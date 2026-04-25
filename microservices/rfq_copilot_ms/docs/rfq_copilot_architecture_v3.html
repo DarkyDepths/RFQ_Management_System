@@ -138,7 +138,11 @@ body {
 </div>
 
 <!-- ═════════════════ SECTION 1 — CANONICAL PIPELINE ═════════════════ -->
-<div class="section-heading">Section 1 — Canonical pipeline (Level 1)</div>
+<div class="section-heading">Section 1 — Canonical pipeline (stage registry)</div>
+
+<div style="margin: -8px 0 16px; padding: 12px 18px; background: #1c1f3a; border-left: 3px solid #7c3aed; border-radius: 6px; font-size: 13px; color: #c3b1ff; line-height: 1.6;">
+  <strong>Not every turn executes every stage.</strong> The Path Planner emits a <code style="background:#0d1117;padding:1px 6px;border-radius:3px;color:#e3b341;">TurnExecutionPlan</code> that activates or skips stages per path. Section 2 shows the per-path execution traces.
+</div>
 
 <div class="diagram-card">
 <div class="mermaid">
@@ -146,25 +150,31 @@ flowchart TD
     ENG([Engineer message])
     OUT([Answer])
 
-    ENG --> PLAN["1 · Path Planner<br/>classify into 1..8"]
+    ENG --> PLAN["1 · Path Planner<br/>deterministic + LLM fallback<br/>emits TurnExecutionPlan"]
 
     PLAN --> RES["2 · Target Resolver<br/>deterministic ID / search / N&#47;A"]
     RES --> ACC["3 · Access Check<br/>via manager_ms (I6)"]
     ACC --> MEM["4 · Memory Load<br/>working + episodic + session_state"]
     MEM --> CTX["5 · Context Packet Builder<br/>L1..L5, only requested fields (I1)"]
-    CTX --> AGENT["6 · Agent — LLM call<br/>COT &#43; selective evidence tool &#43; compose"]
-    AGENT --> GRD["7 · Guardrails<br/>scope · evidence · shape · ..."]
-    GRD --> JUDGE["8 · Judge<br/>conditional per path"]
-    JUDGE --> FIN["9 · Finalizer<br/>template per outcome"]
-    FIN --> PERSIST["10 · Persist<br/>working · episodic · session_state · audit"]
+    CTX --> AGENT["6 · Agent — tool call<br/>selective evidence tool"]
+    AGENT --> EVCHK["7 · Evidence Check<br/>tool result present?"]
+    EVCHK --> COMP["8 · Agent — Compose<br/>COT + answer draft"]
+    COMP --> GRD["9 · Guardrails<br/>scope · evidence · shape · ..."]
+    GRD --> JUDGE["10 · Judge<br/>conditional per path"]
+    JUDGE --> FIN["11 · Finalizer<br/>template per outcome"]
+    FIN --> PERSIST["12 · Persist<br/>working · episodic · session_state · audit"]
     PERSIST --> OUT
 
-    PLAN -.path reclassify.-> PLAN
-    RES -.target_resolution_failed.-> PLAN
-    ACC -.access_denied.-> PLAN
-    AGENT -.tool result missing.-> PLAN
-    GRD -.fail.-> FIN
-    JUDGE -.fail.-> FIN
+    GATE{{"Escalation Gate<br/>(I5 inheritance)"}}
+    P8["Path 8.x sub-case<br/>(inherits caller state)"]
+
+    RES -.target_resolution_failed.-> GATE
+    ACC -.access_denied.-> GATE
+    EVCHK -.evidence_missing.-> GATE
+    GRD -.fail.-> GATE
+    JUDGE -.fail.-> GATE
+    GATE --> P8
+    P8 --> FIN
 
     subgraph BACK["Backend services"]
         direction LR
@@ -183,16 +193,20 @@ flowchart TD
 
     style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
     style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
-    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style PLAN      fill:#0f3328,stroke:#1D9E75,color:#56d364
     style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
     style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
     style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
     style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
     style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style EVCHK     fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
     style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
     style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
     style FIN       fill:#0f3328,stroke:#238636,color:#56d364
     style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style GATE      fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P8        fill:#2d2208,stroke:#9e6a03,color:#e3b341
     style BACK      fill:#0d1117,stroke:#21262d,color:#8b949e,stroke-dasharray:5 5
     style MGR       fill:#162032,stroke:#1f6feb,color:#58a6ff
     style INT       fill:#162032,stroke:#1f6feb,color:#58a6ff
@@ -202,12 +216,13 @@ flowchart TD
 </div>
 
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>LLM reasoning (Planner, Agent)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Deterministic classifier (LLM fallback)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>LLM reasoning (Agent / Compose)</div>
   <div class="legend-item"><div class="legend-dot" style="background:#1f6feb"></div>Resolver / backend access</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#da3633"></div>Access enforcement</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#9e6a03"></div>Memory / Guardrails / Judge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#da3633"></div>Access enforcement / Escalation Gate</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9e6a03"></div>Memory / Evidence Check / Guardrails / Judge</div>
   <div class="legend-item"><div class="legend-dot" style="background:#238636"></div>Finalizer / output</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#c9d1d9"></div>Pipeline core</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c9d1d9"></div>Context builder</div>
 </div>
 
 <!-- ═════════════════ SECTION 2 — PATH TRACES ═════════════════ -->
@@ -253,18 +268,22 @@ flowchart LR
 flowchart LR
     ENG([msg]) --> PLAN[Planner] --> CTX["Context<br/>L1+L3+L4+L5"]
     CTX --> AGENT["Agent<br/>query_rag"]
-    AGENT --> GRD["Guardrails<br/>scope · evidence · shape"]
-    GRD --> JUDGE{"Judge?<br/>only if claim<br/>and 0 passages"}
+    AGENT --> EVCHK["Evidence check<br/>passages present?"]
+    EVCHK --> COMP["Agent compose"]
+    COMP --> GRD["Guardrails<br/>scope · evidence · shape"]
+    GRD --> JUDGE{"Judge?<br/>tiered (see card)"}
     JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
-    AGENT -.outside KB.-> PATH82["→ 8.2"]
-    AGENT -.0 passages.-> PATH85["→ 8.5"]
+    EVCHK -.0 passages.-> PATH85["→ 8.5"]
+    PLAN -.outside KB.-> PATH82["→ 8.2"]
     AGENT -.user pivots to RFQ.-> RECLASS["→ Path 4 / 5"]
 
     style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
     style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
-    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style PLAN      fill:#0f3328,stroke:#1D9E75,color:#56d364
     style CTX       fill:#0f3328,stroke:#238636,color:#56d364
     style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style EVCHK     fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
     style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
     style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
     style FIN       fill:#0f3328,stroke:#238636,color:#56d364
@@ -280,7 +299,16 @@ flowchart LR
     <div><strong>Layers:</strong> L1 + L3 + L4 + L5 (no L2)</div>
     <div><strong>Model:</strong> Haiku 4.5 / Sonnet 4.6 if multi-passage synth</div>
     <div><strong>Token budget:</strong> ~1500 in+out</div>
-    <div><strong>Judge:</strong> conditional (claim AND 0 passages)</div>
+    <div><strong>0 passages → 8.5:</strong> escalate before compose, never fabricate</div>
+  </div>
+  <div style="margin-top: 14px; padding: 12px 16px; background: #1a1a00; border-left: 3px solid #9e6a03; border-radius: 6px; font-size: 12px;">
+    <div style="color: #e3b341; font-weight: 700; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;">Tiered judge policy</div>
+    <div style="color: #8b949e; line-height: 1.7;">
+      • <strong>none</strong> for short glossary / template-style answers<br>
+      • <strong>conditional</strong> for standards-sensitive content (ASME / Aramco norm interpretations)<br>
+      • <strong>conditional</strong> for multi-passage synthesis<br>
+      • <strong>mandatory</strong> when answer makes applicability or judgment claims
+    </div>
   </div>
 </div>
 
@@ -324,7 +352,7 @@ flowchart LR
   <div class="path-meta">
     <div><strong>Evidence:</strong> rfq_manager_ms</div>
     <div><strong>Tools:</strong> search_portfolio, get_dashboard_metrics, get_dashboard_analytics</div>
-    <div><strong>Access:</strong> post-retrieval filter (accessible_only)</div>
+    <div><strong>Access:</strong> actor-scoped query at source · post-retrieval sanity filter · counts of inaccessible MUST NOT be exposed (I9)</div>
     <div><strong>Model:</strong> Haiku 4.5 / Sonnet 4.6 for cross-portfolio synth</div>
     <div><strong>Token budget:</strong> ~3000 in+out</div>
     <div><strong>Note:</strong> persists last_search_results for follow-ups</div>
@@ -342,25 +370,29 @@ flowchart LR
     RES --> ACC["Access<br/>via manager_ms"]
     ACC --> MEM["Memory<br/>working+episodic"]
     MEM --> CTX["Context<br/>L1+L2+L4+L5"]
-    CTX --> AGENT["Agent<br/>profile / stages / reminders"]
-    AGENT --> GRD["Guardrails<br/>access · evidence · scope · shape"]
+    CTX --> AGENT["Agent — tool call<br/>profile / stages / reminders"]
+    AGENT --> EVCHK["Evidence check"]
+    EVCHK --> COMP["Agent compose"]
+    COMP --> GRD["Guardrails<br/>access · evidence · scope · shape"]
     GRD --> JUDGE{"Judge?<br/>if factual claim"}
     JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
     RES -.target missing.-> PATH84M["→ 8.4 missing"]
     ACC -.denied.-> PATH84I["→ 8.4 inaccessible"]
     RES -.ambiguous.-> PATH83["→ 8.3"]
+    EVCHK -.empty result.-> PATH85["→ 8.5"]
     AGENT -.user asks intel.-> PATH5["→ Path 5"]
     AGENT -.user asks compare.-> PATH7["→ Path 7"]
-    AGENT -.empty result + judgment ask.-> PATH85["→ 8.5"]
 
     style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
     style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
-    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style PLAN      fill:#0f3328,stroke:#1D9E75,color:#56d364
     style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
     style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
     style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
     style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
     style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style EVCHK     fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
     style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
     style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
     style FIN       fill:#0f3328,stroke:#238636,color:#56d364
@@ -394,25 +426,29 @@ flowchart LR
     RES --> ACC["Access<br/>via manager_ms (I6)"]
     ACC --> MEM["Memory<br/>+ staleness check<br/>(metadata only)"]
     MEM --> CTX["Context<br/>L1+L2+L4+L5"]
-    CTX --> AGENT["Agent<br/>snapshot / briefing / workbook"]
-    AGENT --> GRD["Guardrails<br/>access · evidence · scope · shape"]
+    CTX --> AGENT["Agent — tool call<br/>snapshot / briefing / workbook"]
+    AGENT --> EVCHK["Evidence check<br/>artifact present?"]
+    EVCHK --> COMP["Agent compose"]
+    COMP --> GRD["Guardrails<br/>access · evidence · scope · shape"]
     GRD --> JUDGE["Judge<br/>almost always ON"]
     JUDGE --> FIN["Finalizer<br/>+ staleness caveat (soft)"]
     FIN --> PERSIST[Persist] --> OUT([answer])
     RES -.missing.-> PATH84M["→ 8.4 missing"]
     ACC -.denied.-> PATH84I["→ 8.4 inaccessible"]
-    AGENT -.404 artifact.-> PATH85["→ 8.5"]
+    EVCHK -.404 artifact.-> PATH85["→ 8.5"]
     AGENT -.user asks ops.-> PATH4["→ Path 4"]
     AGENT -.user asks compare.-> PATH7["→ Path 7"]
 
     style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
     style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
-    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style PLAN      fill:#0f3328,stroke:#1D9E75,color:#56d364
     style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
     style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
     style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
     style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
     style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style EVCHK     fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
     style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
     style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341
     style FIN       fill:#0f3328,stroke:#238636,color:#56d364
@@ -431,6 +467,13 @@ flowchart LR
     <div><strong>Model:</strong> Sonnet 4.6 · ~3500 tokens</div>
     <div><strong>Judge:</strong> conditional but ~always ON</div>
     <div><strong>Soft trigger:</strong> staleness → finalizer caveat (no escalate)</div>
+  </div>
+  <div style="margin-top: 14px; padding: 12px 16px; background: #1a0e0e; border-left: 3px solid #da3633; border-radius: 6px; font-size: 12px;">
+    <div style="color: #ff7b72; font-weight: 700; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;">Forbidden inferences</div>
+    <div style="color: #8b949e; line-height: 1.7;">
+      Do <strong>NOT</strong> infer readiness · risk score · gap analysis · compliance assessment · workbook conclusion · "is this ready?" judgments — <strong>unless explicitly present in the intelligence artifact</strong>.<br>
+      On detection → escalate to <code style="background:#0d1117;padding:1px 5px;border-radius:3px;color:#e3b341;">8.5_no_evidence</code>. Judge MUST flag any of these via <code style="background:#0d1117;padding:1px 5px;border-radius:3px;color:#e3b341;">answer_makes_forbidden_inference</code>.
+    </div>
   </div>
 </div>
 
@@ -588,16 +631,26 @@ flowchart TD
 <div class="ref-grid">
 
   <div class="ref-card invariant">
-    <div class="ref-title">8 Invariants (apply globally)</div>
+    <div class="ref-title">9 Invariants (apply globally)</div>
     <ul>
       <li><strong>I1.</strong> Context packet rule: only requested fields injected, never raw cached payloads.</li>
       <li><strong>I2.</strong> Resolver vs Evidence: Resolver tools off-agent, never in L4.</li>
       <li><strong>I3.</strong> Access ordering: Access policy runs before any evidence tool call.</li>
       <li><strong>I4.</strong> Existence-leak policy (default vs strict mode toggle).</li>
-      <li><strong>I5.</strong> Escalation inheritance: caller's resolved state carries over.</li>
+      <li><strong>I5.</strong> Escalation inheritance: caller's resolved state carries over via EscalationGate.</li>
       <li><strong>I6.</strong> Access ≠ evidence: access always via manager_ms regardless of evidence source.</li>
       <li><strong>I7.</strong> Cross-target isolation (Path 7): per-target labelled packets.</li>
       <li><strong>I8.</strong> Cross-context memory fan-out (Path 6): working from owner, episodic from current target.</li>
+      <li><strong>I9.</strong> Aggregate-count leak prohibition: counts/sums/sizes of inaccessible items MUST NOT be exposed (Paths 3, 7).</li>
+    </ul>
+  </div>
+
+  <div class="ref-card invariant">
+    <div class="ref-title">Pipeline gates (named components)</div>
+    <ul>
+      <li><strong>Path Planner</strong> · deterministic classifier with tiny-LLM fallback when uncertain · emits TurnExecutionPlan (which stages are active for this turn)</li>
+      <li><strong>Evidence Check</strong> · deterministic gate between Agent.tool_call and Agent.compose · empty/404/0-passages → escalate before composition (never let LLM fabricate)</li>
+      <li><strong>Escalation Gate</strong> · single intercept point for all stage failures · consumes ESCALATION_TRIGGERS · applies I5 inheritance · routes to Path 8.x sub-case</li>
     </ul>
   </div>
 
@@ -625,6 +678,7 @@ flowchart TD
       <li><code>answer_contains_recommendation_or_judgment</code></li>
       <li><code>answer_mentions_missing_data</code></li>
       <li><code>answer_contains_out_of_scope_content</code></li>
+      <li><code>answer_makes_forbidden_inference</code> (Path 5: readiness, risk, gaps, compliance, workbook conclusion)</li>
     </ul>
   </div>
 
@@ -659,8 +713,9 @@ flowchart TD
       <li><strong><code>dynamic: ...</code></strong> · cell content depends on requested field/sub-topic (e.g. Path 7 Allowed evidence)</li>
       <li><strong><code>[default → END]</code></strong> · path is terminal — finalizer is the exit, no further escalation</li>
       <li><strong>Soft trigger</strong> · modifies finalizer template (e.g. staleness caveat) — path stays the same</li>
-      <li><strong>Hard trigger</strong> · changes the active path via Escalation map</li>
+      <li><strong>Hard trigger</strong> · changes the active path via Escalation map (always routed through Escalation Gate, never back to Planner)</li>
       <li>Resolver/Evidence categorization is <strong>per-path, not per-tool</strong> · same tool may be Resolver in one path and Evidence in another</li>
+      <li><strong>Evidence Check fail</strong> escalates <strong>before</strong> compose · never let the LLM compose against missing evidence</li>
     </ul>
   </div>
 
