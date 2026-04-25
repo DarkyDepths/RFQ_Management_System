@@ -6,6 +6,7 @@ import {
   useEffect,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 
@@ -13,6 +14,10 @@ import { MOCK_REPLY_DELAY_MS, generateMockReply } from "@/lib/copilot-mock";
 import type { CopilotMessage, CopilotMode, CopilotStatus } from "@/types/copilot";
 
 const STORAGE_KEY = "copilot:state:v1";
+
+export const DEFAULT_DRAWER_WIDTH = 420;
+export const MIN_DRAWER_WIDTH = 360;
+export const MAX_DRAWER_WIDTH = 720;
 
 interface CopilotState {
   open: boolean;
@@ -142,14 +147,25 @@ interface CopilotContextValue extends CopilotState {
   newChat: () => void;
   setInput: (value: string) => void;
   sendUserMessage: (content: string) => void;
+  drawerWidth: number;
+  setDrawerWidth: (next: number) => void;
+  isResizing: boolean;
+  setResizing: (next: boolean) => void;
 }
 
 const CopilotContext = createContext<CopilotContextValue | null>(null);
 
 export function CopilotProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [drawerWidth, setDrawerWidthState] = useState(DEFAULT_DRAWER_WIDTH);
+  const [isResizing, setResizing] = useState(false);
   const pendingReplyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedRef = useRef(false);
+
+  const setDrawerWidth = (next: number) => {
+    const clamped = Math.min(MAX_DRAWER_WIDTH, Math.max(MIN_DRAWER_WIDTH, next));
+    setDrawerWidthState(clamped);
+  };
 
   // Hydrate from sessionStorage after mount to avoid SSR/CSR divergence.
   useEffect(() => {
@@ -226,6 +242,10 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     newChat,
     setInput,
     sendUserMessage,
+    drawerWidth,
+    setDrawerWidth,
+    isResizing,
+    setResizing,
   };
 
   return <CopilotContext.Provider value={value}>{children}</CopilotContext.Provider>;
