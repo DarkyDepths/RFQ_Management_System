@@ -48,7 +48,7 @@ services:
       retries: 10
       start_period: 20s
     volumes:
-      - ../seed_outputs:/app/seed_outputs
+      - ../../seed_outputs:/app/seed_outputs
       - ../rfq_manager_ms/uploads_scenario:/app/manager_uploads:ro
 
 volumes:

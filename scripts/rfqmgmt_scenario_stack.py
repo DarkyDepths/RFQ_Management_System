@@ -13,8 +13,8 @@ from pathlib import PurePosixPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MANAGER_DIR = ROOT / "rfq_manager_ms"
-INTELLIGENCE_DIR = ROOT / "rfq_intelligence_ms"
+MANAGER_DIR = ROOT / "microservices" / "rfq_manager_ms"
+INTELLIGENCE_DIR = ROOT / "microservices" / "rfq_intelligence_ms"
 MANAGER_COMPOSE = MANAGER_DIR / "docker-compose.scenario.yml"
 INTELLIGENCE_COMPOSE = INTELLIGENCE_DIR / "docker-compose.scenario.yml"
 SEED_OUTPUT_DIR = ROOT / "seed_outputs"

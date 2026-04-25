@@ -64,7 +64,7 @@ services:
       start_period: 20s
     volumes:
       - ./uploads_scenario:/app/uploads_scenario
-      - ../seed_outputs:/app/seed_outputs
+      - ../../seed_outputs:/app/seed_outputs
 
 volumes:
   rfq_scenario_postgres_data:

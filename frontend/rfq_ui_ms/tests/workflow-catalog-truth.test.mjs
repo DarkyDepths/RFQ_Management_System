@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const backendSource = await readFile(
-  path.join(process.cwd(), "..", "rfq_manager_ms", "scripts", "bootstrap_base_data.py"),
+  path.join(process.cwd(), "..", "..", "microservices", "rfq_manager_ms", "scripts", "bootstrap_base_data.py"),
   "utf8",
 );
 const stageSource = await readFile(
