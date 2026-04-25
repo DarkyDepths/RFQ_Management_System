@@ -1,0 +1,1 @@
+"""RAG tools — agent-exposed wrappers around rag_connector: bounded-domain passage retrieval (ASME, Aramco SAES/SAEP, TEMA, API 660/661, GHI internal norms). Top-K + score threshold; passages emitted as evidence with passage_id + source doc ref."""

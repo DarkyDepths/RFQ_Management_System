@@ -1,0 +1,1 @@
+"""Actor model — user identity for the copilot. Carries user_id, display_name, role, team, permission claims. Populated from IAM later; supplied by utils/auth_context dev bypass for v1. All access checks, audit_log entries, and per-target permission decisions are keyed on Actor."""

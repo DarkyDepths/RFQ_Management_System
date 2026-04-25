@@ -1,0 +1,1 @@
+"""Judge prompts — per JUDGE_TRIGGERS (claim, forbidden_inference, scope_drift, comparison_violation). Each prompt declares the verification framing and accepted verdict shape. Loaded by pipeline/judge."""

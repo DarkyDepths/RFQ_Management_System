@@ -1,0 +1,1 @@
+"""LLM connector — Azure OpenAI GPT-4o client (chat + intent deployments per AZURE_OPENAI_*_DEPLOYMENT). Provider-agnostic interface so the underlying SDK can be swapped without touching pipeline stages. Path-aware deployment selection; token budget enforcement via utils/tokens; prompt-cache key handling for L1 system prompts."""

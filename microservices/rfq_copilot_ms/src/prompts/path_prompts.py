@@ -1,0 +1,1 @@
+"""Path-specific system prompts and few-shot exemplars per PathId. Loaded by the compose stage; never inlined into pipeline code. Centralised so prompt review and prompt-cache key changes happen in one place."""

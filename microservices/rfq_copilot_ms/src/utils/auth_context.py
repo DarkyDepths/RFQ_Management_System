@@ -1,0 +1,1 @@
+"""Auth context — resolves the request Actor for each turn. Honors AUTH_BYPASS_* env vars in dev (single deterministic actor); in prod will validate JWT/headers against IAM. Single point of indirection so pipeline code never reads request headers directly and the future IAM swap requires no pipeline changes."""

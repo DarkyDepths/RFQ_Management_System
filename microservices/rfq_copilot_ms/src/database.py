@@ -1,0 +1,1 @@
+"""SQLAlchemy engine + session factory. Reads DATABASE_URL from settings; provides Depends-friendly get_session() for routes/controllers. Tables defined in src/models/db.py; schema migrations in migrations/."""

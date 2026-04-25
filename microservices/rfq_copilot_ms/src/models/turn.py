@@ -1,1 +1,1 @@
-"""TurnRequest, TurnResponse, TurnExecutionPlan models. The TurnExecutionPlan is emitted by the Planner and declares which stages run."""
+"""TurnRequest, TurnResponse, TurnExecutionPlan, EscalationEvent models. The TurnExecutionPlan is emitted by the Planner and declares which stages run. EscalationEvent carries inherited context per I5 (resolved target, access verdict, evidence carry-over) when stage failures route to a Path 8.x sub-case via the escalation_gate."""

@@ -1,1 +1,1 @@
-"""access guardrail — pre-retrieval permission check enforcement. I3 ordering. Audit on denial."""
+"""Access guardrail — invariant enforcement around the access stage: verifies the access verdict ran before any retrieval (I3 ordering), audit_log was written for every attempt (granted + denied), and no evidence reached Compose for a target whose verdict was denied. Does not call manager_ms — that's the access pipeline stage's job."""

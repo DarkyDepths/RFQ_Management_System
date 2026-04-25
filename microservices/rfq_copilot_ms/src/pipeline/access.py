@@ -1,1 +1,1 @@
-"""Access Check — pre-retrieval permission verification via rfq_manager_ms (I3 + I6). Per-target for Path 7. Audit-logs every attempt including denials. Never relied solely on manager filtering."""
+"""Access Check pipeline stage — calls rfq_manager_ms for the per-target permission verdict (I3 + I6) before any retrieval. Per-target for Paths 6 and 7. Emits the verdict structure consumed by Context Builder and Persist; never relies on backend-side filtering alone. Stage logic only — ordering / post-condition enforcement lives in guardrails/access_guardrail.py."""

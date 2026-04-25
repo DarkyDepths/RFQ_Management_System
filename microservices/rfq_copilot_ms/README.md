@@ -1,21 +1,23 @@
 # rfq_copilot_ms
 
-Copilot microservice for the RFQ Lifecycle Management platform. Conversational layer that reads from rfq_manager_ms (operational truth) and rfq_intelligence_ms (derived intelligence), bounded by a frozen execution contract.
+Copilot microservice for the RFQ Lifecycle Management platform. Conversational layer that reads from rfq_manager_ms (operational truth) and rfq_intelligence_ms (derived intelligence), bounded by the v1.1 execution contract (phase-A walkthrough complete; phase-B stress test pending).
 
 ## Architecture
 
 Layered architecture (consistent with rfq_manager_ms / rfq_intelligence_ms):
 
 ```
-routes/        →  FastAPI endpoints (turn, threads, health)
-controllers/   →  TurnController orchestrates the pipeline
-pipeline/      →  12 stages: planner → resolver → access → memory → context → agent → evidence_check → compose → guardrails → judge → finalizer → escalation_gate → persist
+routes/        →  FastAPI endpoints (turn, threads, entry, health)
+controllers/   →  ThreadController (lifecycle), TurnController (single-turn pipeline)
+pipeline/      →  planner → resolver → access → memory → context → agent → evidence_check → compose → guardrails → judge → finalizer → escalation_gate → persist
 datasources/   →  Conversation DB (turns, threads, session_state, audit_log, episodic)
-connectors/    →  manager_ms, intelligence_ms, RAG, Anthropic, event_bus
+connectors/    →  manager_ms, intelligence_ms, RAG, LLM (Azure OpenAI), event_bus
+tools/         →  Agent-callable + off-agent tool adapters (resolver, manager, intelligence, RAG)
+prompts/       →  Path prompts, judge prompts, finalizer templates
 translators/   →  Pure data shape transforms (API payloads ↔ EvidencePacket)
-models/        →  Pydantic + SQLAlchemy contracts
+models/        →  Pydantic + SQLAlchemy contracts (incl. Actor, TurnContext)
 config/        →  PATH_CONFIGS registry, invariants, temporal filters, forbidden inferences
-utils/         →  Pure helpers (claim detector, RFQ code parser, etc.)
+utils/         →  Pure helpers (auth_context, claim detector, RFQ code parser, etc.)
 ```
 
 ## Spec sources

@@ -1,1 +1,1 @@
-"""Pydantic Settings — env vars: DATABASE_URL, MANAGER_MS_BASE_URL, INTELLIGENCE_MS_BASE_URL, ANTHROPIC_API_KEY, RAG_BASE_URL, freshness thresholds, model defaults, strict_mode toggle (I4)."""
+"""Pydantic Settings — env vars: DATABASE_URL, APP_ENV/APP_DEBUG/APP_PORT, CORS_ORIGINS, AZURE_OPENAI_* (endpoint, api_version, api_key, chat_deployment, intent_deployment, timeout), MANAGER_BASE_URL, INTELLIGENCE_BASE_URL, IAM_SERVICE_URL, AUTH_BYPASS_* (enabled, user_id, user_name, role, debug_headers), RAG_BASE_URL, freshness thresholds, strict_mode toggle (I4)."""

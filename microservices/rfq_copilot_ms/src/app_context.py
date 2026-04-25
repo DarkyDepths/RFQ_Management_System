@@ -1,0 +1,1 @@
+"""Application context — DI container assembled at startup. Holds settings, engine + session factory, connectors (manager_ms, intelligence_ms, RAG, LLM, event_bus), datasources, and controllers (Thread, Turn). Injected into routes via FastAPI Depends; built by app.py lifespan, never instantiated per-request."""

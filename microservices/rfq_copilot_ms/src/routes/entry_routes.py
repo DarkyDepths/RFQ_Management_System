@@ -1,0 +1,1 @@
+"""POST /threads (new), POST /threads/open (resume-latest-fresh-or-spawn per the freshness rule), POST /threads/{id}/resume — thread entry endpoints invoked by the UI when the copilot is opened from the general page or an RFQ page. Delegates to ThreadController; never makes lifecycle decisions in the route layer."""

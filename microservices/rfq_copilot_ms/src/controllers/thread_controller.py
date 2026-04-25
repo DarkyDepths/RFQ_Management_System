@@ -1,0 +1,1 @@
+"""ThreadController — owns thread lifecycle: open/resume/new-chat decisions per the freshness rule (general vs rfq_bound), thread listing per actor, ownership invariants. TurnController handles single-turn execution; ThreadController handles everything around the conversation envelope."""

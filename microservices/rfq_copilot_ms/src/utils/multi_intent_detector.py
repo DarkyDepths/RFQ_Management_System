@@ -1,1 +1,1 @@
-"""Multi-intent detector — heuristics for splitting user messages with multiple intents (used by F4 multi_intent_cross_path_detected trigger)."""
+"""Multi-intent detector — DETECTOR ONLY. Identifies messages carrying multiple cross-path intents and emits the F4 multi_intent_cross_path_detected trigger so the planner can route to clarification (8.3) or unsupported (8.2). v1 never splits or processes multiple intents in parallel."""

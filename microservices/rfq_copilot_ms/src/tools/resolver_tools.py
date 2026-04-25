@@ -1,0 +1,1 @@
+"""Resolver tools — off-agent (I2) target resolution wrappers: search_portfolio_by_code, search_portfolio_by_descriptor, page_default_target, none_target. Used by pipeline/resolver before access checks. Strict schemas; never exposed to the LLM agent."""
