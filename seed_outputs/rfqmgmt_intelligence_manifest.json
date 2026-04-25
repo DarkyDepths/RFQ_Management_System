@@ -1,0 +1,145 @@
+{
+  "manifest_version": "rfqmgmt_intelligence_scenarios_v1",
+  "generated_at": "2026-04-11T15:25:45+00:00",
+  "golden_reserved_scenario": "RFQ-06",
+  "seeded": [],
+  "skipped": [
+    {
+      "scenario_key": "RFQ-01",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-02",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-03",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-04",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-05",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-07",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-08",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-09",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-10",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-11",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-14",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-15",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-16",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-17",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-18",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-19",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-20",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-21",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-22",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-23",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-24",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "RFQ-25",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-26",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-27",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-28",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-29",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-30",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-31",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-32",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-33",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-34",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-35",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-36",
+      "reason": "already_seeded"
+    },
+    {
+      "scenario_key": "RFQ-37",
+      "reason": "already_seeded"
+    }
+  ],
+  "manager_manifest_path": "/app/seed_outputs/rfqmgmt_manager_manifest.json"
+}
