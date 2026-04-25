@@ -1,0 +1,1 @@
+"""Memory Load — fetches working memory turns, episodic entries scoped per target, and session_state. Also runs staleness check on Path 5 (artifact metadata vs manager updated_at). Path 6 dual-context: working from owner, episodic from cross-target (I8)."""

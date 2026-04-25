@@ -1,0 +1,1 @@
+"""TurnController — orchestrates the full pipeline: planner → resolver → access → memory → context → agent → evidence_check → compose → guardrails → judge → finalizer → persist. Owns transaction boundaries and escalation routing."""

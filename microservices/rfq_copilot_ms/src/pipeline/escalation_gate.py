@@ -1,0 +1,1 @@
+"""Escalation Gate — single intercept point for stage failures. Consumes ESCALATION_TRIGGERS, applies I5 inheritance (resolved target, access verdict, evidence carry over), routes to a Path 8.x sub-case. Stage failures never loop back to Planner."""

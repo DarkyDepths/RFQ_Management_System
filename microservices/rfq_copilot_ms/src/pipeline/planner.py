@@ -1,0 +1,1 @@
+"""Path Planner — first stage. Deterministic classifier (regex, signals, state) with tiny-LLM fallback when uncertain. Emits TurnExecutionPlan declaring active stages for this turn. Also handles stale-conversation spawn (F7), pending_clarification re-classification (F5), tiered model selection on Path 3 (F3)."""

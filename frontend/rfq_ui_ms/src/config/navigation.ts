@@ -1,6 +1,6 @@
 import type { AppRole } from "@/models/ui/role";
 
-const showFeaturedDetail = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+const showFeaturedDetail = true;
 
 export type NavigationIcon =
   | "layout-dashboard"

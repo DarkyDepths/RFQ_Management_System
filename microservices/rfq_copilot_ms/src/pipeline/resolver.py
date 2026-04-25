@@ -1,0 +1,1 @@
+"""Target Resolver — resolves the turn's target(s) before access checks. Strategies: page_default, search_portfolio_by_code, search_portfolio_by_descriptor, none. Per-target for Path 7. Off-agent only (I2)."""

@@ -1,0 +1,1 @@
+"""Judge — LLM verification stage. Evaluates draft against JUDGE_TRIGGERS active for this path. Verdict: pass | fabrication | scope_drift | forbidden_inference | comparison_violation. On fail → escalate to Finalizer with safe template."""
