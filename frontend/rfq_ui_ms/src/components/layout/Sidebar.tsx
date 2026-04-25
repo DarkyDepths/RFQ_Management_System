@@ -50,16 +50,11 @@ export function Sidebar() {
           sidebarCollapsed && "lg:justify-center lg:px-3",
         )}
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 ring-1 ring-gold-500/20 dark:from-[#2A2218] dark:to-[#1E1A14] dark:ring-gold-500/30">
-          <Image
-            alt="Al Bassam Group"
-            className="object-contain p-0.5"
-            height={32}
-            priority
-            src="/brand/albassam-logo.png"
-            width={32}
-          />
-        </div>
+       <img
+          src="/logo.png"
+          alt="Al Bassam Group Logo"
+          className="w-16 h-12 "
+        />
         {!sidebarCollapsed ? (
           <div className="min-w-0">
             <div className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-300">
