@@ -1,11 +1,10 @@
 import { RFQDetailScreen } from "@/components/rfq/RFQDetailScreen";
 
-export default function RfqDetailPage({
+export default async function RfqDetailPage({
   params,
 }: {
-  params: {
-    rfqId: string;
-  };
+  params: Promise<{ rfqId: string }>;
 }) {
-  return <RFQDetailScreen rfqId={params.rfqId} />;
+  const { rfqId } = await params;
+  return <RFQDetailScreen rfqId={rfqId} />;
 }
