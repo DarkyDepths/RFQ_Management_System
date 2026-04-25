@@ -8,26 +8,32 @@ import { useCopilot } from "@/hooks/useCopilot";
 import { cn } from "@/lib/utils";
 
 export function CopilotComposer() {
-  const { input, setInput, open } = useCopilot();
+  const { input, setInput, open, status, sendUserMessage } = useCopilot();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (open) {
+    if (open && status !== "loading") {
       textareaRef.current?.focus();
     }
-  }, [open, input]);
+  }, [open, input, status]);
 
-  const canSend = input.trim().length > 0;
+  const isLoading = status === "loading";
+  const canSend = !isLoading && input.trim().length > 0;
+
+  const submit = () => {
+    if (!canSend) return;
+    sendUserMessage(input);
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // no-op in Batch 1; Batch 2 wires the local mock send.
+    submit();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      // no-op in Batch 1.
+      submit();
     }
   };
 
@@ -39,11 +45,12 @@ export function CopilotComposer() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask the RFQ Copilot…"
+          placeholder={isLoading ? "Thinking…" : "Ask the RFQ Copilot…"}
           rows={1}
+          disabled={isLoading}
           className={cn(
             "flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground",
-            "outline-none",
+            "outline-none disabled:cursor-not-allowed disabled:opacity-60",
           )}
         />
         <Button
