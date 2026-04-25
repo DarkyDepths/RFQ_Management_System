@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RFQ Copilot — Architecture v3 (path-aware)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  padding: 40px 32px;
+  min-height: 100vh;
+}
+
+.header-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #7d8590; margin-bottom: 6px;
+}
+.header-title {
+  font-size: 28px; font-weight: 700; color: #e6edf3; margin-bottom: 6px;
+}
+.header-sub {
+  font-size: 14px; color: #8b949e; margin-bottom: 32px; line-height: 1.6;
+}
+
+.section-heading {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #7d8590;
+  margin: 40px 0 16px; padding-bottom: 8px;
+  border-bottom: 1px solid #21262d;
+}
+
+.diagram-card {
+  background: #161b22; border: 1px solid #30363d;
+  border-radius: 14px; padding: 32px;
+  overflow-x: auto; margin-bottom: 16px;
+}
+.mermaid { display: flex; justify-content: center; }
+
+.path-block {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 18px;
+  border-left-width: 3px;
+}
+.path-block.lane-0 { border-left-color: #444441; }
+.path-block.lane-1 { border-left-color: #1D9E75; }
+.path-block.lane-2 { border-left-color: #1f6feb; }
+.path-block.lane-3 { border-left-color: #D85A30; }
+.path-block.lane-protected { border-left-color: #9e6a03; }
+
+.path-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 4px;
+}
+.lane-0 .path-title { color: #c9d1d9; }
+.lane-1 .path-title { color: #56d364; }
+.lane-2 .path-title { color: #79c0ff; }
+.lane-3 .path-title { color: #ff9a7b; }
+.lane-protected .path-title { color: #e3b341; }
+
+.path-sub {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: #7d8590;
+  margin-bottom: 14px;
+}
+
+.path-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #21262d;
+  font-size: 12px;
+}
+.path-meta div { color: #8b949e; }
+.path-meta strong { color: #c9d1d9; font-weight: 600; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  padding: 18px 22px; background: #161b22;
+  border: 1px solid #30363d; border-radius: 10px;
+  margin: 16px 0 32px;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8b949e; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.ref-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 18px 20px;
+  border-left: 3px solid #7c3aed;
+}
+.ref-card .ref-title {
+  font-size: 13px; font-weight: 700; color: #c3b1ff;
+  margin-bottom: 10px; letter-spacing: 0.02em;
+}
+.ref-card ul { list-style: none; padding: 0; }
+.ref-card ul li {
+  font-size: 12px; color: #8b949e; line-height: 1.6;
+  padding: 4px 0; border-bottom: 1px solid #21262d;
+}
+.ref-card ul li:last-child { border-bottom: none; }
+.ref-card ul li code {
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 11px;
+  color: #e3b341;
+  background: #2d2208;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.ref-card.invariant { border-left-color: #1f6feb; }
+.ref-card.invariant .ref-title { color: #79c0ff; }
+.ref-card.guardrail { border-left-color: #9e6a03; }
+.ref-card.guardrail .ref-title { color: #e3b341; }
+.ref-card.trigger { border-left-color: #1D9E75; }
+.ref-card.trigger .ref-title { color: #56d364; }
+</style>
+</head>
+<body>
+
+<div class="header-label">rfq_copilot_ms — v3 path-aware</div>
+<div class="header-title">Architecture v3 — One canonical pipeline, 8 path profiles</div>
+<div class="header-sub">
+  The architecture is a single deterministic pipeline. The Path Planner classifies every turn into one of 8 paths, and each path activates only the stages it needs.<br>
+  Section 1 shows the canonical pipeline. Section 2 shows the execution trace per path. Section 3 lists invariants, guardrails, and triggers.
+</div>
+
+<!-- ═════════════════ SECTION 1 — CANONICAL PIPELINE ═════════════════ -->
+<div class="section-heading">Section 1 — Canonical pipeline (Level 1)</div>
+
+<div class="diagram-card">
+<div class="mermaid">
+flowchart TD
+    ENG([Engineer message])
+    OUT([Answer])
+
+    ENG --> PLAN["1 · Path Planner<br/>classify into 1..8"]
+
+    PLAN --> RES["2 · Target Resolver<br/>deterministic ID / search / N&#47;A"]
+    RES --> ACC["3 · Access Check<br/>via manager_ms (I6)"]
+    ACC --> MEM["4 · Memory Load<br/>working + episodic + session_state"]
+    MEM --> CTX["5 · Context Packet Builder<br/>L1..L5, only requested fields (I1)"]
+    CTX --> AGENT["6 · Agent — LLM call<br/>COT &#43; selective evidence tool &#43; compose"]
+    AGENT --> GRD["7 · Guardrails<br/>scope · evidence · shape · ..."]
+    GRD --> JUDGE["8 · Judge<br/>conditional per path"]
+    JUDGE --> FIN["9 · Finalizer<br/>template per outcome"]
+    FIN --> PERSIST["10 · Persist<br/>working · episodic · session_state · audit"]
+    PERSIST --> OUT
+
+    PLAN -.path reclassify.-> PLAN
+    RES -.target_resolution_failed.-> PLAN
+    ACC -.access_denied.-> PLAN
+    AGENT -.tool result missing.-> PLAN
+    GRD -.fail.-> FIN
+    JUDGE -.fail.-> FIN
+
+    subgraph BACK["Backend services"]
+        direction LR
+        MGR["rfq_manager_ms"]
+        INT["rfq_intelligence_ms"]
+        KB[("Domain KB / RAG")]
+        DB[("Conversation DB")]
+    end
+
+    RES -.-> MGR
+    ACC -.-> MGR
+    AGENT -.-> MGR
+    AGENT -.-> INT
+    AGENT -.-> KB
+    PERSIST -.-> DB
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style BACK      fill:#0d1117,stroke:#21262d,color:#8b949e,stroke-dasharray:5 5
+    style MGR       fill:#162032,stroke:#1f6feb,color:#58a6ff
+    style INT       fill:#162032,stroke:#1f6feb,color:#58a6ff
+    style KB        fill:#0f3328,stroke:#238636,color:#56d364
+    style DB        fill:#2d2208,stroke:#9e6a03,color:#e3b341
+</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>LLM reasoning (Planner, Agent)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1f6feb"></div>Resolver / backend access</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#da3633"></div>Access enforcement</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9e6a03"></div>Memory / Guardrails / Judge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#238636"></div>Finalizer / output</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c9d1d9"></div>Pipeline core</div>
+</div>
+
+<!-- ═════════════════ SECTION 2 — PATH TRACES ═════════════════ -->
+<div class="section-heading">Section 2 — Path execution traces (Level 2)</div>
+
+<!-- ── Path 1 ── -->
+<div class="path-block lane-0">
+  <div class="path-title">Path 1 — Conversational</div>
+  <div class="path-sub">Greetings · thanks · identity · micro-help · no business data</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> FIN["Finalizer<br/>template-first<br/>Haiku fallback"]
+    FIN --> PERSIST[Persist] --> OUT([answer])
+    PLAN -.scope drift.-> PATH82["→ Path 8.2"]
+    PLAN -.RFQ ask detected.-> RECLASS["→ reclassify"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH82    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style RECLASS   fill:#1a1200,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Stages active:</strong> Planner · Finalizer · Persist</div>
+    <div><strong>Stages skipped:</strong> Resolver · Access · Memory load · Context · Agent · Guardrails · Judge</div>
+    <div><strong>Evidence:</strong> none · ∅ tools</div>
+    <div><strong>Model:</strong> template-first, Haiku 4.5 fallback</div>
+    <div><strong>Token budget:</strong> ~300 in+out</div>
+    <div><strong>Judge:</strong> none</div>
+  </div>
+</div>
+
+<!-- ── Path 2 ── -->
+<div class="path-block lane-1">
+  <div class="path-title">Path 2 — Domain knowledge</div>
+  <div class="path-sub">Industrial / RFQ concepts (PWHT, ASME, Aramco SAES…) · bounded RAG only</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> CTX["Context<br/>L1+L3+L4+L5"]
+    CTX --> AGENT["Agent<br/>query_rag"]
+    AGENT --> GRD["Guardrails<br/>scope · evidence · shape"]
+    GRD --> JUDGE{"Judge?<br/>only if claim<br/>and 0 passages"}
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+    AGENT -.outside KB.-> PATH82["→ 8.2"]
+    AGENT -.0 passages.-> PATH85["→ 8.5"]
+    AGENT -.user pivots to RFQ.-> RECLASS["→ Path 4 / 5"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style CTX       fill:#0f3328,stroke:#238636,color:#56d364
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH82    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH85    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style RECLASS   fill:#1a1200,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence:</strong> Domain KB (RAG)</div>
+    <div><strong>Tools:</strong> query_rag</div>
+    <div><strong>Layers:</strong> L1 + L3 + L4 + L5 (no L2)</div>
+    <div><strong>Model:</strong> Haiku 4.5 / Sonnet 4.6 if multi-passage synth</div>
+    <div><strong>Token budget:</strong> ~1500 in+out</div>
+    <div><strong>Judge:</strong> conditional (claim AND 0 passages)</div>
+  </div>
+</div>
+
+<!-- ── Path 3 ── -->
+<div class="path-block lane-1">
+  <div class="path-title">Path 3 — Portfolio retrieval</div>
+  <div class="path-sub">Search / list / filter many RFQs · search IS the evidence</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> MEM["Memory<br/>working only"]
+    MEM --> CTX["Context<br/>L1+L2+L4+L5"]
+    CTX --> AGENT["Agent<br/>search_portfolio<br/>+ dashboard tools"]
+    AGENT --> ACC["Access filter<br/>post-retrieval"]
+    ACC --> GRD["Guardrails<br/>evidence · scope · shape"]
+    GRD --> JUDGE{"Judge?<br/>optional"}
+    JUDGE --> FIN[Finalizer] --> PERSIST["Persist<br/>+ last_search_results"]
+    PERSIST --> OUT([answer])
+    AGENT -.zero results.-> PATH85["→ 8.5"]
+    AGENT -.too many.-> PATH83["→ 8.3"]
+    AGENT -.user picks one.-> PATH4["→ Path 4"]
+    AGENT -.user asks ranking.-> PATH81["→ 8.1"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH85    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH83    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH4     fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-dasharray:3 3
+    style PATH81    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence:</strong> rfq_manager_ms</div>
+    <div><strong>Tools:</strong> search_portfolio, get_dashboard_metrics, get_dashboard_analytics</div>
+    <div><strong>Access:</strong> post-retrieval filter (accessible_only)</div>
+    <div><strong>Model:</strong> Haiku 4.5 / Sonnet 4.6 for cross-portfolio synth</div>
+    <div><strong>Token budget:</strong> ~3000 in+out</div>
+    <div><strong>Note:</strong> persists last_search_results for follow-ups</div>
+  </div>
+</div>
+
+<!-- ── Path 4 ── -->
+<div class="path-block lane-2">
+  <div class="path-title">Path 4 — RFQ operational retrieval</div>
+  <div class="path-sub">One RFQ · operational truth (deadline, owner, status, stages, blockers, reminders)</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> RES["Resolver<br/>page_default OR search"]
+    RES --> ACC["Access<br/>via manager_ms"]
+    ACC --> MEM["Memory<br/>working+episodic"]
+    MEM --> CTX["Context<br/>L1+L2+L4+L5"]
+    CTX --> AGENT["Agent<br/>profile / stages / reminders"]
+    AGENT --> GRD["Guardrails<br/>access · evidence · scope · shape"]
+    GRD --> JUDGE{"Judge?<br/>if factual claim"}
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+    RES -.target missing.-> PATH84M["→ 8.4 missing"]
+    ACC -.denied.-> PATH84I["→ 8.4 inaccessible"]
+    RES -.ambiguous.-> PATH83["→ 8.3"]
+    AGENT -.user asks intel.-> PATH5["→ Path 5"]
+    AGENT -.user asks compare.-> PATH7["→ Path 7"]
+    AGENT -.empty result + judgment ask.-> PATH85["→ 8.5"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH84M   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH84I   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH83    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH5     fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-dasharray:3 3
+    style PATH7     fill:#3a1f0a,stroke:#D85A30,color:#ff9a7b,stroke-dasharray:3 3
+    style PATH85    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence:</strong> rfq_manager_ms</div>
+    <div><strong>Resolver tools:</strong> search_portfolio (off-agent)</div>
+    <div><strong>Evidence tools:</strong> get_rfq_profile, get_rfq_stages, list_reminders</div>
+    <div><strong>Layers:</strong> L1 + L2 + L4 + L5 (no L3)</div>
+    <div><strong>Model:</strong> Sonnet 4.6 · ~3000 tokens</div>
+    <div><strong>Judge:</strong> conditional (answer_makes_factual_claim)</div>
+  </div>
+</div>
+
+<!-- ── Path 5 ── -->
+<div class="path-block lane-2">
+  <div class="path-title">Path 5 — RFQ intelligence retrieval</div>
+  <div class="path-sub">One RFQ · derived intelligence (briefing, snapshot, gaps, readiness, workbook profile/review)</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> RES[Resolver]
+    RES --> ACC["Access<br/>via manager_ms (I6)"]
+    ACC --> MEM["Memory<br/>+ staleness check<br/>(metadata only)"]
+    MEM --> CTX["Context<br/>L1+L2+L4+L5"]
+    CTX --> AGENT["Agent<br/>snapshot / briefing / workbook"]
+    AGENT --> GRD["Guardrails<br/>access · evidence · scope · shape"]
+    GRD --> JUDGE["Judge<br/>almost always ON"]
+    JUDGE --> FIN["Finalizer<br/>+ staleness caveat (soft)"]
+    FIN --> PERSIST[Persist] --> OUT([answer])
+    RES -.missing.-> PATH84M["→ 8.4 missing"]
+    ACC -.denied.-> PATH84I["→ 8.4 inaccessible"]
+    AGENT -.404 artifact.-> PATH85["→ 8.5"]
+    AGENT -.user asks ops.-> PATH4["→ Path 4"]
+    AGENT -.user asks compare.-> PATH7["→ Path 7"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH84M   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH84I   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH85    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH4     fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-dasharray:3 3
+    style PATH7     fill:#3a1f0a,stroke:#D85A30,color:#ff9a7b,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence:</strong> rfq_intelligence_ms</div>
+    <div><strong>Access:</strong> via manager_ms (I6 — access ≠ evidence)</div>
+    <div><strong>Evidence tools:</strong> snapshot · briefing · workbook profile/review · artifacts catalog · artifact_metadata</div>
+    <div><strong>Model:</strong> Sonnet 4.6 · ~3500 tokens</div>
+    <div><strong>Judge:</strong> conditional but ~always ON</div>
+    <div><strong>Soft trigger:</strong> staleness → finalizer caveat (no escalate)</div>
+  </div>
+</div>
+
+<!-- ── Path 6 ── -->
+<div class="path-block lane-2">
+  <div class="path-title">Path 6 — Cross-RFQ reference</div>
+  <div class="path-sub">User in thread A explicitly references RFQ B · ownership stays with A</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> RES["Resolver<br/>cross-target only"]
+    RES --> ACC["Access<br/>cross-target only<br/>(owner already verified)"]
+    ACC --> MEM["Memory<br/>working: OWNER thread<br/>episodic: CROSS target"]
+    MEM --> CTX["Context<br/>per-target labelled (I8)"]
+    CTX --> AGENT["Agent<br/>tools per sub-topic<br/>(P4 or P5 rules)"]
+    AGENT --> GRD["Guardrails<br/>+ target_isolation"]
+    GRD --> JUDGE[Judge]
+    JUDGE --> FIN["Finalizer<br/>'On {cross}: ...'<br/>(side-answer framing)"]
+    FIN --> PERSIST["Persist<br/>working → owner thread<br/>episodic → cross-target"]
+    PERSIST --> OUT([answer in owner thread])
+    RES -.missing.-> PATH84M["→ 8.4 (inline, NO thread switch)"]
+    ACC -.denied.-> PATH84I["→ 8.4 (inline, NO thread switch)"]
+    AGENT -.compare ask.-> PATH7["→ Path 7 (suggest, no auto-switch)"]
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 3
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style PATH84M   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH84I   fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH7     fill:#3a1f0a,stroke:#D85A30,color:#ff9a7b,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Special:</strong> dual-context memory (I8)</div>
+    <div><strong>Working memory:</strong> from owner thread</div>
+    <div><strong>Episodic memory:</strong> from cross-target</div>
+    <div><strong>Persistence:</strong> turn enters owner working ; cross-target episodic only</div>
+    <div><strong>Guardrails:</strong> + target_isolation (no leak owner→cross)</div>
+    <div><strong>Note:</strong> failure modes stay inline — thread does not switch</div>
+  </div>
+</div>
+
+<!-- ── Path 7 ── -->
+<div class="path-block lane-3">
+  <div class="path-title">Path 7 — Comparison</div>
+  <div class="path-sub">2+ RFQs side-by-side · mandatory judge · cross-target isolation enforced</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    ENG([msg]) --> PLAN[Planner] --> RES["Resolver<br/>per target<br/>(cap N≤5)"]
+    RES --> ACC["Access<br/>PER TARGET"]
+    ACC --> CFP["Comparable<br/>Field Policy<br/>filter A/B/C"]
+    CFP --> MEM["Memory<br/>per-target episodic"]
+    MEM --> CTX["Context<br/>per-target packets<br/>labelled (I7)"]
+    CTX --> AGENT["Agent<br/>tools per Group A/B"]
+    AGENT --> GRD["Guardrails<br/>+ comparable_field_policy<br/>+ target_isolation"]
+    GRD --> JUDGE["Judge<br/>MANDATORY"]
+    JUDGE --> FIN["Finalizer<br/>table or partial"]
+    FIN --> PERSIST["Persist<br/>fan-out per target_id"]
+    PERSIST --> OUT([answer])
+    RES -.any missing.-> PATH84["→ 8.4"]
+    ACC -.partial.-> FIN_MIX["→ finalizer<br/>mixed_access"]
+    ACC -.all denied.-> PATH84
+    CFP -.Group C.-> PATH81["→ 8.1 unsupported"]
+    CFP -.all ungrounded.-> PATH85["→ 8.5"]
+    AGENT -.winner&#47;better ask.-> PATH81
+
+    style ENG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+    style PLAN      fill:#2d1f5e,stroke:#7c3aed,color:#c3b1ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style CFP       fill:#3a1f0a,stroke:#D85A30,color:#ff9a7b
+    style MEM       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTX       fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style AGENT     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#1a1200,stroke:#9e6a03,color:#e3b341
+    style JUDGE     fill:#1a1a00,stroke:#9e6a03,color:#e3b341
+    style FIN       fill:#0f3328,stroke:#238636,color:#56d364
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style FIN_MIX   fill:#0f3328,stroke:#238636,color:#56d364,stroke-dasharray:3 3
+    style PATH84    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH81    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style PATH85    fill:#1a1200,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Targets:</strong> pair · n_tuple · rfq_vs_slice (cap N≤5)</div>
+    <div><strong>Allowed evidence:</strong> dynamic — Group A→manager · Group B→intelligence · Group C→reject</div>
+    <div><strong>Special guardrails:</strong> comparable_field_policy · target_isolation</div>
+    <div><strong>Model:</strong> Sonnet 4.6 / Opus 4.7 if N&gt;3 or cross-evidence</div>
+    <div><strong>Token budget:</strong> ~6000 in+out</div>
+    <div><strong>Judge:</strong> always (mandatory per freeze)</div>
+  </div>
+</div>
+
+<!-- ── Path 8 ── -->
+<div class="path-block lane-protected">
+  <div class="path-title">Path 8 — Protected / non-answerable (5 sub-cases)</div>
+  <div class="path-sub">Entry from any path via escalation · safety net · finalizer-only most of the time</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart TD
+    ENTRY(["from any path<br/>via Escalation map"]) --> CLASS{"Sub-case?"}
+
+    CLASS -->|capability missing| P81["8.1 Unsupported<br/>template-first<br/>terminal"]
+    CLASS -->|outside domain| P82["8.2 Out of scope<br/>template-first<br/>terminal"]
+    CLASS -->|target unclear| P83["8.3 Ambiguous<br/>writes pending_clarification<br/>asks ONE question"]
+    CLASS -->|RFQ missing or denied| P84["8.4 Missing&#47;Inaccessible<br/>audit log<br/>terminal (I4 strict toggle)"]
+    CLASS -->|in-scope but no evidence| P85["8.5 Not enough evidence<br/>partial known + missing<br/>judge if claim"]
+
+    P81 --> PERSIST[Persist]
+    P82 --> PERSIST
+    P83 --> PERSIST
+    P84 --> PERSIST
+    P85 --> PERSIST
+    PERSIST --> OUT([answer])
+
+    P83 -.same clarification twice.-> P85
+    P85 -.judge fail.-> P85
+
+    style ENTRY     fill:#21262d,stroke:#7c3aed,color:#c3b1ff
+    style CLASS     fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style P81       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style P82       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style P83       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style P84       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P85       fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style PERSIST   fill:#21262d,stroke:#9e6a03,color:#e3b341
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>8.1 Unsupported:</strong> in-domain capability not built</div>
+    <div><strong>8.2 Out of scope:</strong> outside RFQ/industrial domain</div>
+    <div><strong>8.3 Ambiguous:</strong> writes session_state · loop-protected</div>
+    <div><strong>8.4 Missing/inaccessible:</strong> audit-logged · I4 strict-mode capable</div>
+    <div><strong>8.5 Not enough evidence:</strong> partial known + honest gap</div>
+    <div><strong>Common:</strong> evidence inherited from caller path (I5)</div>
+  </div>
+</div>
+
+<!-- ═════════════════ SECTION 3 — REFERENCE ═════════════════ -->
+<div class="section-heading">Section 3 — Quick reference</div>
+
+<div class="ref-grid">
+
+  <div class="ref-card invariant">
+    <div class="ref-title">8 Invariants (apply globally)</div>
+    <ul>
+      <li><strong>I1.</strong> Context packet rule: only requested fields injected, never raw cached payloads.</li>
+      <li><strong>I2.</strong> Resolver vs Evidence: Resolver tools off-agent, never in L4.</li>
+      <li><strong>I3.</strong> Access ordering: Access policy runs before any evidence tool call.</li>
+      <li><strong>I4.</strong> Existence-leak policy (default vs strict mode toggle).</li>
+      <li><strong>I5.</strong> Escalation inheritance: caller's resolved state carries over.</li>
+      <li><strong>I6.</strong> Access ≠ evidence: access always via manager_ms regardless of evidence source.</li>
+      <li><strong>I7.</strong> Cross-target isolation (Path 7): per-target labelled packets.</li>
+      <li><strong>I8.</strong> Cross-context memory fan-out (Path 6): working from owner, episodic from current target.</li>
+    </ul>
+  </div>
+
+  <div class="ref-card guardrail">
+    <div class="ref-title">7 Guardrails (per-path subset)</div>
+    <ul>
+      <li><code>scope</code> · drift detection, redirect</li>
+      <li><code>evidence</code> · every claim has source_ref</li>
+      <li><code>shape</code> · response length / format bounds</li>
+      <li><code>access</code> · pre-retrieval permission check</li>
+      <li><code>ambiguity_loop_check</code> · never re-ask same clarification</li>
+      <li><code>comparable_field_policy</code> · A/B/C filter (Path 7)</li>
+      <li><code>target_isolation</code> · cross-target leak prevention (Paths 6, 7)</li>
+    </ul>
+  </div>
+
+  <div class="ref-card trigger">
+    <div class="ref-title">Trigger glossary — JUDGE_TRIGGERS</div>
+    <ul>
+      <li><code>answer_makes_factual_claim</code></li>
+      <li><code>answer_mentions_other_rfq</code></li>
+      <li><code>answer_uses_manager_evidence</code></li>
+      <li><code>answer_uses_intelligence_artifact</code></li>
+      <li><code>answer_contains_comparison</code></li>
+      <li><code>answer_contains_recommendation_or_judgment</code></li>
+      <li><code>answer_mentions_missing_data</code></li>
+      <li><code>answer_contains_out_of_scope_content</code></li>
+    </ul>
+  </div>
+
+  <div class="ref-card trigger">
+    <div class="ref-title">Trigger glossary — ESCALATION_TRIGGERS</div>
+    <ul>
+      <li><code>target_resolution_failed</code></li>
+      <li><code>access_denied</code></li>
+      <li><code>ambiguous_target</code></li>
+      <li><code>artifact_not_found</code></li>
+      <li><code>evidence_missing</code></li>
+      <li><code>scope_drift</code></li>
+      <li><code>stale_conversation</code></li>
+      <li><code>user_asks_operational</code> / <code>user_asks_intelligence</code> / <code>user_asks_comparison</code></li>
+      <li><code>group_C_field_requested</code> · <code>partial_inaccessibility</code> · <code>all_targets_inaccessible</code></li>
+      <li><code>search_returned_zero</code> · <code>search_returned_too_many</code> · <code>user_picks_one_from_list</code></li>
+      <li><code>concept_outside_bounded_kb</code> · <code>rag_returned_zero_passages</code></li>
+    </ul>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-title">Session state keys</div>
+    <ul>
+      <li><code>pending_clarification</code> · written by 8.3, read by Family 7 (clarification response)</li>
+      <li><code>last_search_results</code> · written by Path 3, enables "show more" / "the 3rd one" follow-ups</li>
+    </ul>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-title">Notation conventions</div>
+    <ul>
+      <li><strong><code>dynamic: ...</code></strong> · cell content depends on requested field/sub-topic (e.g. Path 7 Allowed evidence)</li>
+      <li><strong><code>[default → END]</code></strong> · path is terminal — finalizer is the exit, no further escalation</li>
+      <li><strong>Soft trigger</strong> · modifies finalizer template (e.g. staleness caveat) — path stays the same</li>
+      <li><strong>Hard trigger</strong> · changes the active path via Escalation map</li>
+      <li>Resolver/Evidence categorization is <strong>per-path, not per-tool</strong> · same tool may be Resolver in one path and Evidence in another</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  flowchart: { curve: 'basis', padding: 18, rankSpacing: 38, nodeSpacing: 28 },
+  themeVariables: {
+    primaryColor: '#1c1f3a',
+    primaryTextColor: '#e6edf3',
+    primaryBorderColor: '#7c3aed',
+    lineColor: '#8b949e',
+    secondaryColor: '#161b22',
+    tertiaryColor: '#0d1117',
+    background: '#0d1117',
+    mainBkg: '#161b22',
+    nodeBorder: '#30363d',
+    clusterBkg: '#161b22',
+    titleColor: '#e6edf3',
+    edgeLabelBackground: '#0d1117',
+    fontSize: '13px'
+  }
+});
+</script>
+</body>
+</html>
