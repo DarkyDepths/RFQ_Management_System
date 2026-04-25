@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import { ArtifactCard } from "@/components/artifacts/ArtifactCard";
 import { EmptyState } from "@/components/common/EmptyState";
+import { CopilotFloatingButton } from "@/components/copilot/CopilotFloatingButton";
 import { SkeletonCard } from "@/components/common/SkeletonCard";
 import { IntelligenceActionsPanel } from "@/components/intelligence/IntelligenceActionsPanel";
 import { IntelligencePanel } from "@/components/intelligence/IntelligencePanel";
@@ -166,6 +167,10 @@ export function RFQDetailScreen({ rfqId }: { rfqId: string }) {
     );
   }
 
+  const copilotLabel = rfq.rfqCode?.trim()
+    ? `${rfq.rfqCode.trim()} — ${rfq.title}`
+    : rfq.title;
+
   if (role === "executive") {
     return (
       <div className="space-y-6">
@@ -180,6 +185,7 @@ export function RFQDetailScreen({ rfqId }: { rfqId: string }) {
           workbookProfile={intelligence.workbookProfile}
           workbookReview={intelligence.workbookReview}
         />
+        <CopilotFloatingButton rfqId={rfqId} rfqLabel={copilotLabel} />
       </div>
     );
   }
@@ -410,6 +416,7 @@ export function RFQDetailScreen({ rfqId }: { rfqId: string }) {
           ) : null}
         </motion.div>
       </AnimatePresence>
+      <CopilotFloatingButton rfqId={rfqId} rfqLabel={copilotLabel} />
     </div>
   );
 }

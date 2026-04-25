@@ -12,6 +12,7 @@ import {
   Radar,
 } from "lucide-react";
 
+import { CopilotTrigger } from "@/components/copilot/CopilotTrigger";
 import { ConnectionIndicator } from "@/components/layout/ConnectionIndicator";
 import { primaryNavigation, type NavigationIcon } from "@/config/navigation";
 import { useAppShell } from "@/context/app-shell-context";
@@ -74,6 +75,8 @@ export function Sidebar() {
           sidebarCollapsed && "lg:items-center",
         )}
       >
+        <CopilotTrigger />
+        <div className="hidden h-px w-full bg-border lg:my-2 lg:block" />
         {navItems.map((item) => {
           const isActive =
             item.match === "exact"

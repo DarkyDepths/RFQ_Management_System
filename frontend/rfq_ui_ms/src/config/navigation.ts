@@ -1,6 +1,6 @@
 import type { AppRole } from "@/models/ui/role";
 
-const showFeaturedDetail = true;
+const showFeaturedDetail = false;
 
 export type NavigationIcon =
   | "layout-dashboard"
