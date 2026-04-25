@@ -1,0 +1,53 @@
+# ── Python ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environment ──────────────────────────
+venv/
+.venv/
+env/
+
+# ── Environment variables ────────────────────────
+.env
+
+# ── IDE ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Testing ───────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Alembic ───────────────────────────────────────
+alembic/versions/*.pyc
+migrations/__pycache__/
+
+# ── Logs ──────────────────────────────────────────
+*.log
+error_log.txt
+
+# ── Antigravity / Gemini ──────────────────────────
+.gemini/
+
+# ── Context docs (not shipped) ────────────────────
+Context/
+
+# ── Local fixtures ────────────────────────────────
+local_fixtures/
+
+# ── Local debug / visualization outputs ───────────
+tmp/
+dump_xls.py
+xls_dump.txt

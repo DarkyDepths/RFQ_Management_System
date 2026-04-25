@@ -1,0 +1,26 @@
+export const themeConfig = {
+  colors: {
+    background: "#0D0F12",
+    surface: "#151820",
+    surfaceHover: "#1B1F29",
+    border: "rgba(255,255,255,0.08)",
+    textPrimary: "#F3F4F6",
+    textSecondary: "#A8B0BD",
+    brandGold: "#C89B2A",
+    brandGoldSoft: "#E0B84A",
+    brandDark: "#1E1610",
+    systemBlue: "#4A90D9",
+    systemCyan: "#3FA7B8",
+    success: "#20B26B",
+    warning: "#D89A24",
+    error: "#D95C5C",
+    pending: "#6B7280",
+  },
+  statusToneMap: {
+    active: "text-steel-300",
+    success: "text-emerald-400",
+    warning: "text-gold-300",
+    error: "text-rose-400",
+    pending: "text-slate-400",
+  },
+} as const;

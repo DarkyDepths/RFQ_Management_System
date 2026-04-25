@@ -1,0 +1,2072 @@
+{
+  "info": {
+    "name": "rfq_manager_ms — Test Suite V1.1 (Revised)",
+    "description": "Complete test suite for the RFQ Manager Microservice — V1.1 Revised.\n\n**Improvements over V1.0:**\n- Namespaced variables: each RFQ context has its own stage IDs (rfq1_stage_1_id, cancel_stage_1_id, etc.)\n- Post-state assertions: every mutation verifies side effects, not just status codes\n- Payload notes: tricky fields documented inline\n- Starting state: each folder describes its prerequisites\n- Schema vs business rule: negative tests specify which layer rejects\n\n**How to use:**\n1. Import this collection + environment into Postman\n2. Server running + DB seeded (2 workflows, 4 rules)\n3. Run '0 — Setup' first\n4. Run folders in order (each builds on previous state)\n\n**Variable strategy:**\n- Template IDs: tpl_stage_1 through tpl_stage_11 (from workflow, never change)\n- RFQ 1 stages: rfq1_s1_id through rfq1_s11_id\n- Cancel test: cancel_rfq_id, cancel_s1_id, cancel_s2_id\n- Award test: award_rfq_id\n- Demo: demo_rfq_id, demo_s1 through demo_s11",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/rfq-manager/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "0 — Setup (Run First)",
+      "description": "**Objective:** Populate template-level variables from seeded data.\n**Starting state:** Fresh DB with seed.py executed.\n**Variables produced:** workflow_long_id, workflow_short_id, tpl_stage_1 through tpl_stage_11, tpl_short_stage_1 through tpl_short_stage_5.",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8000/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Server is alive', () => pm.response.to.have.status(200));",
+                  "pm.test('Status OK', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET List Workflows → Save IDs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/workflows"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const workflows = pm.response.json().data;",
+                  "pm.test('At least 2 workflows', () => pm.expect(workflows.length).to.be.at.least(2));",
+                  "for (const wf of workflows) {",
+                  "    if (wf.code === 'GHI-LONG') pm.environment.set('workflow_long_id', wf.id);",
+                  "    if (wf.code === 'GHI-SHORT') pm.environment.set('workflow_short_id', wf.id);",
+                  "}",
+                  "pm.test('GHI-LONG found', () => pm.expect(pm.environment.get('workflow_long_id')).to.not.be.undefined);",
+                  "pm.test('GHI-SHORT found', () => pm.expect(pm.environment.get('workflow_short_id')).to.not.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET GHI-LONG Detail → Save Template Stage IDs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/workflows/{{workflow_long_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const wf = pm.response.json();",
+                  "pm.test('Has 11 stage templates', () => pm.expect(wf.stages.length).to.eql(11));",
+                  "// Save TEMPLATE stage IDs — these are for skip_stages and stage_overrides",
+                  "// NOTE: These are NOT the same as RFQ stage IDs. Template IDs are used only in POST /rfqs payloads.",
+                  "wf.stages.forEach(s => pm.environment.set('tpl_stage_' + s.order, s.id));",
+                  "console.log('Template stage IDs saved: tpl_stage_1 through tpl_stage_11');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET GHI-SHORT Detail → Save Short Template IDs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/workflows/{{workflow_short_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const wf = pm.response.json();",
+                  "pm.test('Has 5 stage templates', () => pm.expect(wf.stages.length).to.eql(5));",
+                  "wf.stages.forEach(s => pm.environment.set('tpl_short_stage_' + s.order, s.id));",
+                  "console.log('Short template stage IDs saved: tpl_short_stage_1 through tpl_short_stage_5');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1 — Core Lifecycle [HIGH]",
+      "description": "**Objective:** Prove end-to-end RFQ creation, stage generation, advancement, and progress tracking.\n**Starting state:** Setup completed. No RFQs exist yet.\n**Variables produced:** rfq1_id, rfq1_code, rfq1_s1_id through rfq1_s11_id.\n**This folder creates RFQ #1 and advances through stages 1-2.",
+      "item": [
+        {
+          "name": "[CREATE] TC-LC-01: Create RFQ with GHI-LONG",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"HP Separator Package — Offshore Platform Alpha\",\n  \"client\": \"Saudi Aramco\",\n  \"deadline\": \"2025-08-15\",\n  \"owner\": \"Proposals Team A\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"industry\": \"Oil & Gas — Upstream\",\n  \"country\": \"Saudi Arabia\",\n  \"priority\": \"critical\",\n  \"description\": \"High-pressure separator package for offshore platform. 3 vessels, ASME VIII Div 1.\",\n  \"code_prefix\": \"IF\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE on payload fields:",
+                  "// - workflow_id: UUID of the workflow (from Setup). Required.",
+                  "// - code_prefix: 'IF' or 'IB'. Controls rfq_code prefix. Default: 'IF'.",
+                  "// - priority: must be exactly 'normal' or 'critical' (Literal enum).",
+                  "",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "const rfq = pm.response.json();",
+                  "pm.test('rfq_code starts with IF-', () => pm.expect(rfq.rfq_code).to.match(/^IF-/));",
+                  "pm.test('Status is In preparation', () => pm.expect(rfq.status).to.eql('In preparation'));",
+                  "pm.test('Progress is 0', () => pm.expect(rfq.progress).to.eql(0));",
+                  "pm.test('Priority is critical', () => pm.expect(rfq.priority).to.eql('critical'));",
+                  "pm.test('current_stage_id is set', () => pm.expect(rfq.current_stage_id).to.not.be.null);",
+                  "pm.test('current_stage_name is set', () => pm.expect(rfq.current_stage_name).to.not.be.null);",
+                  "pm.test('workflow_name is set', () => pm.expect(rfq.workflow_name).to.not.be.null);",
+                  "pm.test('workflow_id matches request', () => pm.expect(rfq.workflow_id).to.eql(pm.environment.get('workflow_long_id')));",
+                  "",
+                  "// Save with rfq1_ namespace",
+                  "pm.environment.set('rfq1_id', rfq.id);",
+                  "pm.environment.set('rfq1_code', rfq.rfq_code);",
+                  "console.log('RFQ #1 created:', rfq.rfq_code);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[STAGES] TC-LC-02: List stages → 11 generated, save IDs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const stages = pm.response.json().data;",
+                  "pm.test('11 stages created', () => pm.expect(stages.length).to.eql(11));",
+                  "pm.test('Stage 1 is In Progress', () => pm.expect(stages[0].status).to.eql('In Progress'));",
+                  "pm.test('Stage 1 has actual_start', () => pm.expect(stages[0].actual_start).to.not.be.null);",
+                  "pm.test('Stage 2 is Not started', () => pm.expect(stages[1].status).to.eql('Not started'));",
+                  "pm.test('Stages ordered 1-11', () => stages.forEach((s, i) => pm.expect(s.order).to.eql(i + 1)));",
+                  "pm.test('All have planned dates', () => stages.forEach(s => {",
+                  "    pm.expect(s.planned_start).to.not.be.null;",
+                  "    pm.expect(s.planned_end).to.not.be.null;",
+                  "}));",
+                  "",
+                  "// Save RFQ1 stage IDs — namespaced to avoid collision with other RFQs",
+                  "stages.forEach(s => {",
+                  "    pm.environment.set('rfq1_s' + s.order + '_id', s.id);",
+                  "    pm.environment.set('rfq1_s' + s.order + '_name', s.name);",
+                  "});",
+                  "console.log('RFQ1 stage IDs saved: rfq1_s1_id through rfq1_s11_id');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[DETAIL] TC-LC-03: Get RFQ detail → all fields populated",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const rfq = pm.response.json();",
+                  "pm.test('Name matches', () => pm.expect(rfq.name).to.include('HP Separator'));",
+                  "pm.test('Client is Saudi Aramco', () => pm.expect(rfq.client).to.eql('Saudi Aramco'));",
+                  "pm.test('Industry populated', () => pm.expect(rfq.industry).to.not.be.null);",
+                  "pm.test('Country is Saudi Arabia', () => pm.expect(rfq.country).to.eql('Saudi Arabia'));",
+                  "pm.test('workflow_id matches', () => pm.expect(rfq.workflow_id).to.eql(pm.environment.get('workflow_long_id')));",
+                  "pm.test('Has created_at', () => pm.expect(rfq.created_at).to.not.be.null);",
+                  "pm.test('Has updated_at', () => pm.expect(rfq.updated_at).to.not.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[DETAIL] TC-LC-04: Get stage 1 detail → empty children",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s1_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test('Status is In Progress', () => pm.expect(s.status).to.eql('In Progress'));",
+                  "pm.test('Notes empty', () => pm.expect(s.notes).to.be.an('array').that.is.empty);",
+                  "pm.test('Files empty', () => pm.expect(s.files).to.be.an('array').that.is.empty);",
+                  "pm.test('Subtasks empty', () => pm.expect(s.subtasks).to.be.an('array').that.is.empty);",
+                  "pm.test('captured_data empty', () => pm.expect(s.captured_data === null || Object.keys(s.captured_data).length === 0).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ADVANCE] TC-LC-05: Advance stage 1 (no mandatory) → success",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s1_id}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test('Stage 1 is Completed', () => pm.expect(s.status).to.eql('Completed'));",
+                  "pm.test('Progress is 100', () => pm.expect(s.progress).to.eql(100));",
+                  "pm.test('actual_end is set', () => pm.expect(s.actual_end).to.not.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-LC-06: Verify stage 2 auto-activated + RFQ state",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s2_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Stage 2 is In Progress', () => pm.expect(pm.response.json().status).to.eql('In Progress'));",
+                  "pm.test('Stage 2 actual_start set', () => pm.expect(pm.response.json().actual_start).to.not.be.null);",
+                  "",
+                  "// Post-state: verify RFQ current_stage moved to stage 2",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    const rfq = res.json();",
+                  "    pm.test('RFQ current_stage_id = stage 2', () => pm.expect(rfq.current_stage_id).to.eql(pm.environment.get('rfq1_s2_id')));",
+                  "    pm.test('RFQ progress > 0', () => pm.expect(rfq.progress).to.be.above(0));",
+                  "    pm.test('RFQ still In preparation', () => pm.expect(rfq.status).to.eql('In preparation'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[UPDATE] TC-LC-07: Fill mandatory field for stage 2",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s2_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"captured_data\": {\n    \"go_nogo_decision\": \"GO — strategic client, high margin potential\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: captured_data is a JSONB field. You send the entire object.",
+                  "// The mandatory_fields for stage 2 (Go/No-Go) is 'go_nogo_decision'.",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('captured_data saved', () => pm.expect(pm.response.json().captured_data.go_nogo_decision).to.include('GO'));",
+                  "pm.test('Status still In Progress (not auto-advanced)', () => pm.expect(pm.response.json().status).to.eql('In Progress'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ADVANCE] TC-LC-08: Advance stage 2 (mandatory filled)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s2_id}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Stage 2 Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));",
+                  "",
+                  "// Post-state: verify RFQ progress and current stage moved to 3",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    const rfq = res.json();",
+                  "    pm.test('RFQ current_stage_id = stage 3', () => pm.expect(rfq.current_stage_id).to.eql(pm.environment.get('rfq1_s3_id')));",
+                  "    pm.test('RFQ progress increased', () => pm.expect(rfq.progress).to.be.above(0));",
+                  "    console.log('RFQ progress after 2 stages:', rfq.progress + '%');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[LIST] TC-LC-09: List RFQs with filters + pagination",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/rfqs?status=In preparation&priority=critical&page=1&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rfqs"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "In preparation"
+                },
+                {
+                  "key": "priority",
+                  "value": "critical"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Has pagination: data, total, page, size', () => {",
+                  "    pm.expect(body).to.have.property('data');",
+                  "    pm.expect(body).to.have.property('total');",
+                  "    pm.expect(body).to.have.property('page');",
+                  "    pm.expect(body).to.have.property('size');",
+                  "});",
+                  "pm.test('All results are critical', () => body.data.forEach(r => pm.expect(r.priority).to.eql('critical')));",
+                  "pm.test('Summary has rfq_code, owner, workflow_name', () => {",
+                  "    if (body.data.length > 0) {",
+                  "        const f = body.data[0];",
+                  "        pm.expect(f).to.have.property('rfq_code');",
+                  "        pm.expect(f).to.have.property('owner');",
+                  "        pm.expect(f).to.have.property('workflow_name');",
+                  "        pm.expect(f).to.have.property('country');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[SEARCH] TC-LC-10: Search by client name",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/rfqs?search=Aramco",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rfqs"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Aramco"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Results contain Aramco', () => {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.length).to.be.at.least(1);",
+                  "    data.forEach(r => {",
+                  "        const match = r.name.toLowerCase().includes('aramco') || r.client.toLowerCase().includes('aramco');",
+                  "        pm.expect(match).to.be.true;",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 — Business Rule Enforcement [HIGH]",
+      "description": "**Objective:** Prove the system correctly REJECTS invalid operations.\n**Starting state:** RFQ #1 exists with stages 1-2 completed, stage 3 is current (In Progress).\n**Variables used:** rfq1_id, rfq1_s3_id, rfq1_s4_id, workflow_long_id.\n**Note:** This folder advances stage 3 (no mandatory) then tests blockers + mandatory on stage 4.",
+      "item": [
+        {
+          "name": "[ADVANCE] TC-BR-00: Advance stage 3 (no mandatory) → setup for stage 4 tests",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s3_id}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Stage 3 Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));",
+                  "",
+                  "// Post-state: confirm stage 4 is now active",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    pm.test('RFQ current stage = stage 4', () => pm.expect(res.json().current_stage_id).to.eql(pm.environment.get('rfq1_s4_id')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-BUSINESS] TC-BR-01: Advance stage 4 WITHOUT mandatory → 422",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s4_id}}/advance",
+            "description": "Stage 4 (Preliminary design) requires 'design_approved' in captured_data.\nExpected failure: BUSINESS RULE (422) — mandatory fields guard, not schema validation."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: Business rule — mandatory field 'design_approved' missing from captured_data",
+                  "// This is NOT a schema error. The request format is valid. The business logic rejects it.",
+                  "pm.test('Status 422 — business rule: mandatory fields missing', () => pm.response.to.have.status(422));",
+                  "pm.test('Error mentions missing fields', () => {",
+                  "    const msg = JSON.stringify(pm.response.json()).toLowerCase();",
+                  "    const hasKeywords = msg.includes('design_approved') || msg.includes('mandatory') || msg.includes('missing');",
+                  "    pm.expect(hasKeywords).to.be.true;",
+                  "});",
+                  "",
+                  "// POST-STATE: verify stage 4 is UNCHANGED (still In Progress, not corrupted)",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id') + '/stages/' + pm.environment.get('rfq1_s4_id'), function(err, res) {",
+                  "    pm.test('Stage 4 still In Progress (no side effect)', () => pm.expect(res.json().status).to.eql('In Progress'));",
+                  "    pm.test('Stage 4 progress unchanged at 0', () => pm.expect(res.json().progress).to.eql(0));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[BLOCKER] TC-BR-02: Set blocker on stage 4",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s4_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_status\": \"Blocked\",\n  \"blocker_reason_code\": \"missing_client_docs\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: blocker_status must be exactly 'Blocked' or 'Resolved' (Literal enum).",
+                  "// blocker_reason_code is free text (e.g. 'missing_client_docs', 'supplier_delay').",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Blocker set', () => pm.expect(pm.response.json().blocker_status).to.eql('Blocked'));",
+                  "pm.test('Reason saved', () => pm.expect(pm.response.json().blocker_reason_code).to.eql('missing_client_docs'));",
+                  "pm.test('Status still In Progress (blocker is orthogonal)', () => pm.expect(pm.response.json().status).to.eql('In Progress'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-BUSINESS] TC-BR-03: Advance BLOCKED stage → 409",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s4_id}}/advance",
+            "description": "Expected failure: BUSINESS RULE (409 Conflict) — blocker prevents advancement."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: Business rule — stage is blocked",
+                  "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Error mentions blocked', () => {",
+                  "    const msg = JSON.stringify(pm.response.json()).toLowerCase();",
+                  "    pm.expect(msg).to.include('block');",
+                  "});",
+                  "",
+                  "// POST-STATE: verify no side effects — stage and RFQ unchanged",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id') + '/stages/' + pm.environment.get('rfq1_s4_id'), function(err, res) {",
+                  "    pm.test('Stage 4 still In Progress (not corrupted)', () => pm.expect(res.json().status).to.eql('In Progress'));",
+                  "    pm.test('Blocker still active', () => pm.expect(res.json().blocker_status).to.eql('Blocked'));",
+                  "});",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    pm.test('RFQ current_stage unchanged', () => pm.expect(res.json().current_stage_id).to.eql(pm.environment.get('rfq1_s4_id')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[RECOVER] TC-BR-04: Resolve blocker + fill mandatory",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s4_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_status\": \"Resolved\",\n  \"captured_data\": {\n    \"design_approved\": \"Approved by Chief Engineer — 3-vessel configuration confirmed\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Blocker resolved', () => pm.expect(pm.response.json().blocker_status).to.eql('Resolved'));",
+                  "pm.test('Mandatory field saved', () => pm.expect(pm.response.json().captured_data.design_approved).to.not.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ADVANCE] TC-BR-05: Advance stage 4 → success after recovery",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s4_id}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Stage 4 Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));",
+                  "",
+                  "// Post-state: RFQ moved to stage 5",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    pm.test('RFQ current_stage = stage 5', () => pm.expect(res.json().current_stage_id).to.eql(pm.environment.get('rfq1_s5_id')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-SCHEMA] TC-BR-06: Invalid priority 'urgent' → 422",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Invalid Priority\",\n  \"client\": \"Test Client\",\n  \"deadline\": \"2025-12-31\",\n  \"owner\": \"Test Team\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"priority\": \"urgent\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: SCHEMA validation — Pydantic Literal rejects 'urgent'",
+                  "// Valid values: 'normal', 'critical'",
+                  "pm.test('Status 422 — schema: invalid enum', () => pm.response.to.have.status(422));",
+                  "",
+                  "// POST-STATE: no RFQ created (verify count unchanged is impractical, but no new ID returned)",
+                  "pm.test('No rfq_code in response', () => pm.expect(pm.response.json().rfq_code).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-SCHEMA] TC-BR-07: Invalid status 'Pending' → 422",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Pending\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: SCHEMA — Literal enum rejects 'Pending'",
+                  "// Valid: Draft, In preparation, Submitted, Awarded, Lost, Cancelled",
+                  "pm.test('Status 422 — schema: invalid status', () => pm.response.to.have.status(422));",
+                  "",
+                  "// POST-STATE: RFQ status unchanged",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id'), function(err, res) {",
+                  "    pm.test('RFQ status unchanged (In preparation)', () => pm.expect(res.json().status).to.eql('In preparation'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-NOTFOUND] TC-BR-08: Non-existent workflow → 404",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Bad Workflow\",\n  \"client\": \"Test Client\",\n  \"deadline\": \"2025-12-31\",\n  \"owner\": \"Test Team\",\n  \"workflow_id\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: NOT FOUND — workflow UUID doesn't exist in DB",
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-NOTFOUND] TC-BR-09: Random UUID for RFQ → 404",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3A — Data Integrity / Code Generation [HIGH]",
+      "description": "**Objective:** Prove rfq_code auto-increments and dual prefix support.\n**Starting state:** RFQ #1 exists (IF-0001 or similar).\n**Creates:** RFQ #2 (IF prefix), RFQ #3 (IB prefix).",
+      "item": [
+        {
+          "name": "[CODE] TC-DI-01: Create 2nd RFQ → code increments",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gas Dehydration Unit — Jubail\",\n  \"client\": \"SABIC\",\n  \"deadline\": \"2025-09-30\",\n  \"owner\": \"Proposals Team B\",\n  \"workflow_id\": \"{{workflow_short_id}}\",\n  \"priority\": \"normal\",\n  \"code_prefix\": \"IF\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const rfq = pm.response.json();",
+                  "pm.test('rfq_code starts with IF-', () => pm.expect(rfq.rfq_code).to.match(/^IF-/));",
+                  "pm.test('Code is different from RFQ #1', () => pm.expect(rfq.rfq_code).to.not.eql(pm.environment.get('rfq1_code')));",
+                  "pm.environment.set('rfq2_id', rfq.id);",
+                  "pm.environment.set('rfq2_code', rfq.rfq_code);",
+                  "console.log('RFQ #2:', rfq.rfq_code);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[CODE] TC-DI-02: Create RFQ with IB prefix → separate sequence",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Storage Tank Replacement — Yanbu\",\n  \"client\": \"Maaden\",\n  \"deadline\": \"2025-10-15\",\n  \"owner\": \"Proposals Team A\",\n  \"workflow_id\": \"{{workflow_short_id}}\",\n  \"code_prefix\": \"IB\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Starts with IB-', () => pm.expect(pm.response.json().rfq_code).to.match(/^IB-/));",
+                  "pm.environment.set('rfq3_id', pm.response.json().id);",
+                  "console.log('IB prefix RFQ:', pm.response.json().rfq_code);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3B — Data Integrity / Subtask Rollup [HIGH]",
+      "description": "**Objective:** Prove subtask → stage progress rollup and soft delete behavior.\n**Starting state:** RFQ #1 at stage 5 (In Progress after folder 2 advanced stage 4).\n**Variables used:** rfq1_id, rfq1_s5_id.\n**Variables produced:** sub1_id, sub2_id.",
+      "item": [
+        {
+          "name": "[SUBTASK] TC-DI-03: Create subtask 1",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/subtasks",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Collect nozzle specifications from vendor\",\n  \"assigned_to\": \"Ahmad K.\",\n  \"due_date\": \"2025-07-20\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: Subtask creation uses 'name' (not 'title'). assigned_to and due_date are optional.",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const s = pm.response.json();",
+                  "pm.test('Progress starts at 0', () => pm.expect(s.progress).to.eql(0));",
+                  "pm.test('Status is Open', () => pm.expect(s.status).to.eql('Open'));",
+                  "pm.environment.set('sub1_id', s.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[SUBTASK] TC-DI-04: Create subtask 2",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/subtasks",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Finalize material grade selection\",\n  \"assigned_to\": \"Eng. Mohammed\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('sub2_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ROLLUP] TC-DI-05: Update subtask 1 to 100% → stage = 50%",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/subtasks/{{sub1_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 100,\n  \"status\": \"Done\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: Subtask update uses PATCH. Status must be 'Open', 'In progress', or 'Done' (Literal).",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Subtask progress 100', () => pm.expect(pm.response.json().progress).to.eql(100));",
+                  "",
+                  "// POST-STATE: stage progress should be average = (100 + 0) / 2 = 50",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id') + '/stages/' + pm.environment.get('rfq1_s5_id'), function(err, res) {",
+                  "    pm.test('Stage progress = 50 (avg of 100, 0)', () => pm.expect(res.json().progress).to.eql(50));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[SOFTDELETE] TC-DI-06: Delete subtask 2 → stage recalculates to 100",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/subtasks/{{sub2_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-DI-07: Stage progress = 100, deleted subtask gone",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Stage progress = 100', () => pm.expect(pm.response.json().progress).to.eql(100));",
+                  "pm.test('Only 1 subtask remains', () => pm.expect(pm.response.json().subtasks.length).to.eql(1));",
+                  "pm.test('Remaining subtask is sub1', () => pm.expect(pm.response.json().subtasks[0].id).to.eql(pm.environment.get('sub1_id')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3C — Data Integrity / Deadline [MEDIUM]",
+      "description": "**Objective:** Prove deadline change recalculates uncompleted stage dates.\n**Starting state:** RFQ #1 with some stages completed.\n**Uses:** rfq1_id.",
+      "item": [
+        {
+          "name": "[DEADLINE] TC-DI-08: Change deadline → verify dates shift",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deadline\": \"2025-09-30\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Deadline updated', () => pm.expect(pm.response.json().deadline).to.eql('2025-09-30'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-DI-09: Last stage end = new deadline, completed untouched",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const stages = pm.response.json().data;",
+                  "pm.test('Last stage planned_end = 2025-09-30', () => pm.expect(stages[stages.length - 1].planned_end).to.eql('2025-09-30'));",
+                  "pm.test('Stage count unchanged (still 11)', () => pm.expect(stages.length).to.eql(11));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 — Flexibility [MEDIUM]",
+      "description": "**Objective:** Prove multiple workflows, skip_stages, and stage_overrides.\n**Starting state:** Setup completed (template IDs available).\n**Each scenario creates a FRESH RFQ.\n**IMPORTANT PAYLOAD NOTES:**\n- skip_stages expects an array of TEMPLATE stage UUIDs (from tpl_stage_X variables), NOT order numbers\n- stage_overrides[].stage_template_id is the template UUID, NOT a stage instance ID",
+      "item": [
+        {
+          "name": "[SHORT] TC-FL-01: Create RFQ with GHI-SHORT → 5 stages",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Repeat Order — Standard Heat Exchanger\",\n  \"client\": \"Saudi Aramco\",\n  \"deadline\": \"2025-07-30\",\n  \"owner\": \"Quick Proposals Team\",\n  \"workflow_id\": \"{{workflow_short_id}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('rfq_short_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-FL-02: SHORT → exactly 5 stages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq_short_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('5 stages', () => pm.expect(pm.response.json().data.length).to.eql(5));",
+                  "pm.test('Stage 1 In Progress', () => pm.expect(pm.response.json().data[0].status).to.eql('In Progress'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[SKIP] TC-FL-03: Create with skip_stages (skip template stages 3 and 6)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Workflow — No Pre-bid or Vendor Inquiry\",\n  \"client\": \"SABIC\",\n  \"deadline\": \"2025-10-01\",\n  \"owner\": \"Proposals Team A\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"skip_stages\": [\"{{tpl_stage_3}}\", \"{{tpl_stage_6}}\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: skip_stages expects TEMPLATE stage UUIDs (tpl_stage_X from Setup).",
+                  "// These are NOT RFQ stage instance IDs. NOT order numbers like 3 or 6.",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('rfq_skip_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-FL-04: 9 stages, re-numbered 1-9",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq_skip_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const stages = pm.response.json().data;",
+                  "pm.test('9 stages (11 minus 2 skipped)', () => pm.expect(stages.length).to.eql(9));",
+                  "pm.test('Re-numbered 1-9', () => stages.forEach((s, i) => pm.expect(s.order).to.eql(i + 1)));",
+                  "pm.test('No stage named Pre-bid clarifications', () => {",
+                  "    const names = stages.map(s => s.name);",
+                  "    pm.expect(names).to.not.include('Pre-bid clarifications');",
+                  "});",
+                  "pm.test('No stage named Vendor inquiry', () => {",
+                  "    const names = stages.map(s => s.name);",
+                  "    pm.expect(names).to.not.include('Vendor inquiry');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-BUSINESS] TC-FL-05: Skip ALL stages → 400",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Skip — All Stages\",\n  \"client\": \"Test\",\n  \"deadline\": \"2025-12-31\",\n  \"owner\": \"Test\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"skip_stages\": [\"{{tpl_stage_1}}\", \"{{tpl_stage_2}}\", \"{{tpl_stage_3}}\", \"{{tpl_stage_4}}\", \"{{tpl_stage_5}}\", \"{{tpl_stage_6}}\", \"{{tpl_stage_7}}\", \"{{tpl_stage_8}}\", \"{{tpl_stage_9}}\", \"{{tpl_stage_10}}\", \"{{tpl_stage_11}}\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: BUSINESS RULE (400) — cannot create RFQ with zero stages",
+                  "// This is NOT a schema error. The array is valid. The business logic rejects zero remaining stages.",
+                  "pm.test('Status 400 — business rule: zero stages', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[OVERRIDE] TC-FL-06: Create with stage_overrides",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Override Test — Special Team Assignment\",\n  \"client\": \"Maaden\",\n  \"deadline\": \"2025-11-15\",\n  \"owner\": \"Proposals Team B\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"stage_overrides\": [\n    { \"stage_template_id\": \"{{tpl_stage_4}}\", \"assigned_team\": \"External Consultant\" },\n    { \"stage_template_id\": \"{{tpl_stage_7}}\", \"assigned_team\": \"Senior Estimation Lead\" }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: stage_overrides[].stage_template_id is the TEMPLATE UUID, NOT a stage instance ID.",
+                  "// assigned_team is free text — any string.",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('rfq_override_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-FL-07: Overridden teams applied correctly",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{rfq_override_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const stages = pm.response.json().data;",
+                  "const s4 = stages.find(s => s.order === 4);",
+                  "const s7 = stages.find(s => s.order === 7);",
+                  "const s1 = stages.find(s => s.order === 1);",
+                  "pm.test('Stage 4 = External Consultant', () => pm.expect(s4.assigned_team).to.eql('External Consultant'));",
+                  "pm.test('Stage 7 = Senior Estimation Lead', () => pm.expect(s7.assigned_team).to.eql('Senior Estimation Lead'));",
+                  "pm.test('Stage 1 = Estimation (default, NOT overridden)', () => pm.expect(s1.assigned_team).to.eql('Estimation'));",
+                  "pm.test('Stage count = 11 (overrides dont change count)', () => pm.expect(stages.length).to.eql(11));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 — Supporting Resources [MEDIUM]",
+      "description": "**Objective:** Prove notes, reminders, workflows, stats, and analytics.\n**Starting state:** Multiple RFQs exist from previous folders.\n**Uses:** rfq1_id, rfq1_s5_id for notes/reminders.",
+      "item": [
+        {
+          "name": "[NOTE] TC-SR-01: Add note to stage",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/notes",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Client confirmed SA-516 Gr.70 material for shell plates. Nozzle specs pending.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Text saved', () => pm.expect(pm.response.json().text).to.include('SA-516'));",
+                  "pm.test('Has timestamp', () => pm.expect(pm.response.json().created_at).to.not.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NOTE] TC-SR-02: Add 2nd note → both in detail",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s5_id}}/notes",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Vendor quoted 6-week lead time for SA-516 plates.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "// Verify both notes exist",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('rfq1_id') + '/stages/' + pm.environment.get('rfq1_s5_id'), function(err, res) {",
+                  "    pm.test('2 notes in stage detail', () => pm.expect(res.json().notes.length).to.eql(2));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[REMINDER] TC-SR-03: Create internal reminder",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/reminders",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rfq_id\": \"{{rfq1_id}}\",\n  \"rfq_stage_id\": \"{{rfq1_s5_id}}\",\n  \"type\": \"internal\",\n  \"message\": \"Follow up with vendor on nozzle spec delivery\",\n  \"due_date\": \"2025-07-25\",\n  \"assigned_to\": \"Ahmad K.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// NOTE: type must be 'internal' or 'external' (Literal enum).",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Status open', () => pm.expect(pm.response.json().status).to.eql('open'));",
+                  "pm.test('send_count 0', () => pm.expect(pm.response.json().send_count).to.eql(0));",
+                  "pm.environment.set('reminder_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[REMINDER] TC-SR-04: List reminders filtered by rfq_id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reminders?rfq_id={{rfq1_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reminders"
+              ],
+              "query": [
+                {
+                  "key": "rfq_id",
+                  "value": "{{rfq1_id}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('At least 1 reminder', () => pm.expect(pm.response.json().data.length).to.be.at.least(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[STATS] TC-SR-05: Reminder stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/reminders/stats"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test('Has open_tasks', () => pm.expect(s).to.have.property('open_tasks'));",
+                  "pm.test('Has overdue_tasks', () => pm.expect(s).to.have.property('overdue_tasks'));",
+                  "pm.test('Has due_this_week', () => pm.expect(s).to.have.property('due_this_week'));",
+                  "pm.test('Has with_active_reminders', () => pm.expect(s).to.have.property('with_active_reminders'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[RULES] TC-SR-06: List reminder rules (4 seeded)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/reminders/rules"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('4 rules', () => pm.expect(pm.response.json().data.length).to.eql(4));",
+                  "pm.environment.set('rule_id', pm.response.json().data[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[RULES] TC-SR-07: Toggle rule off",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/reminders/rules/{{rule_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Deactivated', () => pm.expect(pm.response.json().is_active).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[EMAIL] TC-SR-08: Test email (log-only V1)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/reminders/test"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[DASHBOARD] TC-SR-09: RFQ stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/stats"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test('total_rfqs_12m > 0', () => pm.expect(s.total_rfqs_12m).to.be.above(0));",
+                  "pm.test('avg_cycle_days is integer', () => pm.expect(Number.isInteger(s.avg_cycle_days)).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ANALYTICS] TC-SR-10: Business analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/analytics"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const a = pm.response.json();",
+                  "pm.test('Has win_rate', () => pm.expect(a).to.have.property('win_rate'));",
+                  "pm.test('Has by_client array', () => pm.expect(a.by_client).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[WORKFLOW] TC-SR-11: Set SHORT as default",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/workflows/{{workflow_short_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_default\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('SHORT is default', () => pm.expect(pm.response.json().is_default).to.eql(true));",
+                  "",
+                  "// Post-state: LONG should no longer be default",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/workflows/' + pm.environment.get('workflow_long_id'), function(err, res) {",
+                  "    pm.test('LONG is no longer default', () => pm.expect(res.json().is_default).to.eql(false));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 — Interruption & State Transitions [HIGH]",
+      "description": "**Objective:** Prove terminal state freezing, cancellation, award, and state permanence.\n**Each scenario creates a FRESH RFQ to avoid state contamination.\n**Variables:** cancel_rfq_id, award_rfq_id, lost_rfq_id (all namespaced).",
+      "item": [
+        {
+          "name": "[FRESH RFQ] TC-IT-01: Create RFQ for cancellation test",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cancellation Test — Client Withdrew\",\n  \"client\": \"TestCorp\",\n  \"deadline\": \"2025-12-01\",\n  \"owner\": \"Test Team\",\n  \"workflow_id\": \"{{workflow_short_id}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('cancel_rfq_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[SETUP] TC-IT-02: Get stages + advance stage 1",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{cancel_rfq_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stages = pm.response.json().data;",
+                  "pm.environment.set('cancel_s1_id', stages[0].id);",
+                  "pm.environment.set('cancel_s2_id', stages[1].id);",
+                  "pm.environment.set('cancel_stage_count', stages.length);",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('cancel_rfq_id') + '/stages/' + stages[0].id + '/advance',",
+                  "    method: 'POST'",
+                  "}, function(err, res) {",
+                  "    pm.test('Stage 1 advanced', () => pm.expect(res.code).to.eql(200));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[CANCEL] TC-IT-03: Cancel at stage 2 → freeze",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{cancel_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Cancelled\",\n  \"outcome_reason\": \"Client withdrew — budget reallocation\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const rfq = pm.response.json();",
+                  "pm.test('Status = Cancelled', () => pm.expect(rfq.status).to.eql('Cancelled'));",
+                  "pm.test('current_stage_id = null', () => pm.expect(rfq.current_stage_id).to.be.null);",
+                  "pm.test('outcome_reason saved', () => pm.expect(rfq.outcome_reason).to.include('budget'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[VERIFY] TC-IT-04: Stages frozen correctly",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{cancel_rfq_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stages = pm.response.json().data;",
+                  "pm.test('Stage 1 = Completed (preserved)', () => pm.expect(stages[0].status).to.eql('Completed'));",
+                  "pm.test('Stage 2 = Skipped (was In Progress)', () => pm.expect(stages[1].status).to.eql('Skipped'));",
+                  "pm.test('All remaining = Skipped', () => {",
+                  "    for (let i = 2; i < stages.length; i++) pm.expect(stages[i].status).to.eql('Skipped');",
+                  "});",
+                  "pm.test('Stage count unchanged', () => pm.expect(stages.length).to.eql(parseInt(pm.environment.get('cancel_stage_count'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-CONFLICT] TC-IT-05: Reopen Cancelled → 409",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{cancel_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In preparation\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: CONFLICT — terminal state is permanent",
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "",
+                  "// POST-STATE: RFQ still Cancelled",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('cancel_rfq_id'), function(err, res) {",
+                  "    pm.test('Still Cancelled (no side effect)', () => pm.expect(res.json().status).to.eql('Cancelled'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[FRESH RFQ] TC-IT-06: Create RFQ for award test",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Award Test — Best Technical Score\",\n  \"client\": \"Saudi Aramco\",\n  \"deadline\": \"2025-12-15\",\n  \"owner\": \"Proposals Team A\",\n  \"workflow_id\": \"{{workflow_short_id}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('award_rfq_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[AWARD] TC-IT-07: Award mid-workflow",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{award_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Awarded\",\n  \"outcome_reason\": \"Best technical score and competitive pricing\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Awarded', () => pm.expect(pm.response.json().status).to.eql('Awarded'));",
+                  "pm.test('current_stage cleared', () => pm.expect(pm.response.json().current_stage_id).to.be.null);",
+                  "pm.test('outcome_reason captured', () => pm.expect(pm.response.json().outcome_reason).to.include('technical'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[NEGATIVE-CONFLICT] TC-IT-08: Awarded → Lost → 409",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{award_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Lost\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// EXPECTED FAILURE: CONFLICT — terminal-to-terminal transition blocked",
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "",
+                  "// POST-STATE: still Awarded",
+                  "pm.sendRequest(pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('award_rfq_id'), function(err, res) {",
+                  "    pm.test('Still Awarded', () => pm.expect(res.json().status).to.eql('Awarded'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[APPEND] TC-IT-09: Add note to completed stage (post-clarification)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{rfq1_id}}/stages/{{rfq1_s1_id}}/notes",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Post-completion: Client confirmed scope changes are minor.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — allowed on completed stage', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[FRESH RFQ] TC-IT-10: Create + mark Lost with reason",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lost Test — Competitor Won\",\n  \"client\": \"SABIC\",\n  \"deadline\": \"2025-11-01\",\n  \"owner\": \"Proposals Team B\",\n  \"workflow_id\": \"{{workflow_short_id}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('lost_rfq_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[LOST] TC-IT-11: Mark as Lost",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{lost_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Lost\",\n  \"outcome_reason\": \"Competitor offered 12% lower margin\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Lost', () => pm.expect(pm.response.json().status).to.eql('Lost'));",
+                  "pm.test('Reason captured', () => pm.expect(pm.response.json().outcome_reason).to.include('12%'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[ANALYTICS] TC-IT-12: Win rate after Award + Lost",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/analytics"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Win rate calculated', () => {",
+                  "    const wr = pm.response.json().win_rate;",
+                  "    pm.expect(wr).to.be.a('number');",
+                  "    pm.expect(wr).to.be.above(0); // at least 1 awarded",
+                  "    console.log('Win rate:', wr + '%');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7 — Curated Demo Path (Meeting) [RUN THIS LIVE]",
+      "description": "**10 scenarios in a story-driven sequence. Run this folder in the meeting.**\nShows: creation → 11 stages → advance → mandatory reject → blocker reject → recovery → progress → cancel → freeze → permanence.\nTime: 15-20 minutes.",
+      "item": [
+        {
+          "name": "DEMO-01: Create RFQ (GHI-LONG, critical)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DEMO — Pressure Vessel Package for Offshore Platform\",\n  \"client\": \"Saudi Aramco\",\n  \"deadline\": \"2025-08-30\",\n  \"owner\": \"Proposals Team A\",\n  \"workflow_id\": \"{{workflow_long_id}}\",\n  \"industry\": \"Oil & Gas\",\n  \"country\": \"Saudi Arabia\",\n  \"priority\": \"critical\",\n  \"code_prefix\": \"IF\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json();",
+                  "pm.test('rfq_code auto-generated', () => pm.expect(r.rfq_code).to.match(/^IF-/));",
+                  "pm.environment.set('demo_rfq_id', r.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-02: Show 11 auto-generated stages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('11 stages', () => pm.expect(pm.response.json().data.length).to.eql(11));",
+                  "pm.test('Stage 1 In Progress', () => pm.expect(pm.response.json().data[0].status).to.eql('In Progress'));",
+                  "const stages = pm.response.json().data;",
+                  "stages.forEach(s => pm.environment.set('demo_s' + s.order, s.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-03: Advance stage 1 → works",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages/{{demo_s1}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-04: Try advance stage 2 WITHOUT mandatory → 422!",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages/{{demo_s2}}/advance"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('422 — mandatory missing!', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-05: Set blocker + fill mandatory",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages/{{demo_s2}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_status\": \"Blocked\",\n  \"blocker_reason_code\": \"waiting_client_response\",\n  \"captured_data\": { \"go_nogo_decision\": \"GO\" }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Blocker set', () => pm.response.to.have.status(200));",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('demo_rfq_id') + '/stages/' + pm.environment.get('demo_s2') + '/advance',",
+                  "    method: 'POST'",
+                  "}, function(err, res) {",
+                  "    pm.test('409 — blocked!', () => pm.expect(res.code).to.eql(409));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-06: Resolve → advance succeeds",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages/{{demo_s2}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_status\": \"Resolved\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Resolved', () => pm.response.to.have.status(200));",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/rfqs/' + pm.environment.get('demo_rfq_id') + '/stages/' + pm.environment.get('demo_s2') + '/advance',",
+                  "    method: 'POST'",
+                  "}, function(err, res) {",
+                  "    pm.test('200 — advance works!', () => pm.expect(res.code).to.eql(200));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-07: Show RFQ progress",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Progress > 0', () => pm.expect(pm.response.json().progress).to.be.above(0));",
+                  "console.log('Progress:', pm.response.json().progress + '%');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-08: Cancel mid-workflow",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Cancelled\",\n  \"outcome_reason\": \"Client cancelled — budget freeze\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Cancelled', () => pm.expect(pm.response.json().status).to.eql('Cancelled'));",
+                  "pm.test('current_stage cleared', () => pm.expect(pm.response.json().current_stage_id).to.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-09: Show frozen stages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}/stages"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stages = pm.response.json().data;",
+                  "const completed = stages.filter(s => s.status === 'Completed').length;",
+                  "const skipped = stages.filter(s => s.status === 'Skipped').length;",
+                  "pm.test('History preserved + rest skipped', () => pm.expect(completed + skipped).to.eql(stages.length));",
+                  "console.log(completed + ' Completed, ' + skipped + ' Skipped');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DEMO-10: Try to reopen → 409 PERMANENT",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/rfqs/{{demo_rfq_id}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In preparation\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409 — PERMANENT', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

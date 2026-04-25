@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ─── Light Mode (default) ─── */
+  :root {
+    --background: 40 18% 97%;
+    --foreground: 222 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 20% 12%;
+    --primary: 213 58% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 50% 44%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 40 10% 92%;
+    --muted-foreground: 215 10% 46%;
+    --accent: 192 42% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 55% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 10% 86%;
+    --input: 220 10% 90%;
+    --ring: 213 58% 44%;
+    --radius: 0.75rem;
+    color-scheme: light;
+  }
+
+  /* ─── Dark Mode ─── */
+  .dark {
+    --background: 222 18% 7%;
+    --foreground: 210 18% 94%;
+    --card: 222 16% 11%;
+    --card-foreground: 210 18% 94%;
+    --popover: 222 16% 11%;
+    --popover-foreground: 210 18% 94%;
+    --primary: 213 60% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 55% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 14% 14%;
+    --muted-foreground: 215 12% 62%;
+    --accent: 192 45% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 55% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 12% 18%;
+    --input: 220 12% 15%;
+    --ring: 213 60% 52%;
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    min-height: 100vh;
+  }
+
+  /* Dark body gets a subtle atmospheric gradient */
+  .dark body {
+    background-image:
+      radial-gradient(ellipse at 15% 10%, rgba(74, 144, 217, 0.08), transparent 40%),
+      radial-gradient(ellipse at 85% 5%, rgba(200, 155, 42, 0.06), transparent 30%);
+  }
+
+  ::selection {
+    background: hsl(213 60% 52% / 0.25);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  /* ─── Surface Panels ─── */
+  .surface-panel {
+    @apply relative overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+
+  .dark .surface-panel {
+    background-color: hsl(222 16% 11% / 0.92);
+    border-color: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 12px 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .dark .surface-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025) 0%,
+      rgba(255, 255, 255, 0) 20%
+    );
+  }
+
+  .surface-panel-hover {
+    @apply transition-all duration-300;
+  }
+
+  .surface-panel-hover:hover {
+    @apply shadow-md;
+    transform: translateY(-1px);
+  }
+
+  .dark .surface-panel-hover:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 16px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  /* ─── Section Label ─── */
+  .section-kicker {
+    @apply inline-flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em];
+    color: hsl(var(--muted-foreground));
+  }
+
+  .dark .section-kicker {
+    color: hsl(36 55% 60%);
+  }
+
+  /* ─── Demo Banner ─── */
+  .demo-banner {
+    @apply inline-flex items-center gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-1.5 text-xs font-medium text-amber-600;
+  }
+
+  .dark .demo-banner {
+    @apply text-amber-300;
+  }
+
+  /* ─── Typography ─── */
+  .text-display {
+    @apply font-display tracking-[-0.03em];
+  }
+
+  /* ─── Stat Cell ─── */
+  .stat-cell {
+    @apply rounded-xl border border-border bg-muted/40 px-4 py-3;
+  }
+
+  .dark .stat-cell {
+    @apply bg-white/[0.025];
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ─── Shimmer Loading ─── */
+  .shimmer-line {
+    @apply relative overflow-hidden;
+    background: hsl(var(--muted));
+  }
+
+  .shimmer-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--muted-foreground) / 0.08),
+      transparent
+    );
+    animation: shimmer 1.8s linear infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
