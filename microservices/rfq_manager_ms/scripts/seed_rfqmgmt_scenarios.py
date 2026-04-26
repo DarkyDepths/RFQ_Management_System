@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -28,8 +29,11 @@ from src.translators.rfq_translator import RfqCreateRequest  # noqa: E402
 from src.utils.rfq_lifecycle import calculate_rfq_lifecycle_progress  # noqa: E402
 
 
-BatchName = Literal["must-have", "later", "optional"]
+BatchName = Literal["must-have", "later", "optional", "dashboard"]
+SeedBatchName = Literal["must-have", "later", "optional", "dashboard", "all"]
 SCENARIO_TAG_PREFIX = "[SCENARIO:"
+DASHBOARD_SCENARIO_KEY_PREFIX = "DASH-D"
+DASHBOARD_SEED_MARKER_PREFIX = "[seed:dashboard:"
 GOLDEN_SCENARIO_KEY = "RFQ-06"
 MANIFEST_VERSION = "rfqmgmt_manager_scenarios_v3"
 
@@ -108,10 +112,12 @@ class ManagerScenarioSpec:
     captured_data_by_stage: dict[str, dict] = field(default_factory=dict)
     verification_roles: tuple[str, ...] = ()
     manual_only: bool = False
+    seed_marker: str | None = None
 
     @property
     def description(self) -> str:
-        return f"{SCENARIO_TAG_PREFIX}{self.key}] {self.summary}"
+        marker = f" {self.seed_marker}" if self.seed_marker else ""
+        return f"{SCENARIO_TAG_PREFIX}{self.key}]{marker} {self.summary}"
 
 
 def _utc_now() -> datetime:
@@ -731,7 +737,9 @@ SCENARIOS: tuple[ManagerScenarioSpec, ...] = (
 
 
 def _scenario_number(key: str) -> int:
-    return int(key.split("-")[1])
+    suffix = key.rsplit("-", 1)[-1]
+    digits = "".join(character for character in suffix if character.isdigit())
+    return int(digits)
 
 
 def _approval_signature_for_key(key: str) -> str:
@@ -1131,6 +1139,7 @@ def _portfolio_scenario(
     skip_stage_names: tuple[str, ...] = (),
     captured_data_by_stage: dict[str, dict] | None = None,
     code_prefix: Literal["IF", "IB"] = "IF",
+    seed_marker: str | None = None,
 ) -> ManagerScenarioSpec:
     default_note_stage = current_stage_name or (completed_stage_names[-1] if completed_stage_names else "RFQ received")
     scenario_notes = notes if notes is not None else (
@@ -1194,6 +1203,7 @@ def _portfolio_scenario(
             outcome_reason=outcome_reason,
             extra=captured_data_by_stage,
         ),
+        seed_marker=seed_marker,
     )
 
 
@@ -1942,6 +1952,444 @@ def _build_optional_extension_scenarios() -> tuple[ManagerScenarioSpec, ...]:
     )
 
 
+def _is_dashboard_extension_key(scenario_key: str) -> bool:
+    return scenario_key.startswith(DASHBOARD_SCENARIO_KEY_PREFIX)
+
+
+def _dashboard_seed_marker(scenario_key: str) -> str:
+    return f"{DASHBOARD_SEED_MARKER_PREFIX}{scenario_key}]"
+
+
+DASHBOARD_CLIENT_TARGETS: tuple[tuple[str, int], ...] = (
+    ("Saudi Aramco", 16),
+    ("Saudi Electricity Company", 12),
+    ("SABIC", 11),
+    ("Maaden", 9),
+    ("NEOM", 8),
+    ("SWCC", 8),
+    ("Royal Commission Jubail", 6),
+    ("PetroRabigh", 6),
+    ("Yasref", 5),
+    ("Sadara", 5),
+)
+
+
+DASHBOARD_CLIENT_PROFILES: dict[str, dict[str, object]] = {
+    "Saudi Aramco": {
+        "industry": "Oil & Gas",
+        "countries": ("Saudi Arabia", "Bahrain", "UAE"),
+        "themes": (
+            "Produced Water Injection Skid",
+            "Offshore Separator Internals",
+            "Pipeline Chemical Injection Package",
+            "Gas Compression Seal Pot",
+        ),
+    },
+    "Saudi Electricity Company": {
+        "industry": "Power",
+        "countries": ("Saudi Arabia", "Kuwait"),
+        "themes": (
+            "Auxiliary Transformer Cooling Package",
+            "Substation Chemical Dosing Unit",
+            "Turbine Hall Drainage Skid",
+            "Switchyard Firewater Pump Package",
+        ),
+    },
+    "SABIC": {
+        "industry": "Petrochemicals",
+        "countries": ("Saudi Arabia", "Qatar"),
+        "themes": (
+            "Ethylene Plant Tie-In Package",
+            "Utilities Neutralization Skid",
+            "Polymer Line Dosing Upgrade",
+            "Cooling Water Chemical Injection Rack",
+        ),
+    },
+    "Maaden": {
+        "industry": "Mining",
+        "countries": ("Saudi Arabia", "Oman"),
+        "themes": (
+            "Phosphate Slurry Transfer Package",
+            "Mine Water Treatment Skid",
+            "Beneficiation Plant Reagent Rack",
+            "Heavy Media Separation Utility Module",
+        ),
+    },
+    "NEOM": {
+        "industry": "Infrastructure",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "District Cooling Utility Module",
+            "Hydrogen Pilot Plant Injection Skid",
+            "Industrial Water Reuse Package",
+            "Smart City Utility Pumping Package",
+        ),
+    },
+    "SWCC": {
+        "industry": "Water",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "Desalination Pretreatment Dosing Package",
+            "RO Chemical Cleaning Skid",
+            "Brine Transfer Pumping Module",
+            "Intake Chlorination Upgrade",
+        ),
+    },
+    "Royal Commission Jubail": {
+        "industry": "Infrastructure",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "Industrial City Firewater Upgrade",
+            "Jubail Utility Corridor Pump Package",
+            "Wastewater Lift Station Module",
+        ),
+    },
+    "PetroRabigh": {
+        "industry": "Oil & Gas",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "Refinery Caustic Dosing Package",
+            "Tank Farm Transfer Pump Skid",
+            "Utilities Chemical Injection Rack",
+        ),
+    },
+    "Yasref": {
+        "industry": "Oil & Gas",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "Hydrocracker Utility Skid",
+            "Sulfur Recovery Chemical Injection Package",
+            "Refinery Water Treatment Module",
+        ),
+    },
+    "Sadara": {
+        "industry": "Petrochemicals",
+        "countries": ("Saudi Arabia",),
+        "themes": (
+            "Isocyanates Utility Package",
+            "Process Cooling Water Dosing Skid",
+            "Chemical Storage Transfer Module",
+        ),
+    },
+}
+
+
+DASHBOARD_LONG_STAGE_CHAIN = (
+    "RFQ received",
+    "Go / No-Go",
+    "Pre-bid clarifications",
+    "Preliminary design",
+    "BOQ / BOM preparation",
+    "Vendor inquiry",
+    "Cost estimation",
+    "Internal approval",
+    "Offer submission",
+    "Post-bid clarifications",
+    "Award / Lost",
+)
+DASHBOARD_SHORT_STAGE_CHAIN = (
+    "RFQ received",
+    "Go / No-Go",
+    "Cost estimation",
+    "Internal approval",
+    "Offer submission",
+    "Award / Lost",
+)
+DASHBOARD_CUSTOM_STAGE_CHAIN = (
+    "RFQ received",
+    "Go / No-Go",
+    "Pre-bid clarifications",
+    "Preliminary design",
+    "BOQ / BOM preparation",
+    "Cost estimation",
+    "Internal approval",
+    "Offer submission",
+    "Award / Lost",
+)
+
+
+def _dashboard_round_robin(targets: tuple[tuple[str, int], ...]) -> list[str]:
+    remaining = {name: count for name, count in targets}
+    values: list[str] = []
+    while any(count > 0 for count in remaining.values()):
+        for name, _ in targets:
+            if remaining[name] <= 0:
+                continue
+            values.append(name)
+            remaining[name] -= 1
+    return values
+
+
+def _dashboard_stage_chain(workflow_code: str) -> tuple[str, ...]:
+    if workflow_code == "GHI-SHORT":
+        return DASHBOARD_SHORT_STAGE_CHAIN
+    if workflow_code == "GHI-CUSTOM":
+        return DASHBOARD_CUSTOM_STAGE_CHAIN
+    return DASHBOARD_LONG_STAGE_CHAIN
+
+
+def _dashboard_skip_stage_names(workflow_code: str) -> tuple[str, ...]:
+    if workflow_code != "GHI-CUSTOM":
+        return ()
+    return tuple(
+        stage_name
+        for stage_name in DASHBOARD_LONG_STAGE_CHAIN
+        if stage_name not in DASHBOARD_CUSTOM_STAGE_CHAIN
+    )
+
+
+def _dashboard_blocker_reason(stage_name: str, index: int) -> str:
+    stage_reason_map = {
+        "RFQ received": "missing_initial_package",
+        "Go / No-Go": "scope_fit_review",
+        "Pre-bid clarifications": "waiting_client_docs",
+        "Preliminary design": "technical_clarification",
+        "BOQ / BOM preparation": "bom_quantity_gap",
+        "Vendor inquiry": "vendor_quote_delay",
+        "Cost estimation": "cost_basis_gap",
+        "Internal approval": "internal_approval_hold",
+        "Offer submission": "commercial_exception",
+        "Post-bid clarifications": "waiting_client_response",
+        "Award / Lost": "client_award_feedback_pending",
+    }
+    return stage_reason_map.get(stage_name, f"dashboard_blocker_{index:02d}")
+
+
+def _dashboard_family(
+    *,
+    status: str,
+    current_stage_name: str | None,
+    blocker_reason_code: str | None,
+    active_position: int | None,
+) -> str:
+    if status == "Awarded":
+        return "awarded_terminal"
+    if status == "Lost":
+        return "lost_terminal"
+    if status == "Cancelled":
+        return "cancelled_terminal"
+    if blocker_reason_code:
+        if blocker_reason_code in {"internal_approval_hold", "cost_basis_gap", "commercial_exception"}:
+            return "blocked_internal_hold"
+        return "blocked_client_hold"
+    if active_position is not None and active_position <= 20:
+        return "stale_execution"
+    if current_stage_name == "Award / Lost":
+        return "decision_wait_followup"
+    if current_stage_name in {"RFQ received", "Go / No-Go"}:
+        return "fresh_intake"
+    if current_stage_name in {"Internal approval", "Offer submission"}:
+        return "deadline_watch"
+    return "healthy_mid_pipeline"
+
+
+def _dashboard_intelligence_profile(
+    *,
+    status: str,
+    current_stage_name: str | None,
+    blocker_reason_code: str | None,
+    index: int,
+) -> str:
+    if status in {"Awarded", "Lost"}:
+        return "mature_partial"
+    if status == "Cancelled":
+        return "early_partial"
+    if blocker_reason_code and index % 3 == 0:
+        return "thin_partial_stale"
+    if current_stage_name in {"Cost estimation", "Internal approval", "Offer submission", "Post-bid clarifications", "Award / Lost"}:
+        return "mature_partial"
+    if current_stage_name in {"Pre-bid clarifications", "Preliminary design", "BOQ / BOM preparation", "Vendor inquiry"}:
+        return "early_partial"
+    return "none" if index % 2 else "early_partial"
+
+
+def _dashboard_outcome_reason(status: str, client: str, theme: str) -> str | None:
+    if status == "Awarded":
+        return f"{client} awarded the {theme.lower()} after technical compliance and commercial alignment."
+    if status == "Lost":
+        return f"{client} selected a competing offer after final commercial comparison."
+    if status == "Cancelled":
+        return f"{client} cancelled the {theme.lower()} after scope or funding reprioritization."
+    return None
+
+
+def _dashboard_summary(
+    *,
+    status: str,
+    client: str,
+    theme: str,
+    current_stage_name: str | None,
+    blocker_reason_code: str | None,
+    deadline_offset_days: int,
+) -> str:
+    if status == "Awarded":
+        return f"Dashboard extension awarded {theme.lower()} for {client}, kept for win-rate and cycle-time analytics."
+    if status == "Lost":
+        return f"Dashboard extension lost {theme.lower()} for {client}, kept for funnel and outcome comparison."
+    if status == "Cancelled":
+        return f"Dashboard extension cancelled {theme.lower()} for {client}, preserving terminal-state variety."
+    pressure = "overdue" if deadline_offset_days < 0 else "deadline-sensitive" if deadline_offset_days <= 6 else "on-track"
+    blocker = f" with blocker {blocker_reason_code}" if blocker_reason_code else ""
+    return f"Dashboard extension active {theme.lower()} for {client} at {current_stage_name}, {pressure}{blocker}."
+
+
+def _build_dashboard_extension_scenarios() -> tuple[ManagerScenarioSpec, ...]:
+    clients = _dashboard_round_robin(DASHBOARD_CLIENT_TARGETS)
+    statuses = _dashboard_round_robin(
+        (
+            ("In preparation", 49),
+            ("Awarded", 16),
+            ("Lost", 13),
+            ("Cancelled", 8),
+        )
+    )
+    priorities = _dashboard_round_robin((("critical", 29), ("normal", 57)))
+    workflows = _dashboard_round_robin(
+        (
+            ("GHI-LONG", 54),
+            ("GHI-SHORT", 28),
+            ("GHI-CUSTOM", 4),
+        )
+    )
+    owners = _dashboard_round_robin(
+        (
+            ("Karim Ben Ali", 18),
+            ("Maya Fares", 16),
+            ("Ahmed Proposal Ops", 15),
+            ("GHI Estimator", 12),
+            ("Omar Rahman", 10),
+            ("Youssef Nasser", 8),
+            ("Sara Ben Ali", 5),
+            ("Dina Engineering", 2),
+        )
+    )
+
+    scenarios: list[ManagerScenarioSpec] = []
+    client_seen: Counter[str] = Counter()
+    active_position = 0
+    terminal_position = 0
+
+    for index in range(86):
+        scenario_key = f"{DASHBOARD_SCENARIO_KEY_PREFIX}{index + 1:03d}"
+        client = clients[index]
+        client_seen[client] += 1
+        profile = DASHBOARD_CLIENT_PROFILES[client]
+        countries = profile["countries"]
+        themes = profile["themes"]
+        country = countries[(client_seen[client] - 1) % len(countries)]
+        theme = themes[(client_seen[client] - 1) % len(themes)]
+        status = statuses[index]
+        workflow_code = workflows[index]
+        stage_chain = _dashboard_stage_chain(workflow_code)
+
+        current_stage_name: str | None = None
+        completed_stage_names: tuple[str, ...]
+        current_stage_progress = 0
+        blocker_reason_code: str | None = None
+
+        if status == "In preparation":
+            active_position += 1
+            current_stage_name = stage_chain[(active_position - 1) % len(stage_chain)]
+            current_stage_index = stage_chain.index(current_stage_name)
+            completed_stage_names = tuple(stage_chain[:current_stage_index])
+            current_stage_progress = 15 + ((active_position * 11) % 80)
+            if active_position <= 18:
+                blocker_reason_code = _dashboard_blocker_reason(current_stage_name, active_position)
+            if active_position <= 20:
+                deadline_offset_days = -1 * (1 + (active_position % 9))
+                created_days_ago = 24 + ((active_position * 3) % 55)
+            elif active_position <= 31:
+                deadline_offset_days = 1 + (active_position % 6)
+                created_days_ago = 8 + ((active_position * 2) % 34)
+            else:
+                deadline_offset_days = 9 + ((active_position * 3) % 37)
+                created_days_ago = 4 + ((active_position * 2) % 50)
+            updated_days_ago = min(created_days_ago, active_position % 5)
+        else:
+            terminal_position += 1
+            deadline_offset_days = -7 - ((terminal_position * 2) % 90)
+            created_days_ago = 42 + ((terminal_position * 5) % 145)
+            updated_days_ago = 1 + (terminal_position % 15)
+            if status == "Cancelled":
+                completed_count = min(len(stage_chain) - 1, 2 + (terminal_position % 5))
+                completed_stage_names = tuple(stage_chain[:completed_count])
+            else:
+                completed_stage_names = tuple(stage_chain)
+
+        family = _dashboard_family(
+            status=status,
+            current_stage_name=current_stage_name,
+            blocker_reason_code=blocker_reason_code,
+            active_position=active_position if status == "In preparation" else None,
+        )
+        intelligence_profile = _dashboard_intelligence_profile(
+            status=status,
+            current_stage_name=current_stage_name,
+            blocker_reason_code=blocker_reason_code,
+            index=index,
+        )
+        outcome_reason = _dashboard_outcome_reason(status, client, theme)
+        summary = _dashboard_summary(
+            status=status,
+            client=client,
+            theme=theme,
+            current_stage_name=current_stage_name,
+            blocker_reason_code=blocker_reason_code,
+            deadline_offset_days=deadline_offset_days,
+        )
+        tags = ["dashboard_extension"]
+        if status in {"Awarded", "Lost", "Cancelled"}:
+            tags.extend(["terminal", status.lower()])
+        elif blocker_reason_code:
+            tags.append("blocked")
+        elif deadline_offset_days < 0:
+            tags.append("overdue")
+        elif deadline_offset_days <= 6:
+            tags.append("due_soon")
+        else:
+            tags.append("on_track")
+
+        scenarios.append(
+            _portfolio_scenario(
+                key=scenario_key,
+                batch="dashboard",
+                family=family,
+                workflow_code=workflow_code,
+                name=f"{theme} {client_seen[client]:02d}",
+                client=client,
+                industry=str(profile["industry"]),
+                country=str(country),
+                owner=owners[index],
+                priority=priorities[index],
+                status=status,
+                deadline_offset_days=deadline_offset_days,
+                created_days_ago=created_days_ago,
+                updated_days_ago=updated_days_ago,
+                summary=summary,
+                current_stage_name=current_stage_name,
+                current_stage_progress=current_stage_progress,
+                completed_stage_names=completed_stage_names,
+                blocker_reason_code=blocker_reason_code,
+                outcome_reason=outcome_reason,
+                intelligence_profile=intelligence_profile,
+                tags=tuple(tags),
+                skip_stage_names=_dashboard_skip_stage_names(workflow_code),
+                captured_data_by_stage={
+                    "RFQ received": {
+                        "dashboard_seed": True,
+                        "dashboard_scenario_key": scenario_key,
+                        "client_cluster": client,
+                        "project_theme": theme,
+                    },
+                },
+                code_prefix="IB" if (index + 1) % 5 == 0 else "IF",
+                seed_marker=_dashboard_seed_marker(scenario_key),
+            )
+        )
+
+    return tuple(scenarios)
+
+
 SCENARIOS = (
     SCENARIOS
     + _build_must_have_extension_scenarios()
@@ -1949,15 +2397,17 @@ SCENARIOS = (
     + _build_optional_extension_scenarios()
 )
 
+DASHBOARD_EXTENSION_SCENARIOS = _build_dashboard_extension_scenarios()
+
 
 def scenario_registry() -> dict[str, ManagerScenarioSpec]:
     return {
         scenario.key: _materialize_scenario_defaults(scenario)
-        for scenario in SCENARIOS
+        for scenario in (*SCENARIOS, *DASHBOARD_EXTENSION_SCENARIOS)
     }
 
 
-def seeded_scenarios_for_batch(batch: Literal["must-have", "later", "optional", "all"]) -> list[ManagerScenarioSpec]:
+def seeded_scenarios_for_batch(batch: SeedBatchName) -> list[ManagerScenarioSpec]:
     scenarios = [
         _materialize_scenario_defaults(scenario)
         for scenario in SCENARIOS
@@ -1965,6 +2415,17 @@ def seeded_scenarios_for_batch(batch: Literal["must-have", "later", "optional", 
     ]
     if batch == "all":
         return scenarios
+    if batch == "dashboard":
+        dashboard_extension = [
+            _materialize_scenario_defaults(scenario)
+            for scenario in DASHBOARD_EXTENSION_SCENARIOS
+        ]
+        baseline = [
+            scenario
+            for scenario in scenarios
+            if scenario.batch in {"must-have", "later"}
+        ]
+        return baseline + dashboard_extension
     return [scenario for scenario in scenarios if scenario.batch == batch]
 
 
@@ -2039,7 +2500,24 @@ def _scenario_query(session, scenario_key: str):
     return session.query(RFQ).filter(RFQ.description.like(f"{SCENARIO_TAG_PREFIX}{scenario_key}]%"))
 
 
-def _find_existing_scenario(session, scenario_key: str) -> RFQ | None:
+def _find_existing_scenario(
+    session,
+    scenario_key: str,
+    *,
+    name: str | None = None,
+    client: str | None = None,
+) -> RFQ | None:
+    if _is_dashboard_extension_key(scenario_key):
+        marker = _dashboard_seed_marker(scenario_key)
+        marker_query = session.query(RFQ).filter(RFQ.description.like(f"%{marker}%"))
+        if name and client:
+            existing = marker_query.filter(RFQ.name == name, RFQ.client == client).first()
+            if existing is not None:
+                return existing
+        existing = marker_query.first()
+        if existing is not None:
+            return existing
+
     return _scenario_query(session, scenario_key).first()
 
 
@@ -2267,6 +2745,7 @@ def _build_manifest_entry(session, scenario: ManagerScenarioSpec, rfq: RFQ) -> d
         "family": scenario.family,
         "tags": list(scenario.tags),
         "manual_only": scenario.manual_only,
+        "seed_marker": scenario.seed_marker,
         "intelligence_profile": scenario.intelligence_profile,
         "rfq_id": str(rfq.id),
         "rfq_code": rfq.rfq_code,
@@ -2276,6 +2755,7 @@ def _build_manifest_entry(session, scenario: ManagerScenarioSpec, rfq: RFQ) -> d
         "country": rfq.country,
         "priority": rfq.priority,
         "status": rfq.status,
+        "progress": rfq.progress,
         "workflow_code": scenario.workflow_code,
         "current_stage_id": str(rfq.current_stage_id) if rfq.current_stage_id else None,
         "current_stage_name": current_stage_name,
@@ -2351,24 +2831,79 @@ def _load_existing_seeded_entries(session) -> list[dict]:
     for scenario_key, scenario in sorted(registry.items()):
         if scenario.manual_only:
             continue
-        rfq = _find_existing_scenario(session, scenario_key)
+        rfq = _find_existing_scenario(
+            session,
+            scenario_key,
+            name=scenario.name,
+            client=scenario.client,
+        )
         if rfq is None:
             continue
         entries.append(_build_manifest_entry(session, scenario, rfq))
     return entries
 
 
+def _count_by(entries: list[dict], key: str) -> dict[str, int]:
+    return dict(sorted(Counter(str(entry.get(key)) for entry in entries).items()))
+
+
+def _build_seed_summary(entries: list[dict]) -> dict:
+    terminal_statuses = {"Awarded", "Lost", "Cancelled"}
+    today = date.today()
+    blocked_active = sum(
+        1
+        for entry in entries
+        if entry["status"] == "In preparation" and entry["blocked"]
+    )
+    overdue_active = sum(
+        1
+        for entry in entries
+        if entry["status"] == "In preparation"
+        and date.fromisoformat(entry["deadline"]) < today
+    )
+    terminal_entries = [
+        entry for entry in entries if entry["status"] in terminal_statuses
+    ]
+    terminal_consistent = sum(
+        1
+        for entry in terminal_entries
+        if entry["current_stage_id"] is None and entry["progress"] == 100
+    )
+    status_counts = Counter(entry["status"] for entry in entries)
+
+    return {
+        "total_rfqs": len(entries),
+        "count_by_status": dict(sorted(status_counts.items())),
+        "count_by_priority": _count_by(entries, "priority"),
+        "count_by_client": _count_by(entries, "client"),
+        "count_by_owner": _count_by(entries, "owner"),
+        "count_by_workflow": _count_by(entries, "workflow_code"),
+        "blocked_active_rfqs": blocked_active,
+        "overdue_active_rfqs": overdue_active,
+        "awarded_count": status_counts.get("Awarded", 0),
+        "lost_count": status_counts.get("Lost", 0),
+        "cancelled_count": status_counts.get("Cancelled", 0),
+        "terminal_rfqs_total": len(terminal_entries),
+        "terminal_rfqs_with_current_stage_id_null_and_progress_100": terminal_consistent,
+    }
+
+
 def seed_manager_scenarios(
     session,
     *,
-    batch: Literal["must-have", "later", "optional", "all"] = "must-have",
+    batch: SeedBatchName = "must-have",
 ) -> dict:
     seed_base_data(session)
     created: list[str] = []
     existing: list[str] = []
 
     for scenario in seeded_scenarios_for_batch(batch):
-        current = _find_existing_scenario(session, scenario.key)
+        current = _find_existing_scenario(
+            session,
+            scenario.key,
+            name=scenario.name,
+            client=scenario.client,
+        )
         if current is not None:
             existing.append(scenario.key)
             continue
@@ -2376,6 +2911,7 @@ def seed_manager_scenarios(
         created.append(scenario.key)
 
     manifest_entries = _load_existing_seeded_entries(session)
+    seed_summary = _build_seed_summary(manifest_entries) if batch == "dashboard" else None
     manifest = {
         "manifest_version": MANIFEST_VERSION,
         "generated_at": _utc_now().isoformat(),
@@ -2389,6 +2925,7 @@ def seed_manager_scenarios(
         "created_scenarios": created,
         "existing_scenarios": existing,
         "manifest": manifest,
+        "seed_summary": seed_summary,
     }
 
 
@@ -2409,9 +2946,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--batch",
-        choices=["must-have", "later", "optional", "all"],
+        choices=["must-have", "later", "optional", "dashboard", "all"],
         default="must-have",
-        help="Scenario batch to seed. RFQ-06 remains manual-only in every batch.",
+        help=(
+            "Scenario batch to seed. 'dashboard' = must-have + later + "
+            "dashboard extension scenarios. RFQ-06 remains manual-only in every batch."
+        ),
     )
     parser.add_argument(
         "--reset",
@@ -2441,19 +2981,18 @@ def main() -> int:
     output_path = _cli_path(args.manifest_out)
     write_manifest(result["manifest"], output_path)
 
-    print(
-        json.dumps(
-            {
-                "requested_batch": args.batch,
-                "created_scenarios": result["created_scenarios"],
-                "existing_scenarios": result["existing_scenarios"],
-                "manifest_out": output_path.as_posix(),
-                "seeded_scenarios_present": [item["scenario_key"] for item in result["manifest"]["scenarios"]],
-                "golden_reserved_scenario": GOLDEN_SCENARIO_KEY,
-            },
-            indent=2,
-        )
-    )
+    output = {
+        "requested_batch": args.batch,
+        "created_scenarios": result["created_scenarios"],
+        "existing_scenarios": result["existing_scenarios"],
+        "manifest_out": output_path.as_posix(),
+        "seeded_scenarios_present": [item["scenario_key"] for item in result["manifest"]["scenarios"]],
+        "golden_reserved_scenario": GOLDEN_SCENARIO_KEY,
+    }
+    if result["seed_summary"] is not None:
+        output["seed_summary"] = result["seed_summary"]
+
+    print(json.dumps(output, indent=2))
     return 0
 
 

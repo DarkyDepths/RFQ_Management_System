@@ -1,11 +1,1213 @@
 {
   "manifest_version": "rfqmgmt_intelligence_scenarios_v1",
-  "generated_at": "2026-04-25T14:33:02+00:00",
+  "generated_at": "2026-04-26T09:50:21+00:00",
   "golden_reserved_scenario": "RFQ-06",
   "seeded": [
     {
+      "scenario_key": "DASH-D001",
+      "rfq_id": "a7ec1cc4-5b27-43d3-b928-73cd5618ae37",
+      "intelligence_profile": "thin_partial_stale",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D002",
+      "rfq_id": "f1146ae3-52c5-4edc-a300-5077dddeba8f",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D003",
+      "rfq_id": "2ebbff7b-eff7-4512-8d85-d4c17969959a",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D004",
+      "rfq_id": "b941b41b-0542-4431-9a43-63b9252591e2",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D005",
+      "rfq_id": "d03f6de6-1fce-459d-9c47-99e0d1ab33c8",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D006",
+      "rfq_id": "63098ee6-a31e-49d1-9e6b-a51b1513fe58",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D007",
+      "rfq_id": "96ee6700-e257-49a8-aa08-5ab72cbf49aa",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D008",
+      "rfq_id": "cbeff025-76f5-4e25-bb51-62c01848b1d3",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D009",
+      "rfq_id": "0b38997b-58b8-4683-95bf-75cb8ecbe794",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D010",
+      "rfq_id": "4c0bd902-f969-4302-ac63-eaa6ec55b937",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D011",
+      "rfq_id": "31bcf287-c4b8-4835-bd81-32f7edc417a6",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D012",
+      "rfq_id": "04fb3e41-167e-42f8-a7a9-92874662447e",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D013",
+      "rfq_id": "754df251-83ad-4c2b-a55c-1fe140b187a8",
+      "intelligence_profile": "thin_partial_stale",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D014",
+      "rfq_id": "071d64dc-2e82-4d6c-81e7-ba92ed6c5b47",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D015",
+      "rfq_id": "ad0691c6-09b4-42c1-8fc6-6021695a3eb7",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D016",
+      "rfq_id": "b4838260-32b6-461f-8742-bd3f9040cae1",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D017",
+      "rfq_id": "858606a5-25dd-4c5e-b102-ace0f20c717a",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D018",
+      "rfq_id": "3e0c8871-36b2-4fac-a035-b7dd3921bc5c",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D019",
+      "rfq_id": "c174ccae-cc54-4cae-83e5-535e68d96a6a",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D020",
+      "rfq_id": "876e4f92-e40e-45cb-9697-0952a6eb011a",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D021",
+      "rfq_id": "f6995d9d-bae3-4657-9e62-1ffe5250ad2c",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D022",
+      "rfq_id": "3e6ee9ad-92d7-4a46-a3c1-73aed7ff8847",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D023",
+      "rfq_id": "6f54e698-f412-426e-9d76-148e4f9d00fb",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D024",
+      "rfq_id": "0ee443c4-97b4-41ff-9dd6-6d5cb4ae73ec",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D025",
+      "rfq_id": "75ee189d-baaa-47d9-94ed-3f3a2c78a3ac",
+      "intelligence_profile": "thin_partial_stale",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D026",
+      "rfq_id": "660d5748-d151-419d-b46e-7f73fe15d0de",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D027",
+      "rfq_id": "81be6ba1-3fad-4c74-8d24-3dbc8c7cd5ad",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D028",
+      "rfq_id": "5ee72c43-0aef-4fa3-a978-ae58db8eb623",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D029",
+      "rfq_id": "e120a6bd-45e9-43a6-a7a1-63dc76bb8c7f",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D030",
+      "rfq_id": "916b5fc3-f5c3-4550-9298-4ace24bdb4de",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D031",
+      "rfq_id": "a64c9202-a56c-45b7-a6ce-db153f809e4d",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D032",
+      "rfq_id": "8574e45a-1b83-45d9-bd11-93fd80b1b4a8",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D033",
+      "rfq_id": "ead345fe-2b8c-4f58-b296-668507458f5e",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D034",
+      "rfq_id": "7a8cecf6-f005-4801-8962-3902c3daf946",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D035",
+      "rfq_id": "6c095926-73fe-4fe3-a036-94d1e3d2f733",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D036",
+      "rfq_id": "6bfa9773-8d9d-4b57-af67-d298f057018e",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D037",
+      "rfq_id": "7b13636a-da92-4094-aeda-9e7c82d0826d",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D038",
+      "rfq_id": "2e10e1de-0ce6-4a4f-bd50-4ce684d55165",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D039",
+      "rfq_id": "ea2bf6cc-e801-4c0a-bc4e-a4760e0de734",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D040",
+      "rfq_id": "976a502b-8e00-4db8-a4d3-844de0cd4202",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D041",
+      "rfq_id": "f6cc149f-7ebb-4340-ab7a-3fd00577ac61",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D042",
+      "rfq_id": "77c5df52-3a57-43b0-af33-16ac9f9b4f4c",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D043",
+      "rfq_id": "952ee882-dbeb-4aac-9c78-030748aa7a46",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D044",
+      "rfq_id": "2ee785ff-3a1b-45fb-a15a-a2dc98db9b54",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D045",
+      "rfq_id": "236724e9-3cd1-474d-a91a-e01d502e880c",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D046",
+      "rfq_id": "1c046144-4719-4af5-8f5f-7db320df97b4",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D047",
+      "rfq_id": "4a7672e1-b54f-4753-8732-80e652c89e50",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D049",
+      "rfq_id": "b8e3cc33-c448-4a99-8a9b-6c92d7e30cdf",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D050",
+      "rfq_id": "4243e58f-4364-420d-bac6-aeabcbc27197",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D051",
+      "rfq_id": "17f5d457-92c3-4bb5-93c0-c3fc0e4691a0",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D052",
+      "rfq_id": "33f2d80b-c575-4125-acf3-8520d9540011",
+      "intelligence_profile": "thin_partial_stale",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D053",
+      "rfq_id": "73457e43-6fe4-407e-ba08-3450fab34f81",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D054",
+      "rfq_id": "3f4e0ce7-ee5c-4b29-b279-7e63f21c885d",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D055",
+      "rfq_id": "f1505f79-f7e6-4470-ba7c-b7bfeab2ccb5",
+      "intelligence_profile": "thin_partial_stale",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D057",
+      "rfq_id": "74965494-a5ea-42c8-a075-daff75a0e2bc",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D058",
+      "rfq_id": "6c32d644-2df9-4fb0-97dd-81172ac6b1b3",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D059",
+      "rfq_id": "d2523c04-b484-49f8-9a8c-7a3aee6ec5b4",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D060",
+      "rfq_id": "0eb6bbe2-12ca-4fee-83b4-f8e08db52c52",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D061",
+      "rfq_id": "9eb8bf86-2fae-44ed-89d4-e0f3d9aa4e3a",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D062",
+      "rfq_id": "d6b15c28-c5d7-42d1-8298-ea98225d036c",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D063",
+      "rfq_id": "d2974d0a-dd83-4346-8d67-0a047f9e5297",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D064",
+      "rfq_id": "95741164-bc0e-466c-b546-02314dbc47f6",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D065",
+      "rfq_id": "b2df56af-9c60-4c23-b58d-7d34ec3bd6b6",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D066",
+      "rfq_id": "40a6e301-b879-446c-be44-217017ed5bd1",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D067",
+      "rfq_id": "8aeda3c9-2e52-4efc-9e78-e554140f51b4",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D068",
+      "rfq_id": "6e58ed26-500d-4590-a2c9-d629b2839207",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D069",
+      "rfq_id": "c7f5ac10-f9e7-46d2-8454-aa0790885eef",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D070",
+      "rfq_id": "8d8b4c7c-ca46-4fb9-b346-a08563fe220e",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D071",
+      "rfq_id": "30c57af1-2e1d-4080-b9f2-7b702b033320",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D073",
+      "rfq_id": "4cb34546-db86-4f8b-9fce-45e532d34261",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D074",
+      "rfq_id": "566bdeb9-66b8-4dcf-8218-bd3ebdb9a0af",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D075",
+      "rfq_id": "64552e91-ae0e-464b-9a2c-9d392d592dbb",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D076",
+      "rfq_id": "26f03a09-575d-4571-81cf-bae93d688b05",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D077",
+      "rfq_id": "88d98413-9605-4065-b6e9-ecd98a41f02c",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D078",
+      "rfq_id": "cde9342c-e9ee-4095-b2c4-d2b8dcbf53c0",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D079",
+      "rfq_id": "911cc9cf-b075-4a39-8c19-c39b0c5d253b",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D080",
+      "rfq_id": "c9d14104-16db-4331-b80a-8d61f1f6dab3",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D081",
+      "rfq_id": "559f3291-64fe-4f1c-b202-a995564aea25",
+      "intelligence_profile": "mature_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot",
+        "workbook_profile",
+        "cost_breakdown_profile",
+        "parser_report",
+        "workbook_review_report",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D083",
+      "rfq_id": "dfbe292e-bd46-4329-9304-7f44894a2404",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D084",
+      "rfq_id": "efc15889-5b6c-4132-976e-9ca9f653703d",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D085",
+      "rfq_id": "a64d0d97-a349-4f8a-8ccb-965853e2c70f",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
+      "scenario_key": "DASH-D086",
+      "rfq_id": "9039dad9-b513-4f4d-b595-d2bce9807cba",
+      "intelligence_profile": "early_partial",
+      "artifact_types": [
+        "rfq_intake_profile",
+        "intelligence_briefing",
+        "rfq_analytical_record",
+        "rfq_intelligence_snapshot"
+      ]
+    },
+    {
       "scenario_key": "RFQ-02",
-      "rfq_id": "64a05255-3c32-423b-995f-867860db73e0",
+      "rfq_id": "11fa679a-5dea-492a-ac62-b711afcd417b",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -16,7 +1218,7 @@
     },
     {
       "scenario_key": "RFQ-04",
-      "rfq_id": "ff182c1e-a927-42e5-89f1-6259b44efa04",
+      "rfq_id": "d5183d9d-2d7f-46d9-ad59-9741626acdeb",
       "intelligence_profile": "stale_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -27,7 +1229,7 @@
     },
     {
       "scenario_key": "RFQ-07",
-      "rfq_id": "8b13039d-d5de-4c3c-9704-d53027f61446",
+      "rfq_id": "c1da4a0d-c513-4908-9969-b9b052e60d2f",
       "intelligence_profile": "failed_workbook",
       "artifact_types": [
         "rfq_intake_profile",
@@ -42,7 +1244,7 @@
     },
     {
       "scenario_key": "RFQ-08",
-      "rfq_id": "8644d2dd-26b7-470b-8ab1-d8587a2c12c7",
+      "rfq_id": "8353e5f9-05d9-4c12-b353-9ffadb4238b7",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -59,7 +1261,7 @@
     },
     {
       "scenario_key": "RFQ-09",
-      "rfq_id": "6b6959fc-5802-451f-86bd-4fb2190d747d",
+      "rfq_id": "173f6899-1e13-45da-9985-b5b4aaaa61ed",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -76,7 +1278,7 @@
     },
     {
       "scenario_key": "RFQ-10",
-      "rfq_id": "49744597-9461-42ab-8aea-9b696f77574e",
+      "rfq_id": "042fe668-d809-4ade-bb44-7e91a0649cf6",
       "intelligence_profile": "mature_partial_stale_award",
       "artifact_types": [
         "rfq_intake_profile",
@@ -93,7 +1295,7 @@
     },
     {
       "scenario_key": "RFQ-11",
-      "rfq_id": "5514d550-1bef-439f-844f-5b7ec0376577",
+      "rfq_id": "a2a32111-4517-44bb-aba0-3b356f0bc12a",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -104,7 +1306,7 @@
     },
     {
       "scenario_key": "RFQ-15",
-      "rfq_id": "5ac1ee86-c691-4d42-87d1-bf9343ea5c87",
+      "rfq_id": "df91ea94-c68e-4ea4-a914-c3a903222649",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -115,7 +1317,7 @@
     },
     {
       "scenario_key": "RFQ-16",
-      "rfq_id": "0253da94-76f3-4068-b705-a3b47e74ff2a",
+      "rfq_id": "1a17cac6-c4fd-4ed2-acdd-ce2f1a353223",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -132,7 +1334,7 @@
     },
     {
       "scenario_key": "RFQ-17",
-      "rfq_id": "634737e9-156d-445c-886b-5fe63117af90",
+      "rfq_id": "a8e3f24f-84c1-4435-be3e-abcf05d8c0db",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -149,7 +1351,7 @@
     },
     {
       "scenario_key": "RFQ-18",
-      "rfq_id": "7e8cc10b-8ec2-4499-8198-933eef19805a",
+      "rfq_id": "7f9d28fb-a6ca-4489-871f-a10fe9b511a8",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -160,7 +1362,7 @@
     },
     {
       "scenario_key": "RFQ-19",
-      "rfq_id": "d17d0d80-b4a1-4f98-84e4-adc818c826a0",
+      "rfq_id": "d2923260-a664-4095-8c51-7b90eb043be3",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -177,7 +1379,7 @@
     },
     {
       "scenario_key": "RFQ-20",
-      "rfq_id": "1024a722-66fe-4fd2-af85-9f023bd9b0af",
+      "rfq_id": "c0f0754b-a808-48f3-87a2-18e31974a7e0",
       "intelligence_profile": "stale_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -188,7 +1390,7 @@
     },
     {
       "scenario_key": "RFQ-21",
-      "rfq_id": "8dd7f7d2-8ed3-4583-854a-baf4fa7e1c7f",
+      "rfq_id": "074c33e2-37fe-4f25-89df-b98351499fc4",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -199,7 +1401,7 @@
     },
     {
       "scenario_key": "RFQ-23",
-      "rfq_id": "b0f6024a-1a69-46d4-9c86-570e84003f86",
+      "rfq_id": "0ab4760c-da92-4b7b-8199-a24784bc9702",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -210,7 +1412,7 @@
     },
     {
       "scenario_key": "RFQ-25",
-      "rfq_id": "489b2b42-8db2-4b93-8e86-9c4741660e99",
+      "rfq_id": "152747ae-d1ff-46a0-93f7-68fcbd72ce18",
       "intelligence_profile": "early_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -221,7 +1423,7 @@
     },
     {
       "scenario_key": "RFQ-26",
-      "rfq_id": "c5095d29-8f83-4acb-93d2-ff9036b3e858",
+      "rfq_id": "be121b5c-0872-42aa-b8b8-72c293237c75",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -232,7 +1434,7 @@
     },
     {
       "scenario_key": "RFQ-27",
-      "rfq_id": "443118d0-b20f-4d84-bea3-3c0a0145d8e9",
+      "rfq_id": "a1f87294-223b-4a09-a78b-e9e06dbff717",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -243,7 +1445,7 @@
     },
     {
       "scenario_key": "RFQ-28",
-      "rfq_id": "87987315-b19f-4314-a0e1-cbffcb5b172f",
+      "rfq_id": "c3cacba0-325e-439e-a373-dec254bc518b",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -260,7 +1462,7 @@
     },
     {
       "scenario_key": "RFQ-29",
-      "rfq_id": "3b49b830-d44e-4cac-9994-93eb0e76b054",
+      "rfq_id": "cfa1d5ee-4c52-4f8a-8902-80a78789c46b",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -277,7 +1479,7 @@
     },
     {
       "scenario_key": "RFQ-30",
-      "rfq_id": "63685fb0-e1b7-4aeb-992a-1b85b7b11051",
+      "rfq_id": "9e44007e-20a6-41c0-acdf-a7346401065d",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -294,7 +1496,7 @@
     },
     {
       "scenario_key": "RFQ-31",
-      "rfq_id": "63f9042d-3ad1-489b-a725-0b1082ecb7cc",
+      "rfq_id": "d79d5d53-595f-429a-9e38-86dc5fc9399f",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -311,7 +1513,7 @@
     },
     {
       "scenario_key": "RFQ-32",
-      "rfq_id": "84214aba-a7f6-4120-b47b-81525012c732",
+      "rfq_id": "52fbcbf1-52ab-4d9b-9a60-7617f97853df",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -328,7 +1530,7 @@
     },
     {
       "scenario_key": "RFQ-33",
-      "rfq_id": "83375b1f-2000-4d46-afea-a449b5203d12",
+      "rfq_id": "8e07b020-5e13-44e4-82a9-48f733bbcd68",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -345,7 +1547,7 @@
     },
     {
       "scenario_key": "RFQ-34",
-      "rfq_id": "2335753a-3c6b-407a-a605-c31aa3519edf",
+      "rfq_id": "7f977cc7-19c5-4dea-b6d6-b9faa30c8da2",
       "intelligence_profile": "mature_partial",
       "artifact_types": [
         "rfq_intake_profile",
@@ -362,7 +1564,7 @@
     },
     {
       "scenario_key": "RFQ-35",
-      "rfq_id": "5ed21b95-0d7a-4fd2-850d-8d11b9a9ce91",
+      "rfq_id": "457eab6e-991f-41e5-a919-3672734d9c3c",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -373,7 +1575,7 @@
     },
     {
       "scenario_key": "RFQ-36",
-      "rfq_id": "fc5fd50b-7e40-4ad3-917d-d79318a79cda",
+      "rfq_id": "a0877b36-2f38-4255-8aa5-73a18d8aa4d0",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -384,7 +1586,7 @@
     },
     {
       "scenario_key": "RFQ-37",
-      "rfq_id": "a0863642-8c8b-4ee4-9fd0-ec33d8a3b2e8",
+      "rfq_id": "2c311c96-c417-49e5-8afe-2fb08796480f",
       "intelligence_profile": "thin_partial_stale",
       "artifact_types": [
         "rfq_intake_profile",
@@ -395,6 +1597,22 @@
     }
   ],
   "skipped": [
+    {
+      "scenario_key": "DASH-D048",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "DASH-D056",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "DASH-D072",
+      "reason": "no_intelligence_seed_required"
+    },
+    {
+      "scenario_key": "DASH-D082",
+      "reason": "no_intelligence_seed_required"
+    },
     {
       "scenario_key": "RFQ-01",
       "reason": "no_intelligence_seed_required"

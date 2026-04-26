@@ -160,6 +160,16 @@ def seed_stack(*, seed_set: str) -> None:
             str(CONTAINER_MANAGER_MANIFEST),
         )
 
+    if seed_set == "full-plus-dashboard":
+        _manager_exec(
+            "python",
+            "scripts/seed_rfqmgmt_scenarios.py",
+            "--batch",
+            "dashboard",
+            "--manifest-out",
+            str(CONTAINER_MANAGER_MANIFEST),
+        )
+
     _intelligence_exec(
         "python",
         "scripts/seed_rfqmgmt_intelligence.py",
@@ -180,7 +190,15 @@ def verify_stack(*, seed_set: str) -> dict:
     manager_stats = _read_json(f"{MANAGER_BASE_URL}/rfq-manager/v1/rfqs/stats")
     manager_list = _read_json(f"{MANAGER_BASE_URL}/rfq-manager/v1/rfqs?page=1&size=20")
 
-    expected_total = 7 if seed_set == "must-have" else 10 if seed_set == "full" else 12
+    expected_total = (
+        120
+        if seed_set == "full-plus-dashboard"
+        else 7
+        if seed_set == "must-have"
+        else 10
+        if seed_set == "full"
+        else 12
+    )
     if manager_stats["total_rfqs_12m"] < expected_total:
         raise RuntimeError(
             f"Scenario stack verification failed: expected at least {expected_total} RFQs, "
@@ -216,7 +234,7 @@ def verify_stack(*, seed_set: str) -> dict:
     workbook_failure_status = None
     workbook_failure_review_status = None
     failed_workbook_anchor = manager_manifest.get("verification_targets", {}).get("failed_workbook_anchor")
-    if seed_set in {"full", "full-plus-optional"} and failed_workbook_anchor:
+    if seed_set in {"full", "full-plus-optional", "full-plus-dashboard"} and failed_workbook_anchor:
         rfq07_snapshot = _read_json(
             f"{INTELLIGENCE_BASE_URL}/intelligence/v1/rfqs/{failed_workbook_anchor['rfq_id']}/snapshot"
         )
@@ -303,9 +321,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--seed-set",
-        choices=["must-have", "full", "full-plus-optional"],
+        choices=["must-have", "full", "full-plus-optional", "full-plus-dashboard"],
         default="full",
-        help="Which scenario set to seed. 'full' = must-have + later, without optional edge-only scenarios.",
+        help=(
+            "Which scenario set to seed. 'full' = must-have + later, without optional "
+            "edge-only scenarios. 'full-plus-dashboard' adds dashboard extension scenarios."
+        ),
     )
     parser.add_argument(
         "--remove-volumes",

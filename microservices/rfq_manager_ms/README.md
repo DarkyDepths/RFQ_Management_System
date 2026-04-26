@@ -142,13 +142,16 @@ Operational endpoints outside v1: `/health`, `/metrics`.
 
 ```bash
 # From rfq_manager_ms, start the curated scenario stack in the parent workspace
-python ../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+
+# Use the dashboard-quality 120-RFQ portfolio when testing operational dashboards
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full-plus-dashboard
 
 # Start the UI separately in rfq_ui_ms
 # npm run dev
 
 # Stop and wipe the scenario stack when finished
-python ../scripts/rfqmgmt_scenario_stack.py down --remove-volumes
+python ../../scripts/rfqmgmt_scenario_stack.py down --remove-volumes
 ```
 
 This is the official local source of truth for end-to-end testing because it:
@@ -156,6 +159,8 @@ This is the official local source of truth for end-to-end testing because it:
 - boots the manager scenario compose file
 - seeds curated RFQ scenarios via `scripts/seed_rfqmgmt_scenarios.py`
 - produces the manifest consumed by the intelligence-side scenario stack
+
+See `docs/DASHBOARD_SCENARIO_DATASET.md` for the dashboard extension dataset.
 
 ## Configuration
 

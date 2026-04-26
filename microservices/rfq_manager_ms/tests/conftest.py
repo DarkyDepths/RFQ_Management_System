@@ -10,6 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from src.app import create_app
 from src.app_context import get_db
@@ -31,7 +32,11 @@ import src.models.rfq_code_counter  # noqa: F401
 
 @pytest.fixture
 def db_engine():
-	engine = create_engine("sqlite:///:memory:")
+	engine = create_engine(
+		"sqlite:///:memory:",
+		connect_args={"check_same_thread": False},
+		poolclass=StaticPool,
+	)
 	Base.metadata.create_all(bind=engine)
 	try:
 		yield engine

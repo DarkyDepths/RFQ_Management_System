@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import re
+from collections import Counter
 from datetime import date, timedelta
 
 from scripts.seed_rfqmgmt_scenarios import (
+    DASHBOARD_SEED_MARKER_PREFIX,
     GOLDEN_SCENARIO_KEY,
     SCENARIO_TAG_PREFIX,
     seeded_scenarios_for_batch,
@@ -132,6 +135,124 @@ def test_all_batch_contains_full_portfolio_plus_manual_reservation(db_session):
     assert "RFQ-41" in seeded_keys
     assert GOLDEN_SCENARIO_KEY not in seeded_keys
     assert "GHI-CUSTOM" in workflow_codes
+
+
+def test_dashboard_batch_seeds_120_rfqs_with_dashboard_extension_delta(db_session):
+    result = seed_manager_scenarios(db_session, batch="dashboard")
+
+    entries = result["manifest"]["scenarios"]
+    seeded_keys = {item["scenario_key"] for item in entries}
+    dashboard_entries = [
+        item for item in entries if item["scenario_key"].startswith("DASH-D")
+    ]
+
+    assert len(entries) == 120
+    assert len(dashboard_entries) == 86
+    assert GOLDEN_SCENARIO_KEY not in seeded_keys
+    assert {item["scenario_key"] for item in dashboard_entries} == {
+        f"DASH-D{index:03d}" for index in range(1, 87)
+    }
+
+    assert Counter(item["status"] for item in entries) == {
+        "In preparation": 75,
+        "Awarded": 20,
+        "Lost": 17,
+        "Cancelled": 8,
+    }
+    assert Counter(item["priority"] for item in entries) == {
+        "normal": 76,
+        "critical": 44,
+    }
+    assert Counter(item["workflow_code"] for item in entries) == {
+        "GHI-LONG": 72,
+        "GHI-SHORT": 42,
+        "GHI-CUSTOM": 6,
+    }
+    assert Counter(item["client"] for item in dashboard_entries) == {
+        "Saudi Aramco": 16,
+        "Saudi Electricity Company": 12,
+        "SABIC": 11,
+        "Maaden": 9,
+        "NEOM": 8,
+        "SWCC": 8,
+        "Royal Commission Jubail": 6,
+        "PetroRabigh": 6,
+        "Yasref": 5,
+        "Sadara": 5,
+    }
+
+    summary = result["seed_summary"]
+    assert summary["total_rfqs"] == 120
+    assert summary["blocked_active_rfqs"] >= 24
+    assert summary["overdue_active_rfqs"] >= 26
+    assert summary["awarded_count"] == 20
+    assert summary["lost_count"] == 17
+    assert summary["cancelled_count"] == 8
+    assert summary["terminal_rfqs_with_current_stage_id_null_and_progress_100"] == 45
+
+    repeated_clients = [
+        client
+        for client, count in Counter(item["client"] for item in dashboard_entries).items()
+        if count > 1
+    ]
+    assert len(repeated_clients) == 10
+    assert len(Counter(item["owner"] for item in entries)) >= 8
+
+
+def test_dashboard_seed_is_idempotent_and_uses_markers_not_runtime_codes(db_session):
+    first = seed_manager_scenarios(db_session, batch="dashboard")
+    second = seed_manager_scenarios(db_session, batch="dashboard")
+
+    assert len(first["created_scenarios"]) == 120
+    assert second["created_scenarios"] == []
+    assert set(second["existing_scenarios"]) == {
+        scenario.key for scenario in seeded_scenarios_for_batch("dashboard")
+    }
+    assert db_session.query(RFQ).count() == 120
+
+    dashboard_entries = [
+        item
+        for item in second["manifest"]["scenarios"]
+        if item["scenario_key"].startswith("DASH-D")
+    ]
+    assert dashboard_entries
+    assert all(
+        item["seed_marker"] == f"{DASHBOARD_SEED_MARKER_PREFIX}{item['scenario_key']}]"
+        for item in dashboard_entries
+    )
+    assert all(item["seed_marker"] in item["description"] for item in dashboard_entries)
+    assert all(
+        re.match(r"^(IF|IB)-\d{4}$", item["rfq_code"])
+        for item in second["manifest"]["scenarios"]
+    )
+
+
+def test_dashboard_seed_keeps_terminal_rfqs_consistent_and_api_smoke(db_session, client):
+    seed_manager_scenarios(db_session, batch="dashboard")
+
+    terminal_rfqs = (
+        db_session.query(RFQ)
+        .filter(RFQ.status.in_(["Awarded", "Lost", "Cancelled"]))
+        .all()
+    )
+    assert len(terminal_rfqs) == 45
+    assert all(rfq.current_stage_id is None for rfq in terminal_rfqs)
+    assert all(rfq.progress == 100 for rfq in terminal_rfqs)
+
+    health = client.get("/health")
+    stats = client.get("/rfq-manager/v1/rfqs/stats")
+    analytics = client.get("/rfq-manager/v1/rfqs/analytics")
+    listing = client.get("/rfq-manager/v1/rfqs?page=1&size=100")
+
+    assert health.status_code == 200
+    assert stats.status_code == 200
+    assert analytics.status_code == 200
+    assert listing.status_code == 200
+    assert stats.json()["total_rfqs_12m"] == 120
+    assert stats.json()["open_rfqs"] == 75
+    assert analytics.json()["win_rate"] == 54.1
+    assert listing.json()["total"] == 120
+    assert len(listing.json()["data"]) == 100
 
 
 def test_blocked_overdue_scenario_has_expected_operational_pressure(db_session):

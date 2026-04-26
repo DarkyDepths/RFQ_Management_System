@@ -16,7 +16,13 @@ This runbook is for day-to-day operation of the current `rfq_manager_ms` V1 serv
 Start:
 
 ```bash
-python ../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+```
+
+For dashboard and analytics work, use the 120-RFQ portfolio:
+
+```bash
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full-plus-dashboard
 ```
 
 Bootstrap note:
@@ -28,13 +34,13 @@ Bootstrap note:
 Inspect status:
 
 ```bash
-python ../scripts/rfqmgmt_scenario_stack.py verify --seed-set full
+python ../../scripts/rfqmgmt_scenario_stack.py verify --seed-set full
 ```
 
 Stop:
 
 ```bash
-python ../scripts/rfqmgmt_scenario_stack.py down --remove-volumes
+python ../../scripts/rfqmgmt_scenario_stack.py down --remove-volumes
 ```
 
 ## 3) Health and Smoke Checks
@@ -107,7 +113,13 @@ alembic upgrade head
 Seed curated platform scenarios:
 
 ```bash
-python ../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full
+```
+
+Dashboard-quality seed:
+
+```bash
+python ../../scripts/rfqmgmt_scenario_stack.py all --seed-set full-plus-dashboard
 ```
 
 ## 5) Reminder Processing (Current V1 Behavior)
