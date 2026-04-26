@@ -24,18 +24,26 @@ class ManagerRfqDetailDto(BaseModel):
     name: str
     client: str
     status: str
+    progress: int = 0
     deadline: date
     current_stage_name: Optional[str] = None
     current_stage_id: Optional[UUID] = None
+    workflow_name: Optional[str] = None
+    industry: Optional[str] = None
+    country: Optional[str] = None
     priority: str
     owner: str
     description: Optional[str] = None
+    source_package_available: bool = False
+    source_package_updated_at: Optional[datetime] = None
+    workbook_available: bool = False
+    workbook_updated_at: Optional[datetime] = None
     outcome_reason: Optional[str] = None
     updated_at: datetime
 
 
 class ManagerRfqStageDto(BaseModel):
-    """Subset of manager's RfqStageResponse needed for blocker extraction."""
+    """Subset of manager's RfqStageResponse needed for blocker extraction and stage list rendering."""
 
     model_config = ConfigDict(extra="ignore")
 
