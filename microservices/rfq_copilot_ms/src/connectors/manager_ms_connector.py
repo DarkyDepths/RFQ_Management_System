@@ -1,1 +1,99 @@
-"""rfq_manager_ms HTTP connector — operational truth: profile, stages, reminders, search_portfolio, dashboard metrics/analytics. Owns Access policy enforcement (I6)."""
+"""rfq_manager_ms HTTP connector — operational truth.
+
+Sync httpx client (matches the rest of the service's sync pattern).
+Sends X-Debug-* headers carrying the copilot's Actor so manager attributes
+the request to the actual user instead of its own bypass actor.
+
+Failure mapping:
+- network / timeout -> ManagerUnreachable
+- 404               -> RfqNotFound
+- non-2xx           -> ManagerUnreachable (with status code in message)
+- 2xx but unparseable -> ManagerUnreachable
+"""
+
+from __future__ import annotations
+
+import logging
+
+import httpx
+
+from src.config.settings import settings
+from src.models.actor import Actor
+from src.models.manager_dto import ManagerRfqDetailDto, ManagerRfqStageDto
+from src.utils.errors import ManagerUnreachable, RfqNotFound
+
+
+logger = logging.getLogger(__name__)
+
+_MANAGER_API_PATH = "/rfq-manager/v1"
+
+
+class ManagerConnector:
+    def __init__(self, base_url: str | None = None, timeout_seconds: float = 5.0):
+        self._base_url = (base_url or settings.MANAGER_BASE_URL).rstrip("/")
+        self._timeout = timeout_seconds
+
+    def get_rfq_detail(self, rfq_id: str, actor: Actor) -> ManagerRfqDetailDto:
+        url = self._url(f"/rfqs/{rfq_id}")
+        response = self._get(url, actor)
+        if response.status_code == 404:
+            raise RfqNotFound(f"RFQ '{rfq_id}' not found in manager")
+        self._raise_for_unexpected(response, context=f"GET {url}")
+        try:
+            return ManagerRfqDetailDto.model_validate(response.json())
+        except Exception as exc:
+            raise ManagerUnreachable(
+                f"Manager returned an unparseable RFQ detail payload: {exc}"
+            ) from exc
+
+    def get_rfq_stages(self, rfq_id: str, actor: Actor) -> list[ManagerRfqStageDto]:
+        url = self._url(f"/rfqs/{rfq_id}/stages")
+        response = self._get(url, actor)
+        if response.status_code == 404:
+            raise RfqNotFound(f"RFQ '{rfq_id}' not found in manager (stages)")
+        self._raise_for_unexpected(response, context=f"GET {url}")
+        try:
+            payload = response.json()
+            data = payload.get("data", []) if isinstance(payload, dict) else []
+            return [ManagerRfqStageDto.model_validate(item) for item in data]
+        except Exception as exc:
+            raise ManagerUnreachable(
+                f"Manager returned an unparseable stages payload: {exc}"
+            ) from exc
+
+    def _url(self, path: str) -> str:
+        return f"{self._base_url}{_MANAGER_API_PATH}{path}"
+
+    def _get(self, url: str, actor: Actor) -> httpx.Response:
+        try:
+            return httpx.get(
+                url,
+                headers=self._actor_headers(actor),
+                timeout=self._timeout,
+            )
+        except httpx.TimeoutException as exc:
+            raise ManagerUnreachable(
+                f"Manager request timed out after {self._timeout}s"
+            ) from exc
+        except httpx.RequestError as exc:
+            raise ManagerUnreachable(
+                f"Could not reach manager service: {exc}"
+            ) from exc
+
+    @staticmethod
+    def _actor_headers(actor: Actor) -> dict[str, str]:
+        # X-Debug-* headers are honored by manager when AUTH_BYPASS_DEBUG_HEADERS_ENABLED=true.
+        # If manager has them disabled, it silently falls back to its own bypass actor —
+        # safe either way. No real auth in Batch 4.
+        return {
+            "X-Debug-User-Id": actor.user_id,
+            "X-Debug-User-Name": actor.display_name,
+        }
+
+    @staticmethod
+    def _raise_for_unexpected(response: httpx.Response, context: str) -> None:
+        if 200 <= response.status_code < 300:
+            return
+        raise ManagerUnreachable(
+            f"Manager returned HTTP {response.status_code} for {context}"
+        )

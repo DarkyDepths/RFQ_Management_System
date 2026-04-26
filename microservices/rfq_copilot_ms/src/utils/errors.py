@@ -24,3 +24,21 @@ class BadRequestError(AppError):
 class ServiceUnavailableError(AppError):
     status_code = 503
     message = "Service unavailable"
+
+
+class RfqNotFound(NotFoundError):
+    """Manager returned 404 for the requested RFQ id."""
+
+    message = "RFQ not found in the platform"
+
+
+class ManagerUnreachable(ServiceUnavailableError):
+    """rfq_manager_ms is unreachable, timed out, or returned an unexpected status."""
+
+    message = "Could not reach the RFQ data service"
+
+
+class LlmUnreachable(ServiceUnavailableError):
+    """Azure OpenAI is unreachable, returned an auth error, or timed out."""
+
+    message = "Language model is unavailable"
