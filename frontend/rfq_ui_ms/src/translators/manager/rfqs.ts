@@ -115,6 +115,7 @@ export function translateRfqCard(
     region: item.region,
     workflowName: item.workflowName,
     valueLabel: formatCompactCurrency(item.valueSar),
+    valueSar: item.valueSar,
     dueDateValue: item.dueDate,
     dueLabel: formatDate(item.dueDate),
     status: item.status,

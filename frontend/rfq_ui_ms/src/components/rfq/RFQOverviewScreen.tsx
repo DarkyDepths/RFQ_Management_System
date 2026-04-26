@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, PlusSquare, Radar } from "lucide-react";
 
+import { EstimatorWorkloadChart } from "@/components/charts/EstimatorWorkloadChart";
+import { ManagerPipelineChart } from "@/components/charts/ManagerPipelineChart";
 import { EmptyState } from "@/components/common/EmptyState";
 import { KPICard } from "@/components/common/KPICard";
 import { ReminderCenterSummaryCard } from "@/components/reminders/ReminderCenterSummaryCard";
@@ -100,6 +102,17 @@ export function RFQOverviewScreen() {
               <KPICard key={metric.id} index={index} metric={metric} />
             ))}
           </div>
+        )}
+      </section>
+
+      {/* ─── Role Summary Chart ─── */}
+      <section>
+        {loading ? (
+          <SkeletonCard className="h-[420px]" lines={8} />
+        ) : role === "manager" ? (
+          <ManagerPipelineChart rfqs={rfqs} />
+        ) : (
+          <EstimatorWorkloadChart rfqs={rfqs} />
         )}
       </section>
 

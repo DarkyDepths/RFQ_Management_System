@@ -18,9 +18,11 @@ export default function HomePage() {
   }, [role, router]);
 
   return (
-    <div className="flex h-[60vh] items-center justify-center">
-      
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-primary" />
+    <div className="flex min-h-[60dvh] items-center justify-center">
+      <div className="relative">
+        <div className="absolute inset-0 rounded-full bg-primary/10 blur-2xl animate-breathe" />
+        <div className="relative h-10 w-10 animate-spin rounded-full border-2 border-border border-t-primary" />
+      </div>
     </div>
   );
 }

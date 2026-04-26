@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import {
   BarChart,
   Files,
@@ -40,29 +39,34 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "border-b border-border bg-card lg:sticky lg:top-0 lg:z-20 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r",
-        sidebarCollapsed ? "lg:w-[72px]" : "lg:w-[264px]",
+        "border-b border-border/70 bg-card/80 backdrop-blur-xl",
+        "lg:sticky lg:top-0 lg:z-20 lg:flex lg:h-[100dvh] lg:flex-col",
+        "lg:border-b-0 lg:border-r lg:bg-transparent lg:backdrop-blur-0",
+        sidebarCollapsed ? "lg:w-[80px]" : "lg:w-[260px]",
       )}
     >
       {/* ─── Brand Zone ─── */}
       <div
         className={cn(
-          "flex items-center gap-3 border-b border-border px-4 py-4 lg:border-b lg:px-5 lg:py-5",
+          "flex items-center gap-3 border-b border-border/60 px-4 py-4 lg:px-5 lg:py-5",
           sidebarCollapsed && "lg:justify-center lg:px-3",
         )}
       >
-       <img
-          src="/logo.png"
-          alt="Al Bassam Group Logo"
-          className="w-16 h-12 "
-        />
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-steel-500/15 to-gold-500/10 ring-1 ring-border">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="Al Bassam Group"
+            className="h-9 w-9 object-contain"
+          />
+        </div>
         {!sidebarCollapsed ? (
           <div className="min-w-0">
-            <div className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-300">
+            <div className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">
               Al Bassam Group
             </div>
-            <div className="mt-0.5 text-sm font-medium leading-tight text-foreground">
-              GHI Estimation Department
+            <div className="mt-0.5 truncate text-sm font-medium leading-tight text-foreground">
+              GHI Estimation
             </div>
           </div>
         ) : null}
@@ -71,12 +75,23 @@ export function Sidebar() {
       {/* ─── Navigation ─── */}
       <nav
         className={cn(
-          "hide-scrollbar flex gap-1.5 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:py-4",
+          "hide-scrollbar flex gap-1 overflow-x-auto px-3 py-3",
+          "lg:flex-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:py-4",
           sidebarCollapsed && "lg:items-center",
         )}
       >
         <CopilotTrigger />
-        <div className="hidden h-px w-full bg-border lg:my-2 lg:block" />
+
+        {!sidebarCollapsed ? (
+          <div className="hidden px-3 pt-4 pb-2 lg:block">
+            <span className="text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
+              Workspace
+            </span>
+          </div>
+        ) : (
+          <div className="hidden lg:my-3 lg:block lg:h-px lg:w-8 lg:bg-border/60" />
+        )}
+
         {navItems.map((item) => {
           const isActive =
             item.match === "exact"
@@ -88,29 +103,31 @@ export function Sidebar() {
             <Link
               key={`${item.href}-${item.title}`}
               className={cn(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
-                sidebarCollapsed && "lg:justify-center lg:px-0",
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+                "transition-all duration-200 ease-out-expo",
+                "active:translate-y-[1px]",
+                sidebarCollapsed && "lg:justify-center lg:px-0 lg:w-11 lg:h-11",
                 isActive
-                  ? "bg-primary/10 text-primary dark:bg-primary/12"
+                  ? "bg-primary/10 text-foreground dark:bg-primary/15"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground dark:hover:bg-white/[0.04]",
               )}
               href={item.href}
             >
+              {isActive ? (
+                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary lg:block" />
+              ) : null}
               <div
                 className={cn(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
                   isActive
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground group-hover:text-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" strokeWidth={1.75} />
               </div>
               {!sidebarCollapsed ? (
                 <span className="truncate">{item.title}</span>
-              ) : null}
-              {isActive ? (
-                <div className="absolute left-0 top-1/2 hidden h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary lg:block" />
               ) : null}
             </Link>
           );
@@ -118,7 +135,7 @@ export function Sidebar() {
       </nav>
 
       {/* ─── Connection Status ─── */}
-      <div className="hidden border-t border-border p-3 lg:block">
+      <div className="hidden border-t border-border/60 p-3 lg:block">
         <ConnectionIndicator compact={sidebarCollapsed} />
       </div>
     </aside>

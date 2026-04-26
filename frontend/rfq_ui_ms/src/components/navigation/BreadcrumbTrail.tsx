@@ -9,19 +9,27 @@ export function BreadcrumbTrail() {
   const breadcrumbs = useBreadcrumbs();
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
+    >
       {breadcrumbs.map((crumb, index) => (
-        <div key={crumb.href ?? crumb.label} className="flex items-center gap-2">
-          {index > 0 ? <ChevronRight className="h-4 w-4 text-muted-foreground/40" /> : null}
+        <div key={crumb.href ?? crumb.label} className="flex min-w-0 items-center gap-1.5">
+          {index > 0 ? (
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" strokeWidth={2} />
+          ) : null}
           {crumb.isCurrent || !crumb.href ? (
-            <span className="font-medium text-foreground">{crumb.label}</span>
+            <span className="truncate font-medium text-foreground">{crumb.label}</span>
           ) : (
-            <Link className="transition-colors hover:text-foreground" href={crumb.href}>
+            <Link
+              className="truncate transition-colors hover:text-foreground"
+              href={crumb.href}
+            >
               {crumb.label}
             </Link>
           )}
         </div>
       ))}
-    </div>
+    </nav>
   );
 }

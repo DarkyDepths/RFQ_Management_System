@@ -214,6 +214,7 @@ export interface RfqCardModel {
   region?: string;
   workflowName?: string;
   valueLabel?: string;
+  valueSar?: number;
   dueDateValue: string;
   dueLabel: string;
   status: ManagerRfqStatus;

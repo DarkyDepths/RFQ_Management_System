@@ -11,20 +11,20 @@ export function ThemeToggle() {
   return (
     <button
       aria-label={`Switch to ${resolved === "dark" ? "light" : "dark"} mode`}
-      className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground"
+      className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card/60 text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground active:translate-y-[1px] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
       onClick={toggle}
       type="button"
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {resolved === "dark" ? (
           <motion.div
             key="sun"
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
             initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
-            <Sun className="h-4 w-4" />
+            <Sun className="h-4 w-4" strokeWidth={1.75} />
           </motion.div>
         ) : (
           <motion.div
@@ -32,9 +32,9 @@ export function ThemeToggle() {
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
             initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
-            <Moon className="h-4 w-4" />
+            <Moon className="h-4 w-4" strokeWidth={1.75} />
           </motion.div>
         )}
       </AnimatePresence>

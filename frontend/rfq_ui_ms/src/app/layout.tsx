@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, JetBrains_Mono, Syne } from "next/font/google";
+import { IBM_Plex_Sans, JetBrains_Mono, Outfit } from "next/font/google";
 
 import "./globals.css";
 
@@ -10,10 +10,10 @@ import { RoleProvider } from "@/context/role-context";
 import { ThemeProvider } from "@/context/theme-context";
 import { ToastProvider } from "@/context/toast-context";
 
-const displayFont = Syne({
+const displayFont = Outfit({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const bodyFont = IBM_Plex_Sans({

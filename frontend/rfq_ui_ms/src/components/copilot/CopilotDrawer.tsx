@@ -10,28 +10,35 @@ import { cn } from "@/lib/utils";
 import { CopilotComposer } from "./CopilotComposer";
 import { CopilotEmptyState } from "./CopilotEmptyState";
 import { CopilotHeader } from "./CopilotHeader";
+import { CopilotHistoryPanel } from "./CopilotHistoryPanel";
 import { CopilotMessages } from "./CopilotMessages";
 
 export function CopilotDrawer() {
   const {
     open,
+    mode,
     closeCopilot,
     messages,
     status,
+    historyViewOpen,
     drawerWidth,
     setDrawerWidth,
     isResizing,
     setResizing,
   } = useCopilot();
 
+  // The drawer only handles the RFQ-bound mode. The general copilot lives on
+  // its own dedicated page (/copilot), so we never render the drawer for it.
+  const drawerVisible = open && mode.kind === "rfq_bound";
+
   useEffect(() => {
-    if (!open) return;
+    if (!drawerVisible) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeCopilot();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, closeCopilot]);
+  }, [drawerVisible, closeCopilot]);
 
   // Lock cursor + disable text selection while resizing.
   useEffect(() => {
@@ -69,6 +76,11 @@ export function CopilotDrawer() {
   };
 
   const renderBody = () => {
+    // History view takes over the body area, hiding the chat surface.
+    if (historyViewOpen) {
+      return <CopilotHistoryPanel />;
+    }
+
     if (status === "loading" && messages.length === 0) {
       return (
         <div
@@ -101,17 +113,17 @@ export function CopilotDrawer() {
 
   return (
     <AnimatePresence>
-      {open ? (
+      {drawerVisible ? (
         <motion.aside
           key="copilot-drawer"
-          role="dialog"
+          role="complementary"
           aria-label="RFQ Copilot"
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          style={{ width: drawerWidth }}
-          className="fixed right-0 top-0 z-30 flex h-screen flex-col border-l border-border bg-card shadow-glow"
+          initial={{ x: "100%", opacity: 0.6 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: "100%", opacity: 0.6 }}
+          transition={{ type: "spring", stiffness: 220, damping: 28 }}
+          style={{ width: drawerWidth, maxWidth: "100vw" }}
+          className="fixed right-0 top-0 z-30 flex h-[100dvh] w-full max-w-full flex-col border-l border-border/70 bg-card/95 shadow-[-32px_0_64px_-32px_hsl(0_0%_0%/0.5)] backdrop-blur-2xl lg:max-w-[80vw]"
         >
           <button
             type="button"
@@ -124,8 +136,11 @@ export function CopilotDrawer() {
             )}
           />
           <CopilotHeader />
-          <div className="flex-1 overflow-y-auto">{renderBody()}</div>
-          <CopilotComposer />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {renderBody()}
+          </div>
+          {/* Composer is hidden when browsing history */}
+          {!historyViewOpen && <CopilotComposer />}
         </motion.aside>
       ) : null}
     </AnimatePresence>

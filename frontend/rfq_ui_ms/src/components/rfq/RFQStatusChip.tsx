@@ -12,8 +12,8 @@ export function RFQStatusChip({ status }: { status: ManagerRfqStatus }) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      initial={{ opacity: 0.6, y: 6 }}
-      transition={{ duration: 0.24 }}
+      initial={{ opacity: 0, y: 4 }}
+      transition={{ type: "spring", stiffness: 220, damping: 22 }}
     >
       <Badge variant={meta.tone}>{meta.label}</Badge>
     </motion.div>

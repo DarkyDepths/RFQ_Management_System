@@ -7,16 +7,18 @@ export function Progress({
   value: number;
   className?: string;
 }) {
+  const clamped = Math.max(0, Math.min(100, value));
+
   return (
     <div
       className={cn(
-        "h-2 w-full overflow-hidden rounded-full bg-secondary",
+        "relative h-1.5 w-full overflow-hidden rounded-full bg-muted/70 dark:bg-white/[0.05]",
         className,
       )}
     >
       <div
-        className="h-full rounded-full bg-gradient-to-r from-steel-500 via-cyan-400 to-gold-300 transition-all duration-500"
-        style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out-expo"
+        style={{ width: `${clamped}%` }}
       />
     </div>
   );

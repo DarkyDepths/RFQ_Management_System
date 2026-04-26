@@ -3,14 +3,32 @@ import { requestJson } from "@/lib/http-client";
 import type {
   CopilotMessage,
   CopilotMode,
+  CopilotThreadSummary,
+  WireListThreadsResponse,
   WireMessage,
   WireMode,
   WireNewThreadResponse,
   WireOpenThreadResponse,
+  WireThreadDetail,
+  WireThreadSummary,
   WireTurnResponse,
 } from "@/types/copilot";
 
 // ── wire <-> domain mappers (the only place snake_case touches the codebase) ──
+
+function toDomainMode(wire: WireMode): CopilotMode {
+  if (wire.kind === "general") return { kind: "general" };
+  return { kind: "rfq_bound", rfqId: wire.rfq_id, rfqLabel: wire.rfq_label };
+}
+
+function toDomainThreadSummary(wire: WireThreadSummary): CopilotThreadSummary {
+  return {
+    id: wire.thread_id,
+    mode: toDomainMode(wire.mode),
+    lastActivityAt: wire.last_activity_at,
+    preview: wire.preview,
+  };
+}
 
 function toWireMode(mode: CopilotMode): WireMode {
   if (mode.kind === "general") {
@@ -87,5 +105,27 @@ export async function sendTurn(
   return {
     userMessageId: response.message_id,
     assistantMessage: toDomainMessage(response.assistant_message),
+  };
+}
+
+export async function listThreads(mode: CopilotMode): Promise<CopilotThreadSummary[]> {
+  const response = await requestJson<WireListThreadsResponse>(
+    buildUrl("/threads/list"),
+    {
+      method: "POST",
+      body: JSON.stringify({ mode: toWireMode(mode) }),
+    },
+  );
+  return response.threads.map(toDomainThreadSummary);
+}
+
+export async function loadThread(threadId: string): Promise<OpenThreadResult> {
+  const response = await requestJson<WireThreadDetail>(
+    buildUrl(`/threads/${encodeURIComponent(threadId)}`),
+    { method: "GET" },
+  );
+  return {
+    threadId: response.thread_id,
+    messages: response.messages.map(toDomainMessage),
   };
 }

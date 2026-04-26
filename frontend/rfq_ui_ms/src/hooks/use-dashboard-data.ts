@@ -48,6 +48,7 @@ interface DashboardState {
   lossReasons: ExecutiveAggregateEntry[];
   loading: boolean;
   metrics: KPIMetricModel[];
+  rfqs: RfqCardModel[];
 }
 
 function buildExecutiveMetrics(
@@ -244,6 +245,7 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
     lossReasons: [],
     loading: true,
     metrics: [],
+    rfqs: [],
   });
 
   useEffect(() => {
@@ -259,6 +261,7 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
         lossReasons: [],
         loading: false,
         metrics: [],
+        rfqs: [],
       });
       return;
     }
@@ -302,6 +305,7 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
             leadershipResult.threads,
             leadershipResult.error,
           ),
+          rfqs,
         });
       } catch (error) {
         if (!active) {
@@ -322,15 +326,17 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
           lossReasons: [],
           loading: false,
           metrics: [],
+          rfqs: [],
         });
       }
     }
 
     async function loadManagerDashboard() {
       try {
-        const [metrics, analytics] = await Promise.all([
+        const [metrics, analytics, rfqs] = await Promise.all([
           getDashboardMetrics(),
           getDashboardAnalytics(),
+          listRfqs({ size: 100 }),
         ]);
 
         if (!active) {
@@ -348,6 +354,7 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
           lossReasons: [],
           loading: false,
           metrics,
+          rfqs,
         });
       } catch (error) {
         if (!active) {
@@ -368,6 +375,7 @@ export function useDashboardData(role: AppRole, enabled: boolean) {
           lossReasons: [],
           loading: false,
           metrics: [],
+          rfqs: [],
         });
       }
     }
