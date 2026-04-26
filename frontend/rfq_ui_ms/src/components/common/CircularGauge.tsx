@@ -31,15 +31,15 @@ export function CircularGauge({
   const resolvedColor =
     color ??
     (value >= 80
-      ? "hsl(152, 56%, 40%)"
+      ? "hsl(152 56% 42%)"
       : value >= 50
-        ? "hsl(213, 60%, 52%)"
+        ? "hsl(215 70% 52%)"
         : value >= 25
-          ? "hsl(36, 70%, 50%)"
-          : "hsl(0, 55%, 55%)");
+          ? "hsl(36 75% 50%)"
+          : "hsl(354 60% 52%)");
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setAnimatedValue(value), 120);
+    const timer = window.setTimeout(() => setAnimatedValue(value), 80);
     return () => window.clearTimeout(timer);
   }, [value]);
 
@@ -47,13 +47,13 @@ export function CircularGauge({
     <div className={cn("flex flex-col items-center gap-3", className)}>
       <div className="relative" style={{ width: size, height: size }}>
         <svg
-          className="-rotate-90"
+          className="-rotate-90 drop-shadow-[0_4px_12px_hsl(var(--primary)/0.08)]"
           height={size}
           viewBox={`0 0 ${size} ${size}`}
           width={size}
         >
           <circle
-            className="text-border"
+            className="text-border/60"
             cx={size / 2}
             cy={size / 2}
             fill="none"
@@ -72,24 +72,27 @@ export function CircularGauge({
             strokeLinecap="round"
             strokeWidth={strokeWidth}
             style={{
-              transition: "stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              transition:
+                "stroke-dashoffset 1.1s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-mono text-2xl font-semibold text-foreground">
+          <span className="font-mono tabular-nums text-[1.5rem] font-semibold leading-none text-foreground">
             {value}
           </span>
-          <span className="font-mono text-[0.65rem] text-muted-foreground">%</span>
+          <span className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+            %
+          </span>
         </div>
       </div>
       {label ? (
         <div className="text-center">
-          <div className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             {label}
           </div>
           {sublabel ? (
-            <div className="mt-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 text-xs text-muted-foreground/80">
               {sublabel}
             </div>
           ) : null}

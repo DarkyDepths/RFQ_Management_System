@@ -77,8 +77,9 @@ export function UploadZone({
         scale: dragActive ? 1.01 : 1,
       }}
       className={cn(
-        "surface-panel surface-panel-hover border-dashed p-6 transition-colors duration-200",
-        dragActive && "border-primary bg-primary/5",
+        "surface-panel border-dashed p-6 transition-colors duration-200",
+        "hover:border-foreground/15",
+        dragActive && "border-primary/40 bg-primary/[0.04]",
       )}
       onDragEnter={() => setDragActive(true)}
       onDragLeave={() => setDragActive(false)}

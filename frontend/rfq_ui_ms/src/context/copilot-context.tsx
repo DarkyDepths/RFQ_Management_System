@@ -11,10 +11,17 @@ import {
 
 import {
   createNewThread,
+  listThreads,
+  loadThread,
   openThread,
   sendTurn,
 } from "@/connectors/copilot/threads";
-import type { CopilotMessage, CopilotMode, CopilotStatus } from "@/types/copilot";
+import type {
+  CopilotMessage,
+  CopilotMode,
+  CopilotStatus,
+  CopilotThreadSummary,
+} from "@/types/copilot";
 
 export const DEFAULT_DRAWER_WIDTH = 420;
 export const MIN_DRAWER_WIDTH = 360;
@@ -27,6 +34,10 @@ interface CopilotState {
   messages: CopilotMessage[];
   status: CopilotStatus;
   input: string;
+  // History
+  historyViewOpen: boolean;
+  threads: CopilotThreadSummary[];
+  threadsStatus: CopilotStatus;
 }
 
 type CopilotAction =
@@ -37,12 +48,16 @@ type CopilotAction =
   | { type: "SEND_USER_MESSAGE"; message: CopilotMessage }
   | { type: "RECEIVE_ASSISTANT"; message: CopilotMessage }
   | { type: "SET_THREAD_ID"; threadId: string }
-  | {
-      type: "BACKEND_OPEN_OK";
-      threadId: string;
-      messages: CopilotMessage[];
-    }
-  | { type: "BACKEND_ERROR" };
+  | { type: "BACKEND_OPEN_OK"; threadId: string; messages: CopilotMessage[] }
+  | { type: "BACKEND_ERROR" }
+  // History actions
+  | { type: "HISTORY_OPEN" }
+  | { type: "HISTORY_CLOSE" }
+  | { type: "THREADS_LOAD_START" }
+  | { type: "THREADS_LOAD_OK"; threads: CopilotThreadSummary[] }
+  | { type: "THREADS_LOAD_FAIL" }
+  | { type: "SWITCH_THREAD_START" }
+  | { type: "SWITCH_THREAD_OK"; threadId: string; messages: CopilotMessage[] };
 
 const DEFAULT_MODE: CopilotMode = { kind: "general" };
 
@@ -53,6 +68,9 @@ const INITIAL_STATE: CopilotState = {
   messages: [],
   status: "idle",
   input: "",
+  historyViewOpen: false,
+  threads: [],
+  threadsStatus: "idle",
 };
 
 function modesEqual(a: CopilotMode, b: CopilotMode): boolean {
@@ -70,8 +88,7 @@ function reducer(state: CopilotState, action: CopilotAction): CopilotState {
       if (state.open && modesEqual(state.mode, action.mode)) {
         return state;
       }
-      // Mode change discards any prior in-memory conversation. Multi-thread
-      // caching is the backend ThreadController's job.
+      // Mode change discards any prior in-memory conversation and thread list.
       if (!modesEqual(state.mode, action.mode)) {
         return {
           ...INITIAL_STATE,
@@ -88,12 +105,15 @@ function reducer(state: CopilotState, action: CopilotAction): CopilotState {
       };
     }
     case "CLOSE":
-      return { ...state, open: false };
+      return { ...state, open: false, historyViewOpen: false };
     case "NEW_CHAT":
       return {
         ...INITIAL_STATE,
         open: state.open,
         mode: state.mode,
+        // Keep the loaded thread list — it's still valid.
+        threads: state.threads,
+        threadsStatus: state.threadsStatus,
       };
     case "SET_INPUT":
       return { ...state, input: action.value };
@@ -121,6 +141,27 @@ function reducer(state: CopilotState, action: CopilotAction): CopilotState {
       };
     case "BACKEND_ERROR":
       return { ...state, status: "error" };
+    // ── History ─────────────────────────────────────────────────────────────
+    case "HISTORY_OPEN":
+      return { ...state, historyViewOpen: true };
+    case "HISTORY_CLOSE":
+      return { ...state, historyViewOpen: false };
+    case "THREADS_LOAD_START":
+      return { ...state, threadsStatus: "loading" };
+    case "THREADS_LOAD_OK":
+      return { ...state, threads: action.threads, threadsStatus: "idle" };
+    case "THREADS_LOAD_FAIL":
+      return { ...state, threadsStatus: "error" };
+    case "SWITCH_THREAD_START":
+      return { ...state, status: "loading" };
+    case "SWITCH_THREAD_OK":
+      return {
+        ...state,
+        threadId: action.threadId,
+        messages: action.messages,
+        status: "idle",
+        historyViewOpen: false,
+      };
     default:
       return state;
   }
@@ -136,6 +177,11 @@ interface CopilotContextValue extends CopilotState {
   setDrawerWidth: (next: number) => void;
   isResizing: boolean;
   setResizing: (next: boolean) => void;
+  // History
+  openHistory: () => void;
+  closeHistory: () => void;
+  loadHistory: () => void;
+  switchToThread: (threadId: string) => void;
 }
 
 const CopilotContext = createContext<CopilotContextValue | null>(null);
@@ -149,6 +195,8 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   // result. Prevents an in-flight /threads/open response from a previous mode
   // overwriting state after the user has switched mode mid-fetch.
   const fetchTokenRef = useRef(0);
+  // Separate token for history list fetches (independent lifecycle).
+  const historyTokenRef = useRef(0);
 
   const setDrawerWidth = (next: number) => {
     const clamped = Math.min(MAX_DRAWER_WIDTH, Math.max(MIN_DRAWER_WIDTH, next));
@@ -163,23 +211,39 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
 
     dispatch({ type: "OPEN", mode, needsFetch });
 
-    if (!needsFetch) return;
+    if (needsFetch) {
+      const token = ++fetchTokenRef.current;
+      void (async () => {
+        try {
+          const result = await openThread(mode);
+          if (token !== fetchTokenRef.current) return;
+          dispatch({
+            type: "BACKEND_OPEN_OK",
+            threadId: result.threadId,
+            messages: result.messages,
+          });
+        } catch {
+          if (token !== fetchTokenRef.current) return;
+          dispatch({ type: "BACKEND_ERROR" });
+        }
+      })();
+    }
 
-    const token = ++fetchTokenRef.current;
-    void (async () => {
-      try {
-        const result = await openThread(mode);
-        if (token !== fetchTokenRef.current) return;
-        dispatch({
-          type: "BACKEND_OPEN_OK",
-          threadId: result.threadId,
-          messages: result.messages,
-        });
-      } catch {
-        if (token !== fetchTokenRef.current) return;
-        dispatch({ type: "BACKEND_ERROR" });
-      }
-    })();
+    // Eagerly load thread list whenever the copilot opens (handles mode changes).
+    if (isModeChange || state.threads.length === 0) {
+      const historyToken = ++historyTokenRef.current;
+      dispatch({ type: "THREADS_LOAD_START" });
+      void (async () => {
+        try {
+          const threads = await listThreads(mode);
+          if (historyToken !== historyTokenRef.current) return;
+          dispatch({ type: "THREADS_LOAD_OK", threads });
+        } catch {
+          if (historyToken !== historyTokenRef.current) return;
+          dispatch({ type: "THREADS_LOAD_FAIL" });
+        }
+      })();
+    }
   };
 
   const closeCopilot = () => dispatch({ type: "CLOSE" });
@@ -234,6 +298,46 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     })();
   };
 
+  const openHistory = () => dispatch({ type: "HISTORY_OPEN" });
+  const closeHistory = () => dispatch({ type: "HISTORY_CLOSE" });
+
+  const loadHistory = () => {
+    if (state.threadsStatus === "loading") return;
+    const historyToken = ++historyTokenRef.current;
+    dispatch({ type: "THREADS_LOAD_START" });
+    const mode = state.mode;
+    void (async () => {
+      try {
+        const threads = await listThreads(mode);
+        if (historyToken !== historyTokenRef.current) return;
+        dispatch({ type: "THREADS_LOAD_OK", threads });
+      } catch {
+        if (historyToken !== historyTokenRef.current) return;
+        dispatch({ type: "THREADS_LOAD_FAIL" });
+      }
+    })();
+  };
+
+  const switchToThread = (threadId: string) => {
+    if (state.status === "loading") return;
+    const token = ++fetchTokenRef.current;
+    dispatch({ type: "SWITCH_THREAD_START" });
+    void (async () => {
+      try {
+        const result = await loadThread(threadId);
+        if (token !== fetchTokenRef.current) return;
+        dispatch({
+          type: "SWITCH_THREAD_OK",
+          threadId: result.threadId,
+          messages: result.messages,
+        });
+      } catch {
+        if (token !== fetchTokenRef.current) return;
+        dispatch({ type: "BACKEND_ERROR" });
+      }
+    })();
+  };
+
   const value: CopilotContextValue = {
     ...state,
     openCopilot,
@@ -245,6 +349,10 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     setDrawerWidth,
     isResizing,
     setResizing,
+    openHistory,
+    closeHistory,
+    loadHistory,
+    switchToThread,
   };
 
   return <CopilotContext.Provider value={value}>{children}</CopilotContext.Provider>;

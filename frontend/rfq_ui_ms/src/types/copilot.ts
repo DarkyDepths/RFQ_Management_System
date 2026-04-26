@@ -22,6 +22,13 @@ export interface CopilotThread {
 
 export type CopilotStatus = "idle" | "loading" | "error";
 
+export interface CopilotThreadSummary {
+  id: string;
+  mode: CopilotMode;
+  lastActivityAt: string;
+  preview: string;
+}
+
 // ── Wire types (snake_case) — exact match to backend Pydantic output ────────
 //
 // The connector layer (src/connectors/copilot/threads.ts) owns all wire <-> domain
@@ -50,4 +57,20 @@ export interface WireNewThreadResponse {
 export interface WireTurnResponse {
   message_id: string;
   assistant_message: WireMessage;
+}
+
+export interface WireThreadSummary {
+  thread_id: string;
+  mode: WireMode;
+  last_activity_at: string;
+  preview: string;
+}
+
+export interface WireListThreadsResponse {
+  threads: WireThreadSummary[];
+}
+
+export interface WireThreadDetail {
+  thread_id: string;
+  messages: WireMessage[];
 }

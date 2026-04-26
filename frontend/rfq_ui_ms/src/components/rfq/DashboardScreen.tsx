@@ -14,6 +14,8 @@ import {
   Workflow,
 } from "lucide-react";
 
+import { ExecutivePulseChart } from "@/components/charts/ExecutivePulseChart";
+import { ManagerPipelineChart } from "@/components/charts/ManagerPipelineChart";
 import { EmptyState } from "@/components/common/EmptyState";
 import { KPICard } from "@/components/common/KPICard";
 import { SkeletonCard } from "@/components/common/SkeletonCard";
@@ -44,6 +46,7 @@ export function DashboardScreen() {
     loading,
     lossReasons,
     metrics,
+    rfqs,
   } = useDashboardData(role, permissions.canViewAnalytics);
 
   if (!permissions.canViewAnalytics) {
@@ -163,6 +166,14 @@ export function DashboardScreen() {
           )}
         </section>
 
+        <section>
+          {loading ? (
+            <SkeletonCard className="h-[420px]" lines={8} />
+          ) : (
+            <ExecutivePulseChart rfqs={rfqs} />
+          )}
+        </section>
+
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           {loading ? (
             <>
@@ -249,6 +260,14 @@ export function DashboardScreen() {
               <KPICard key={metric.id} index={index} metric={metric} />
             ))}
           </div>
+        )}
+      </section>
+
+      <section>
+        {loading ? (
+          <SkeletonCard className="h-[420px]" lines={8} />
+        ) : (
+          <ManagerPipelineChart rfqs={rfqs} />
         )}
       </section>
 

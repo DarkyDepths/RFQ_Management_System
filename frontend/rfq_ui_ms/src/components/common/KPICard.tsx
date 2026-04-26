@@ -3,15 +3,27 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { Card, CardContent } from "@/components/ui/card";
 import type { KPIMetricModel } from "@/models/ui/dashboard";
 import { cn } from "@/lib/utils";
 
-const toneStyles: Record<KPIMetricModel["tone"], string> = {
-  steel: "from-steel-500/15 to-transparent text-steel-500 dark:text-steel-300",
-  gold: "from-gold-500/15 to-transparent text-gold-600 dark:text-gold-300",
-  emerald: "from-emerald-500/15 to-transparent text-emerald-600 dark:text-emerald-300",
-  amber: "from-amber-500/15 to-transparent text-amber-600 dark:text-amber-300",
+const toneAccent: Record<KPIMetricModel["tone"], string> = {
+  steel: "from-steel-500/20 via-steel-500/5",
+  gold: "from-gold-500/22 via-gold-500/5",
+  emerald: "from-emerald-500/22 via-emerald-500/5",
+  amber: "from-amber-500/22 via-amber-500/5",
+};
+
+const toneText: Record<KPIMetricModel["tone"], string> = {
+  steel: "text-steel-600 dark:text-steel-300",
+  gold: "text-gold-600 dark:text-gold-300",
+  emerald: "text-emerald-600 dark:text-emerald-300",
+  amber: "text-amber-600 dark:text-amber-300",
+};
+
+const toneTrend: Record<KPIMetricModel["trendDirection"], string> = {
+  up: "text-emerald-600 dark:text-emerald-300",
+  down: "text-rose-600 dark:text-rose-300",
+  steady: "text-muted-foreground",
 };
 
 function TrendIcon({
@@ -19,15 +31,13 @@ function TrendIcon({
 }: {
   direction: KPIMetricModel["trendDirection"];
 }) {
-  if (direction === "up") {
-    return <ArrowUpRight className="h-4 w-4" />;
-  }
-
-  if (direction === "down") {
-    return <ArrowDownRight className="h-4 w-4" />;
-  }
-
-  return <ArrowRight className="h-4 w-4" />;
+  const Icon =
+    direction === "up"
+      ? ArrowUpRight
+      : direction === "down"
+        ? ArrowDownRight
+        : ArrowRight;
+  return <Icon className="h-3.5 w-3.5" strokeWidth={2} />;
 }
 
 export function KPICard({
@@ -39,33 +49,54 @@ export function KPICard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.08 }}
+      transition={{
+        type: "spring",
+        stiffness: 120,
+        damping: 22,
+        delay: index * 0.06,
+      }}
+      whileHover={{ y: -2 }}
+      className="surface-panel surface-panel-hover group relative h-full overflow-hidden"
     >
-      <Card className="surface-panel-hover h-full overflow-hidden">
-        <CardContent className="relative p-5">
-          <div
-            className={cn(
-              "absolute inset-x-0 top-0 h-20 bg-gradient-to-b opacity-50 dark:opacity-100",
-              toneStyles[metric.tone],
-            )}
-          />
-          <div className="relative">
-            <div className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {metric.label}
-            </div>
-            <div className="mt-3 font-mono text-3xl font-semibold tracking-tight text-foreground">
-              {metric.value}
-            </div>
-            <p className="mt-1.5 text-[0.8rem] text-muted-foreground">{metric.helper}</p>
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs font-medium text-foreground dark:bg-white/[0.03]">
-              <TrendIcon direction={metric.trendDirection} />
-              {metric.trendLabel}
-            </div>
+      {/* Top accent wash */}
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent opacity-80 dark:opacity-100",
+          toneAccent[metric.tone],
+        )}
+      />
+      {/* Hover halo */}
+      <div className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.06),transparent_60%)]" />
+
+      <div className="relative p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className={cn("section-kicker", toneText[metric.tone])}>
+            {metric.label}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="mt-4 flex items-baseline gap-2">
+          <div className="font-mono tabular-nums text-[2rem] font-semibold leading-none tracking-tight text-foreground">
+            {metric.value}
+          </div>
+        </div>
+
+        <p className="mt-2 text-[0.8rem] leading-relaxed text-muted-foreground">
+          {metric.helper}
+        </p>
+
+        <div
+          className={cn(
+            "mt-5 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[0.7rem] font-medium dark:bg-white/[0.03]",
+            toneTrend[metric.trendDirection],
+          )}
+        >
+          <TrendIcon direction={metric.trendDirection} />
+          <span className="text-foreground/90">{metric.trendLabel}</span>
+        </div>
+      </div>
     </motion.div>
   );
 }

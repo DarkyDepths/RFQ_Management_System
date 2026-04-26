@@ -1,14 +1,17 @@
 "use client";
 
-import { MessageSquarePlus, Sparkles, X } from "lucide-react";
+import { Clock, MessageSquarePlus, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useCopilot } from "@/hooks/useCopilot";
+import { cn } from "@/lib/utils";
 
 export function CopilotHeader() {
-  const { mode, closeCopilot, newChat } = useCopilot();
+  const { mode, closeCopilot, newChat, historyViewOpen, openHistory, closeHistory } =
+    useCopilot();
 
   const subtitle = mode.kind === "general" ? "General" : mode.rfqLabel;
+  const onHistoryClick = historyViewOpen ? closeHistory : openHistory;
 
   return (
     <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
@@ -24,6 +27,19 @@ export function CopilotHeader() {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={historyViewOpen ? "Back to chat" : "View history"}
+          aria-pressed={historyViewOpen}
+          onClick={onHistoryClick}
+          className={cn(
+            "h-8 w-8",
+            historyViewOpen && "bg-primary/10 text-primary",
+          )}
+        >
+          <Clock className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
