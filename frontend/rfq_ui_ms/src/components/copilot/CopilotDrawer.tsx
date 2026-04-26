@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 import { useCopilot } from "@/hooks/useCopilot";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export function CopilotDrawer() {
     open,
     closeCopilot,
     messages,
+    status,
     drawerWidth,
     setDrawerWidth,
     isResizing,
@@ -66,6 +68,37 @@ export function CopilotDrawer() {
     window.addEventListener("mouseup", onUp);
   };
 
+  const renderBody = () => {
+    if (status === "loading" && messages.length === 0) {
+      return (
+        <div
+          role="status"
+          aria-label="Loading conversation"
+          className="flex h-full items-center justify-center"
+        >
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+    if (status === "error" && messages.length === 0) {
+      return (
+        <div
+          role="alert"
+          className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center"
+        >
+          <AlertCircle className="h-6 w-6 text-destructive" />
+          <p className="text-sm text-muted-foreground">
+            Couldn&apos;t reach the copilot service. Close and reopen to try again.
+          </p>
+        </div>
+      );
+    }
+    if (messages.length === 0) {
+      return <CopilotEmptyState />;
+    }
+    return <CopilotMessages />;
+  };
+
   return (
     <AnimatePresence>
       {open ? (
@@ -91,9 +124,7 @@ export function CopilotDrawer() {
             )}
           />
           <CopilotHeader />
-          <div className="flex-1 overflow-y-auto">
-            {messages.length === 0 ? <CopilotEmptyState /> : <CopilotMessages />}
-          </div>
+          <div className="flex-1 overflow-y-auto">{renderBody()}</div>
           <CopilotComposer />
         </motion.aside>
       ) : null}

@@ -12,4 +12,7 @@ export const apiConfig = {
   intelligenceBaseUrl:
     process.env.NEXT_PUBLIC_INTELLIGENCE_API_URL ?? "http://localhost:8001",
   intelligenceApiPath: "/intelligence/v1",
+  copilotBaseUrl:
+    process.env.NEXT_PUBLIC_COPILOT_API_URL ?? "http://localhost:8003",
+  copilotApiPath: "/rfq-copilot/v1",
 } as const;

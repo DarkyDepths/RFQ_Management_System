@@ -3,17 +3,18 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useReducer,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 
-import { MOCK_REPLY_DELAY_MS, generateMockReply } from "@/lib/copilot-mock";
+import {
+  createNewThread,
+  openThread,
+  sendTurn,
+} from "@/connectors/copilot/threads";
 import type { CopilotMessage, CopilotMode, CopilotStatus } from "@/types/copilot";
-
-const STORAGE_KEY = "copilot:state:v1";
 
 export const DEFAULT_DRAWER_WIDTH = 420;
 export const MIN_DRAWER_WIDTH = 360;
@@ -28,20 +29,20 @@ interface CopilotState {
   input: string;
 }
 
-interface PersistedCopilotState {
-  mode: CopilotMode;
-  threadId: string | null;
-  messages: CopilotMessage[];
-}
-
 type CopilotAction =
-  | { type: "OPEN"; mode: CopilotMode }
+  | { type: "OPEN"; mode: CopilotMode; needsFetch: boolean }
   | { type: "CLOSE" }
   | { type: "NEW_CHAT" }
   | { type: "SET_INPUT"; value: string }
   | { type: "SEND_USER_MESSAGE"; message: CopilotMessage }
   | { type: "RECEIVE_ASSISTANT"; message: CopilotMessage }
-  | { type: "HYDRATE"; payload: PersistedCopilotState };
+  | { type: "SET_THREAD_ID"; threadId: string }
+  | {
+      type: "BACKEND_OPEN_OK";
+      threadId: string;
+      messages: CopilotMessage[];
+    }
+  | { type: "BACKEND_ERROR" };
 
 const DEFAULT_MODE: CopilotMode = { kind: "general" };
 
@@ -64,16 +65,28 @@ function modesEqual(a: CopilotMode, b: CopilotMode): boolean {
 
 function reducer(state: CopilotState, action: CopilotAction): CopilotState {
   switch (action.type) {
-    case "OPEN":
+    case "OPEN": {
+      // Already open in this exact mode — no-op.
       if (state.open && modesEqual(state.mode, action.mode)) {
         return state;
       }
-      // Mode change (or first open in a new mode) discards the prior conversation.
-      // Multi-thread caching is intentionally deferred to the backend (Batch 3+).
+      // Mode change discards any prior in-memory conversation. Multi-thread
+      // caching is the backend ThreadController's job.
       if (!modesEqual(state.mode, action.mode)) {
-        return { ...INITIAL_STATE, open: true, mode: action.mode };
+        return {
+          ...INITIAL_STATE,
+          open: true,
+          mode: action.mode,
+          status: action.needsFetch ? "loading" : "idle",
+        };
       }
-      return { ...state, open: true };
+      // Same mode reopen from closed.
+      return {
+        ...state,
+        open: true,
+        status: action.needsFetch ? "loading" : state.status,
+      };
+    }
     case "CLOSE":
       return { ...state, open: false };
     case "NEW_CHAT":
@@ -88,7 +101,6 @@ function reducer(state: CopilotState, action: CopilotAction): CopilotState {
       return {
         ...state,
         messages: [...state.messages, action.message],
-        threadId: state.threadId ?? crypto.randomUUID(),
         status: "loading",
         input: "",
       };
@@ -98,46 +110,19 @@ function reducer(state: CopilotState, action: CopilotAction): CopilotState {
         messages: [...state.messages, action.message],
         status: "idle",
       };
-    case "HYDRATE":
+    case "SET_THREAD_ID":
+      return { ...state, threadId: action.threadId };
+    case "BACKEND_OPEN_OK":
       return {
         ...state,
-        mode: action.payload.mode,
-        threadId: action.payload.threadId,
-        messages: action.payload.messages,
+        threadId: action.threadId,
+        messages: action.messages,
+        status: "idle",
       };
+    case "BACKEND_ERROR":
+      return { ...state, status: "error" };
     default:
       return state;
-  }
-}
-
-function readPersisted(): PersistedCopilotState | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedCopilotState;
-    if (!parsed || typeof parsed !== "object") return null;
-    if (!parsed.mode || (parsed.mode.kind !== "general" && parsed.mode.kind !== "rfq_bound")) {
-      return null;
-    }
-    if (!Array.isArray(parsed.messages)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writePersisted(state: CopilotState): void {
-  if (typeof window === "undefined") return;
-  try {
-    const payload: PersistedCopilotState = {
-      mode: state.mode,
-      threadId: state.threadId,
-      messages: state.messages,
-    };
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    // sessionStorage can fail in private browsing or when quota is hit; silently ignore.
   }
 }
 
@@ -159,54 +144,52 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [drawerWidth, setDrawerWidthState] = useState(DEFAULT_DRAWER_WIDTH);
   const [isResizing, setResizing] = useState(false);
-  const pendingReplyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hydratedRef = useRef(false);
+
+  // Stale-response guard: every async op gets a token; older tokens drop their
+  // result. Prevents an in-flight /threads/open response from a previous mode
+  // overwriting state after the user has switched mode mid-fetch.
+  const fetchTokenRef = useRef(0);
 
   const setDrawerWidth = (next: number) => {
     const clamped = Math.min(MAX_DRAWER_WIDTH, Math.max(MIN_DRAWER_WIDTH, next));
     setDrawerWidthState(clamped);
   };
 
-  // Hydrate from sessionStorage after mount to avoid SSR/CSR divergence.
-  useEffect(() => {
-    const persisted = readPersisted();
-    if (persisted) {
-      dispatch({ type: "HYDRATE", payload: persisted });
-    }
-    hydratedRef.current = true;
-  }, []);
-
-  // Persist mode/threadId/messages on change. Drawer open/closed and input are deliberately not persisted.
-  useEffect(() => {
-    if (!hydratedRef.current) return;
-    writePersisted(state);
-  }, [state.mode, state.threadId, state.messages]);
-
-  // Cancel any in-flight mock reply on unmount.
-  useEffect(() => {
-    return () => {
-      if (pendingReplyRef.current) clearTimeout(pendingReplyRef.current);
-    };
-  }, []);
-
-  const cancelPendingReply = () => {
-    if (pendingReplyRef.current) {
-      clearTimeout(pendingReplyRef.current);
-      pendingReplyRef.current = null;
-    }
-  };
-
   const openCopilot = (mode: CopilotMode) => {
-    if (!modesEqual(state.mode, mode)) {
-      cancelPendingReply();
-    }
-    dispatch({ type: "OPEN", mode });
+    if (state.open && modesEqual(state.mode, mode)) return;
+
+    const isModeChange = !modesEqual(state.mode, mode);
+    const needsFetch = isModeChange || state.threadId === null;
+
+    dispatch({ type: "OPEN", mode, needsFetch });
+
+    if (!needsFetch) return;
+
+    const token = ++fetchTokenRef.current;
+    void (async () => {
+      try {
+        const result = await openThread(mode);
+        if (token !== fetchTokenRef.current) return;
+        dispatch({
+          type: "BACKEND_OPEN_OK",
+          threadId: result.threadId,
+          messages: result.messages,
+        });
+      } catch {
+        if (token !== fetchTokenRef.current) return;
+        dispatch({ type: "BACKEND_ERROR" });
+      }
+    })();
   };
 
   const closeCopilot = () => dispatch({ type: "CLOSE" });
 
   const newChat = () => {
-    cancelPendingReply();
+    if (state.status === "loading") return;
+    // Cancel any in-flight responses by bumping the token. Local state clears
+    // immediately; the next sendUserMessage will create a fresh thread on
+    // demand via /threads/new.
+    fetchTokenRef.current++;
     dispatch({ type: "NEW_CHAT" });
   };
 
@@ -217,8 +200,6 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     if (!trimmed) return;
     if (state.status === "loading") return;
 
-    cancelPendingReply();
-
     const userMessage: CopilotMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -228,11 +209,29 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SEND_USER_MESSAGE", message: userMessage });
 
     const modeAtSend = state.mode;
-    pendingReplyRef.current = setTimeout(() => {
-      const reply = generateMockReply(modeAtSend);
-      dispatch({ type: "RECEIVE_ASSISTANT", message: reply });
-      pendingReplyRef.current = null;
-    }, MOCK_REPLY_DELAY_MS);
+    let threadId = state.threadId;
+    const token = ++fetchTokenRef.current;
+
+    void (async () => {
+      try {
+        if (threadId === null) {
+          const newResult = await createNewThread(modeAtSend);
+          if (token !== fetchTokenRef.current) return;
+          threadId = newResult.threadId;
+          dispatch({ type: "SET_THREAD_ID", threadId });
+        }
+
+        const turnResult = await sendTurn(threadId, trimmed);
+        if (token !== fetchTokenRef.current) return;
+        dispatch({
+          type: "RECEIVE_ASSISTANT",
+          message: turnResult.assistantMessage,
+        });
+      } catch {
+        if (token !== fetchTokenRef.current) return;
+        dispatch({ type: "BACKEND_ERROR" });
+      }
+    })();
   };
 
   const value: CopilotContextValue = {

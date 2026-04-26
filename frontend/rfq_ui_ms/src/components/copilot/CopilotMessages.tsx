@@ -41,6 +41,14 @@ export function CopilotMessages() {
           <TypingDots />
         </li>
       ) : null}
+      {status === "error" ? (
+        <li
+          role="alert"
+          className="max-w-[85%] self-start rounded-2xl rounded-bl-sm border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          Couldn&apos;t reach the copilot service. Try again.
+        </li>
+      ) : null}
       <div ref={endRef} />
     </ul>
   );

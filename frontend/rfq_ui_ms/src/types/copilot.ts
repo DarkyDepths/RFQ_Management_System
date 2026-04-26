@@ -1,3 +1,5 @@
+// ── Domain types (camelCase) — what components and context see ──────────────
+
 export type CopilotMode =
   | { kind: "general" }
   | { kind: "rfq_bound"; rfqId: string; rfqLabel: string };
@@ -18,34 +20,34 @@ export interface CopilotThread {
   messages: CopilotMessage[];
 }
 
-// Wire DTOs — frozen now to mirror the eventual backend (snake_case = Python defaults).
-// A translator layer will map these to/from the camelCase domain types above when
-// Batch 3 wires real fetch calls.
-
-export interface OpenThreadRequest {
-  mode: CopilotMode;
-}
-
-export interface OpenThreadResponse {
-  thread_id: string;
-  messages: CopilotMessage[];
-}
-
-export interface NewThreadRequest {
-  mode: CopilotMode;
-}
-
-export interface NewThreadResponse {
-  thread_id: string;
-}
-
-export interface TurnRequest {
-  user_message: string;
-}
-
-export interface TurnResponse {
-  message_id: string;
-  assistant_message: CopilotMessage;
-}
-
 export type CopilotStatus = "idle" | "loading" | "error";
+
+// ── Wire types (snake_case) — exact match to backend Pydantic output ────────
+//
+// The connector layer (src/connectors/copilot/threads.ts) owns all wire <-> domain
+// mapping. Components and context never see snake_case fields.
+
+export type WireMode =
+  | { kind: "general" }
+  | { kind: "rfq_bound"; rfq_id: string; rfq_label: string };
+
+export interface WireMessage {
+  id: string;
+  role: CopilotMessageRole;
+  content: string;
+  created_at: string;
+}
+
+export interface WireOpenThreadResponse {
+  thread_id: string;
+  messages: WireMessage[];
+}
+
+export interface WireNewThreadResponse {
+  thread_id: string;
+}
+
+export interface WireTurnResponse {
+  message_id: string;
+  assistant_message: WireMessage;
+}
