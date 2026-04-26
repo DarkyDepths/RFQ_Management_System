@@ -1,1 +1,30 @@
-"""TurnRequest, TurnResponse, TurnExecutionPlan, EscalationEvent models. The TurnExecutionPlan is emitted by the Planner and declares which stages run. EscalationEvent carries inherited context per I5 (resolved target, access verdict, evidence carry-over) when stage failures route to a Path 8.x sub-case via the escalation_gate."""
+"""Turn Pydantic models — wire shapes for the turn endpoint.
+
+Snake_case throughout to match the wire contract pinned in
+frontend/rfq_ui_ms/src/types/copilot.ts (WireMessage / WireTurnResponse).
+The frontend connector normalizes wire <-> domain (camelCase).
+"""
+
+from datetime import datetime
+from typing import Literal
+
+from pydantic import BaseModel
+
+
+MessageRole = Literal["user", "assistant"]
+
+
+class MessageView(BaseModel):
+    id: str
+    role: MessageRole
+    content: str
+    created_at: datetime
+
+
+class TurnRequest(BaseModel):
+    user_message: str
+
+
+class TurnResponse(BaseModel):
+    message_id: str  # ID of the user message that was just persisted.
+    assistant_message: MessageView
