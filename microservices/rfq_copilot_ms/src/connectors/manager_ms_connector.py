@@ -19,7 +19,12 @@ import httpx
 
 from src.config.settings import settings
 from src.models.actor import Actor
-from src.models.manager_dto import ManagerRfqDetailDto, ManagerRfqStageDto
+from src.models.manager_dto import (
+    ManagerPortfolioStatsDto,
+    ManagerRfqDetailDto,
+    ManagerRfqListItemDto,
+    ManagerRfqStageDto,
+)
 from src.utils.errors import ManagerUnreachable, RfqNotFound
 
 
@@ -61,13 +66,58 @@ class ManagerConnector:
                 f"Manager returned an unparseable stages payload: {exc}"
             ) from exc
 
+    # ── General-mode (portfolio) endpoints ──────────────────────────────────
+
+    def get_portfolio_stats(self, actor: Actor) -> ManagerPortfolioStatsDto:
+        url = self._url("/rfqs/stats")
+        response = self._get(url, actor)
+        self._raise_for_unexpected(response, context=f"GET {url}")
+        try:
+            return ManagerPortfolioStatsDto.model_validate(response.json())
+        except Exception as exc:
+            raise ManagerUnreachable(
+                f"Manager returned an unparseable stats payload: {exc}"
+            ) from exc
+
+    def list_rfqs(
+        self,
+        actor: Actor,
+        size: int = 20,
+        sort: str = "deadline",
+        statuses: list[str] | None = None,
+    ) -> list[ManagerRfqListItemDto]:
+        # Bound size defensively (manager caps at 100 anyway).
+        bounded_size = max(1, min(size, 100))
+        url = self._url("/rfqs")
+        params: dict[str, object] = {"size": bounded_size, "sort": sort}
+        if statuses:
+            params["status"] = statuses  # httpx renders list as repeated query param
+        response = self._get(url, actor, params=params)
+        self._raise_for_unexpected(response, context=f"GET {url}")
+        try:
+            payload = response.json()
+            data = payload.get("data", []) if isinstance(payload, dict) else []
+            return [ManagerRfqListItemDto.model_validate(item) for item in data]
+        except Exception as exc:
+            raise ManagerUnreachable(
+                f"Manager returned an unparseable rfqs list payload: {exc}"
+            ) from exc
+
+    # ── Internals ───────────────────────────────────────────────────────────
+
     def _url(self, path: str) -> str:
         return f"{self._base_url}{_MANAGER_API_PATH}{path}"
 
-    def _get(self, url: str, actor: Actor) -> httpx.Response:
+    def _get(
+        self,
+        url: str,
+        actor: Actor,
+        params: dict[str, object] | None = None,
+    ) -> httpx.Response:
         try:
             return httpx.get(
                 url,
+                params=params,
                 headers=self._actor_headers(actor),
                 timeout=self._timeout,
             )

@@ -1,11 +1,11 @@
-"""Manager translator — formats manager DTOs into the RFQ DATA section of the LLM prompt.
+"""Manager translator — formats manager DTOs into prompt context sections.
 
-Pure function. No side effects. Renders only the approved fields per the
-Batch 4 / 4.1 spec; deliberately strips internal IDs, audit metadata,
-notes, files, subtasks. Absent fields render as the literal string
-"not recorded" so the LLM cannot silently skip them. Truly optional
-fields (industry, country) are omitted entirely when null to reduce
-prompt noise.
+Pure functions. No side effects. Renders only approved fields per the
+Batch 4 / 4.1 / 4.2 spec; deliberately strips internal IDs, audit
+metadata, notes, files, subtasks. Absent fields render as the literal
+string "not recorded" so the LLM cannot silently skip them. Truly
+optional context fields (industry, country) are omitted entirely when
+null to reduce prompt noise.
 """
 
 from __future__ import annotations
@@ -13,7 +13,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from src.models.manager_dto import ManagerRfqDetailDto, ManagerRfqStageDto
+from src.models.manager_dto import (
+    ManagerPortfolioStatsDto,
+    ManagerRfqDetailDto,
+    ManagerRfqListItemDto,
+    ManagerRfqStageDto,
+)
+
+
+# ── RFQ-bound mode (single RFQ context) ─────────────────────────────────────
 
 
 def format_rfq_for_prompt(
@@ -21,7 +29,7 @@ def format_rfq_for_prompt(
     current_stage: ManagerRfqStageDto | None,
     all_stages: Optional[list[ManagerRfqStageDto]] = None,
 ) -> str:
-    """Render the RFQ DATA section. See module docstring for rules."""
+    """Render the RFQ DATA section for rfq_bound mode."""
     description = (detail.description or "").strip() or "not recorded"
 
     lines = [
@@ -37,7 +45,6 @@ def format_rfq_for_prompt(
         f"Workflow: {detail.workflow_name or 'not recorded'}",
     ]
 
-    # Optional context fields — skip entirely when null to keep prompt tight.
     if detail.industry:
         lines.append(f"Industry: {detail.industry}")
     if detail.country:
@@ -52,14 +59,68 @@ def format_rfq_for_prompt(
         f"Blocker: {_format_blocker(current_stage)}",
     ])
 
-    # Full stage list (Batch 4.1) — name + status only, one line each.
-    # Cheap context that lets the LLM answer "what stages?" / "how many done?".
     if all_stages:
         lines.append("Stages:")
         for stage in sorted(all_stages, key=lambda s: s.order):
             lines.append(f"  {stage.order}. {stage.name} ({stage.status})")
 
     return "\n".join(lines)
+
+
+# ── General mode (portfolio context) ────────────────────────────────────────
+
+
+def format_portfolio_for_prompt(
+    stats: ManagerPortfolioStatsDto,
+    rfqs: list[ManagerRfqListItemDto],
+) -> str:
+    """Render the PORTFOLIO DATA section for general mode."""
+    lines = [
+        "[PORTFOLIO STATS]",
+        f"Total RFQs (last 12 months): {stats.total_rfqs_12m}",
+        f"Open RFQs: {stats.open_rfqs}",
+        f"Critical RFQs: {stats.critical_rfqs}",
+        f"Average cycle days: {stats.avg_cycle_days}",
+    ]
+
+    if not rfqs:
+        lines.extend(["", "[RFQs] none returned"])
+        return "\n".join(lines)
+
+    lines.extend(["", f"[RFQs (top {len(rfqs)} by deadline ascending)]"])
+    for index, rfq in enumerate(rfqs, start=1):
+        lines.append(_format_rfq_list_item(index, rfq))
+    return "\n".join(lines)
+
+
+def _format_rfq_list_item(index: int, rfq: ManagerRfqListItemDto) -> str:
+    code = rfq.rfq_code or "no-code"
+    blocker = _format_list_blocker(
+        rfq.current_stage_blocker_status,
+        rfq.current_stage_blocker_reason_code,
+    )
+    stage = rfq.current_stage_name or "unknown"
+    return (
+        f'{index}. [{code}] "{rfq.name}" '
+        f"| client={rfq.client} | owner={rfq.owner} "
+        f"| deadline={rfq.deadline.isoformat()} "
+        f"| stage={stage} | status={rfq.status} "
+        f"| priority={rfq.priority} | blocker={blocker}"
+    )
+
+
+def _format_list_blocker(
+    blocker_status: Optional[str],
+    reason_code: Optional[str],
+) -> str:
+    if blocker_status == "Blocked":
+        return f"ACTIVE ({reason_code or 'no reason'})"
+    if blocker_status == "Resolved":
+        return "resolved"
+    return "none"
+
+
+# ── Shared helpers ──────────────────────────────────────────────────────────
 
 
 def _format_artifact(available: bool, updated_at: Optional[datetime]) -> str:

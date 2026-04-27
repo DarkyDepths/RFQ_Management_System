@@ -13,6 +13,7 @@ from src.database import get_session
 from src.datasources.audit_log_datasource import AuditLogDatasource
 from src.datasources.thread_datasource import ThreadDatasource
 from src.datasources.turn_datasource import TurnDatasource
+from src.services.portfolio_grounded_reply import PortfolioGroundedReplyService
 from src.services.rfq_grounded_reply import RfqGroundedReplyService
 
 
@@ -21,6 +22,7 @@ from src.services.rfq_grounded_reply import RfqGroundedReplyService
 _manager_connector: ManagerConnector | None = None
 _llm_connector: LlmConnector | None = None
 _grounded_reply_service: RfqGroundedReplyService | None = None
+_portfolio_reply_service: PortfolioGroundedReplyService | None = None
 
 
 def get_manager_connector() -> ManagerConnector:
@@ -45,6 +47,16 @@ def get_grounded_reply_service() -> RfqGroundedReplyService:
             llm_connector=get_llm_connector(),
         )
     return _grounded_reply_service
+
+
+def get_portfolio_reply_service() -> PortfolioGroundedReplyService:
+    global _portfolio_reply_service
+    if _portfolio_reply_service is None:
+        _portfolio_reply_service = PortfolioGroundedReplyService(
+            manager_connector=get_manager_connector(),
+            llm_connector=get_llm_connector(),
+        )
+    return _portfolio_reply_service
 
 
 # ── Per-request providers ────────────────────────────────────────────────────
@@ -76,5 +88,13 @@ def get_turn_controller(
     audit_ds: AuditLogDatasource = Depends(get_audit_log_datasource),
     db: Session = Depends(get_session),
     grounded_service: RfqGroundedReplyService = Depends(get_grounded_reply_service),
+    portfolio_service: PortfolioGroundedReplyService = Depends(get_portfolio_reply_service),
 ) -> TurnController:
-    return TurnController(thread_ds, turn_ds, audit_ds, db, grounded_service)
+    return TurnController(
+        thread_ds,
+        turn_ds,
+        audit_ds,
+        db,
+        grounded_service,
+        portfolio_service,
+    )

@@ -53,3 +53,36 @@ class ManagerRfqStageDto(BaseModel):
     status: str
     blocker_status: Optional[str] = None
     blocker_reason_code: Optional[str] = None
+
+
+# ── General-mode (portfolio) DTOs ────────────────────────────────────────────
+
+
+class ManagerPortfolioStatsDto(BaseModel):
+    """Subset of manager's RfqStats consumed by Batch 4.2 portfolio grounding."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    total_rfqs_12m: int
+    open_rfqs: int
+    critical_rfqs: int
+    avg_cycle_days: int
+
+
+class ManagerRfqListItemDto(BaseModel):
+    """Subset of manager's RfqSummary for the /rfqs list grounding context."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    id: UUID
+    rfq_code: Optional[str] = None
+    name: str
+    client: str
+    country: Optional[str] = None
+    owner: str
+    priority: str
+    status: str
+    deadline: date
+    current_stage_name: Optional[str] = None
+    current_stage_blocker_status: Optional[str] = None
+    current_stage_blocker_reason_code: Optional[str] = None
