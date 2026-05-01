@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RFQ Copilot — Architecture v4 (trust-boundary)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  padding: 40px 32px;
+  min-height: 100vh;
+}
+
+.header-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #7d8590; margin-bottom: 6px;
+}
+.header-title {
+  font-size: 28px; font-weight: 700; color: #e6edf3; margin-bottom: 6px;
+}
+.header-sub {
+  font-size: 14px; color: #8b949e; margin-bottom: 8px; line-height: 1.6;
+}
+.header-meta {
+  font-size: 12px; color: #7d8590; margin-bottom: 24px;
+  padding: 10px 14px; background: #161b22; border-left: 3px solid #1D9E75;
+  border-radius: 6px; line-height: 1.6;
+}
+.header-meta code {
+  font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+  color: #e3b341; background: #2d2208; padding: 1px 5px; border-radius: 3px;
+}
+
+.section-heading {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #7d8590;
+  margin: 40px 0 16px; padding-bottom: 8px;
+  border-bottom: 1px solid #21262d;
+}
+
+.callout {
+  margin: -8px 0 16px; padding: 12px 18px;
+  background: #1c1f3a; border-left: 3px solid #7c3aed;
+  border-radius: 6px; font-size: 13px; color: #c3b1ff; line-height: 1.6;
+}
+.callout code {
+  background: #0d1117; padding: 1px 6px; border-radius: 3px; color: #e3b341;
+  font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+}
+.callout.amber { background: #2d2208; border-left-color: #9e6a03; color: #e3b341; }
+
+.diagram-card {
+  background: #161b22; border: 1px solid #30363d;
+  border-radius: 14px; padding: 32px;
+  overflow-x: auto; margin-bottom: 16px;
+}
+.mermaid { display: flex; justify-content: center; }
+
+/* ── Trust-boundary legend ── */
+.trust-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 18px 22px; background: #161b22;
+  border: 1px solid #30363d; border-radius: 10px;
+  margin: 16px 0 24px;
+}
+.trust-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 12px; color: #8b949e; line-height: 1.5;
+}
+.trust-dot {
+  width: 14px; height: 14px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 2px;
+  border: 1px solid;
+}
+.trust-item .trust-name {
+  font-weight: 700; font-size: 12px; display: block; margin-bottom: 2px;
+}
+.trust-dot.code { background: #162032; border-color: #1f6feb; }
+.trust-item.code .trust-name { color: #79c0ff; }
+.trust-dot.llm { background: #1c1f3a; border-color: #7c3aed; }
+.trust-item.llm .trust-name { color: #c3b1ff; }
+.trust-dot.external { background: #0f3328; border-color: #1D9E75; }
+.trust-item.external .trust-name { color: #56d364; }
+.trust-dot.persistence { background: #2d2208; border-color: #9e6a03; }
+.trust-item.persistence .trust-name { color: #e3b341; }
+.trust-dot.gate { background: #3a1515; border-color: #da3633; }
+.trust-item.gate .trust-name { color: #ff7b72; }
+.trust-dot.registry { background: #1f1240; border-color: #a371f7; }
+.trust-item.registry .trust-name { color: #d2a8ff; }
+
+/* ── Tables ── */
+.table-card {
+  background: #161b22; border: 1px solid #30363d;
+  border-radius: 10px; padding: 0; margin-bottom: 16px;
+  overflow: hidden;
+}
+table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+table thead th {
+  background: #1c2128; color: #7d8590;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 10px 14px; text-align: left;
+  border-bottom: 1px solid #30363d;
+}
+table tbody td {
+  padding: 10px 14px; color: #c9d1d9;
+  border-bottom: 1px solid #21262d;
+}
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #1a1f26; }
+table code {
+  font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+  color: #e3b341; background: #2d2208; padding: 1px 5px; border-radius: 3px;
+}
+
+/* ── Path blocks (per-path traces) ── */
+.path-block {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 18px;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+.path-block.lane-conversational { border-left-color: #56d364; }
+.path-block.lane-knowledge      { border-left-color: #56d364; }
+.path-block.lane-portfolio      { border-left-color: #79c0ff; }
+.path-block.lane-operational    { border-left-color: #79c0ff; }
+.path-block.lane-intelligence   { border-left-color: #79c0ff; }
+.path-block.lane-cross          { border-left-color: #79c0ff; }
+.path-block.lane-comparison     { border-left-color: #ff9a7b; }
+.path-block.lane-protected      { border-left-color: #ff7b72; }
+
+.path-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 4px;
+}
+.lane-conversational .path-title,
+.lane-knowledge      .path-title { color: #56d364; }
+.lane-portfolio      .path-title,
+.lane-operational    .path-title,
+.lane-intelligence   .path-title,
+.lane-cross          .path-title { color: #79c0ff; }
+.lane-comparison     .path-title { color: #ff9a7b; }
+.lane-protected      .path-title { color: #ff7b72; }
+
+.path-sub {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: #7d8590;
+  margin-bottom: 14px;
+}
+.path-block .diagram-card { padding: 18px; margin-bottom: 0; }
+.path-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #21262d;
+  font-size: 12px;
+}
+.path-meta div { color: #8b949e; line-height: 1.5; }
+.path-meta strong { color: #c9d1d9; font-weight: 600; }
+.path-meta code {
+  font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+  color: #e3b341; background: #2d2208; padding: 1px 5px; border-radius: 3px;
+}
+.slice-pill {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px; letter-spacing: 0.06em;
+  text-transform: uppercase; margin-left: 8px; vertical-align: middle;
+}
+.slice-pill.slice-1 { background: #0f3328; color: #56d364; border: 1px solid #1D9E75; }
+.slice-pill.slice-2 { background: #162032; color: #79c0ff; border: 1px solid #1f6feb; }
+.slice-pill.slice-3 { background: #162032; color: #79c0ff; border: 1px solid #1f6feb; }
+.slice-pill.slice-4 { background: #162032; color: #79c0ff; border: 1px solid #1f6feb; }
+.slice-pill.slice-5 { background: #162032; color: #79c0ff; border: 1px solid #1f6feb; }
+.slice-pill.slice-6 { background: #3a1f0a; color: #ff9a7b; border: 1px solid #D85A30; }
+.slice-pill.slice-7 { background: #2d2208; color: #e3b341; border: 1px solid #9e6a03; }
+.slice-pill.foundation { background: #3a1515; color: #ff7b72; border: 1px solid #da3633; }
+
+/* ── Reference cards ── */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.ref-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 18px 20px;
+  border-left: 3px solid #7c3aed;
+}
+.ref-card .ref-title {
+  font-size: 13px; font-weight: 700; color: #c3b1ff;
+  margin-bottom: 10px; letter-spacing: 0.02em;
+}
+.ref-card ul { list-style: none; padding: 0; }
+.ref-card ul li {
+  font-size: 12px; color: #8b949e; line-height: 1.6;
+  padding: 4px 0; border-bottom: 1px solid #21262d;
+}
+.ref-card ul li:last-child { border-bottom: none; }
+.ref-card ul li code {
+  font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+  color: #e3b341; background: #2d2208; padding: 1px 5px; border-radius: 3px;
+}
+.ref-card.code-block { border-left-color: #1f6feb; }
+.ref-card.code-block .ref-title { color: #79c0ff; }
+.ref-card.llm-block { border-left-color: #7c3aed; }
+.ref-card.gate-block { border-left-color: #da3633; }
+.ref-card.gate-block .ref-title { color: #ff7b72; }
+.ref-card.registry-block { border-left-color: #a371f7; }
+.ref-card.registry-block .ref-title { color: #d2a8ff; }
+.ref-card.persistence-block { border-left-color: #9e6a03; }
+.ref-card.persistence-block .ref-title { color: #e3b341; }
+
+footer {
+  margin-top: 60px; padding-top: 24px;
+  border-top: 1px solid #21262d;
+  font-size: 12px; color: #7d8590; line-height: 1.7;
+}
+footer a { color: #79c0ff; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header-label">rfq_copilot_ms — v4 trust-boundary</div>
+<div class="header-title">Architecture v4 — Two intake sources, one plan factory, Path Registry</div>
+<div class="header-sub">
+  v4 supersedes v3. Every turn enters via one of <strong>two classification sources</strong>: a deterministic <strong>FastIntake</strong> (Stage 0, anchored full-match regex for greetings / thanks / farewells / empty / pure punctuation) or a <strong>GPT-4o Planner</strong> (everything else). Both feed a single <strong>ExecutionPlanFactory</strong>, the only code permitted to construct a <code>TurnExecutionPlan</code> (CI-enforced — §11.5). The PlannerValidator catches LLM-output structural failures only; all policy enforcement (allowed/forbidden fields, intent_topic existence, confidence threshold, Group C, query slots, alias normalization) lives in the factory. Failures route through a single <strong>Escalation Gate</strong> that re-enters the factory via <code>build_from_escalation</code>.
+</div>
+<div class="header-meta">
+  <strong>Frozen:</strong> 2026-04-27 · See <code>docs/11-Architecture_Frozen_v2.md</code> for the canonical specification this diagram renders.<br>
+  <strong>Supersedes:</strong> <code>rfq_copilot_architecture_v3.html</code>. The "deterministic + tiny LLM fallback" planner and the "Agent" tool stage are explicitly forbidden by the freeze.<br>
+  <strong>Trust-boundary mantra:</strong> <em>Two classification sources. One plan factory. One Escalation Gate. The LLM produces language; code produces truth; policy enforces boundaries; the Judge verifies; templates render the safe answer when nothing else worked.</em>
+</div>
+
+<!-- ═════════════════ SECTION 1 — TRUST BOUNDARY LEGEND ═════════════════ -->
+<div class="section-heading">Section 1 — Trust boundary legend (read this first)</div>
+
+<div class="callout">
+  Every block in every diagram is colored by <strong>who owns the decision it represents</strong>. If you can name the color, you know who's responsible. If a block looks the wrong color, that's a bug in the architecture, not a styling issue.
+</div>
+
+<div class="trust-legend">
+  <div class="trust-item code">
+    <div class="trust-dot code"></div>
+    <div>
+      <span class="trust-name">Code (deterministic)</span>
+      Pure functions, hard rules. <strong>FastIntake</strong> (Stage 0 anchored regex), <strong>PlannerValidator</strong> (LLM-output structural checks only — no Path Registry reads), <strong>ExecutionPlanFactory</strong> (the single <code>TurnExecutionPlan</code> constructor), Resolver, Access, Memory Load, Tool Executor, Evidence Check, Context Builder, Guardrails, Finalizer, Persist.
+    </div>
+  </div>
+  <div class="trust-item llm">
+    <div class="trust-dot llm"></div>
+    <div>
+      <span class="trust-name">LLM (GPT-4o, JSON-schema-enforced)</span>
+      Three roles only: Planner (classify intent — emits <code>PlannerProposal</code>), Compose (render answer), Judge (verify draft). Never picks tools, never decides access, never owns escalation. Runs only when FastIntake misses.
+    </div>
+  </div>
+  <div class="trust-item registry">
+    <div class="trust-dot registry"></div>
+    <div>
+      <span class="trust-name">Path Registry (config)</span>
+      Single source of policy truth. Owns: <code>allowed_intake_sources</code> (which classification source may emit each intent), allowed/forbidden tools and fields, field aliases, confidence thresholds, guardrails, judge triggers, memory policy, persistence policy, finalizer template keys. <strong>Read at runtime only by ExecutionPlanFactory and Escalation Gate</strong> — CI-enforced (§11.5.2).
+    </div>
+  </div>
+  <div class="trust-item gate">
+    <div class="trust-dot gate"></div>
+    <div>
+      <span class="trust-name">Escalation Gate (deterministic intercept)</span>
+      Single point that catches every stage's failure trigger and re-enters <code>ExecutionPlanFactory.build_from_escalation()</code> to construct the Path 8.x plan with a <code>reason_code</code>. Stages do not handle their own escalation. The Gate never instantiates <code>TurnExecutionPlan</code> directly.
+    </div>
+  </div>
+  <div class="trust-item external">
+    <div class="trust-dot external"></div>
+    <div>
+      <span class="trust-name">External services</span>
+      Azure OpenAI (LLM backend), rfq_manager_ms (operational truth), rfq_intelligence_ms (derived truth), Domain KB / RAG (bounded knowledge).
+    </div>
+  </div>
+  <div class="trust-item persistence">
+    <div class="trust-dot persistence"></div>
+    <div>
+      <span class="trust-name">Persistence</span>
+      threads, turns, audit_log, <strong>execution_records</strong> (forensics, partial-write, carries <code>intake_path</code> for FastIntake hit-rate analysis), session_state.
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════ SECTION 2 — 8 PATH OVERVIEW ═════════════════ -->
+<div class="section-heading">Section 2 — 8 Path overview (path-aware view)</div>
+
+<div class="callout">
+  v3 was readable because it gave you a per-path mental map. v4 keeps that — same 8 paths, redrawn with the freeze vocabulary: <code>PlannerProposal</code> → <code>PlannerValidator</code> → <code>ValidatedPlannerProposal</code> → <code>ExecutionPlanFactory</code> → <code>TurnExecutionPlan</code>, deterministic <code>Tool Executor</code> (never an Agent), <code>Escalation Gate</code> with <code>reason_code</code> at every failure edge. <strong>Path 1, 8.2, 8.3</strong> can also enter via <strong>FastIntake</strong> (Stage 0) directly to the factory, skipping the Planner LLM call. Stages omitted from a path are skipped at runtime — the engine is one canonical pipeline (Section 3), each path activates only what it needs.
+</div>
+
+<div class="callout amber">
+  <strong>Two universal conventions for the per-path diagrams below</strong> (to keep them readable):
+  <br>
+  <strong>1. <code>llm_unreachable</code> can fire at the Planner, Compose, OR Judge stage in any path that uses them.</strong> Routes to <code>8.5 llm_unavailable</code>. To avoid 3 redundant arrows per path, the per-path diagrams omit these — assume every path that calls an LLM has them implicitly.
+  <br>
+  <strong>2. Reclassification is Planner/Validator-only — never mid-pipeline.</strong> If the user's intent doesn't match the path being executed, that's caught by the Planner on the next turn (or by the Validator pre-execution), not by routing arrows out of mid-pipeline stages. The freeze forbids "user_asks_X mid-tool-execution → switch to Path Y" patterns.
+</div>
+
+<!-- ── Path 1 ── -->
+<div class="path-block lane-conversational">
+  <div class="path-title">Path 1 — Conversational <span class="slice-pill slice-2">Slice 2</span></div>
+  <div class="path-sub">Greetings · thanks · capability questions · no business data</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN[Planner]
+    PLAN -->|Proposal| VAL[Validator]
+    VAL -->|Plan| FIN["Finalizer<br/>template-first<br/>(Compose if nuance needed)"]
+    FIN --> PERSIST[Persist] --> OUT([answer])
+    PLAN -.out_of_scope.-> P82["→ 8.2 out_of_scope"]
+    PLAN -.non-conversational intent detected.-> RECLASS["→ reclassify<br/>(Path 2/3/4/5/6/7/8.3)"]
+    VAL -.validation rule failure.-> P8V1["→ 8.1 unsupported_intent<br/>or 8.3 unclear / low_confidence<br/>(validator §2.3)"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style P82       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P8V1      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style RECLASS   fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Active stages:</strong> Planner · Validator · Finalizer · Persist (optionally Compose)</div>
+    <div><strong>Skipped:</strong> Resolver · Access · Memory Load · Tool Executor · Evidence Check · Context Builder · Guardrails · Judge</div>
+    <div><strong>Evidence source:</strong> none · ∅ tools</div>
+    <div><strong>Escalations:</strong> <code>out_of_scope_detected_by_planner</code> → 8.2</div>
+    <div><strong>Token budget:</strong> ~300 in+out</div>
+  </div>
+</div>
+
+<!-- ── Path 2 ── -->
+<div class="path-block lane-knowledge">
+  <div class="path-title">Path 2 — Controlled domain knowledge + optional RAG enrichment <span class="slice-pill slice-7">Slice 7</span></div>
+  <div class="path-sub">In-domain general questions (PWHT, ASME, methodology) · GPT-4o under controlled prompt · RAG enriches when available</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN["Planner<br/>+ domain boundary check"]
+    PLAN -->|in-domain Proposal| VAL[Validator] -->|Plan| MEM[Memory Load]
+    MEM --> TOOL["Tool Executor<br/>query_rag<br/>(optional)"]
+    TOOL --> RAGQ{"RAG useful /<br/>relevant?"}
+    RAGQ -->|yes| CTX_R["Context Builder<br/>+ controlled domain prompt<br/>+ RAG passages"]
+    RAGQ -->|weak / irrelevant / zero| CTX_NR["Context Builder<br/>+ controlled domain prompt<br/>(no RAG)"]
+    CTX_R --> COMP[Compose]
+    CTX_NR --> COMP
+    COMP --> GRD["Guardrails<br/>scope · evidence · shape"]
+    GRD --> JUDGE["Judge<br/>+ unsourced_citation"]
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+
+    PLAN -.outside domain.-> P82["→ 8.2 out_of_scope"]
+    PLAN -.RFQ-specific intent detected.-> RECLASS["→ reclassify Path 4/5/6/7"]
+    VAL -.validation rule failure.-> P8V2["→ 8.1 unsupported_intent<br/>or 8.3 unclear / low_confidence<br/>(validator §2.3)"]
+    JUDGE -.answer_makes_specific_citation<br/>_without_evidence.-> P85U["→ 8.5 unsourced_citation"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RAGQ      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX_R     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX_NR    fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style P82       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85U      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P8V2      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style RECLASS   fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> GPT-4o controlled domain prompt (primary) · Domain KB / RAG (optional enrichment)</div>
+    <div><strong>Tools (registry):</strong> <code>query_rag</code> with <code>rag_required=False</code></div>
+    <div><strong>Domain boundary check:</strong> at Planner — outside domain → 8.2 immediately. Inside domain → may answer.</div>
+    <div><strong>RAG behavior:</strong> strong passages enrich the prompt; weak/zero passages are ignored, NOT auto-escalated</div>
+    <div><strong>Special Judge trigger:</strong> <code>answer_makes_specific_citation_without_evidence</code> → 8.5 <code>judge_verdict_unsourced_citation</code> (specific paragraph numbers / norm references require RAG)</div>
+    <div><strong>Controlled Domain Prompt:</strong> real artifact in the codebase, declares allowed statement classes (definitions, methodology, general concepts) and forbidden ones (specific citations, project facts, readiness/risk/compliance judgments, client-specific platform facts)</div>
+    <div><strong>RFQ-specific reclassification:</strong> handled by Planner/Validator, NOT by Tool Executor</div>
+  </div>
+</div>
+
+<!-- ── Path 3 ── -->
+<div class="path-block lane-portfolio">
+  <div class="path-title">Path 3 — Portfolio retrieval <span class="slice-pill slice-3">Slice 3</span></div>
+  <div class="path-sub">Structured portfolio query · Validator enforces required slots BEFORE Tool Executor · presentation_policy handles result size</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN["Planner<br/>emits filters · output_shape<br/>· sort · limit"]
+    PLAN -->|"Proposal<br/>(structured)"| VAL["Validator<br/>+ required_query_slots check"]
+    VAL -->|Plan| MEM[Memory Load]
+    MEM --> TOOL["Tool Executor<br/>search_portfolio<br/>+ stats / analytics"]
+    TOOL --> RPOL["Result Policy<br/>presentation_policy:<br/>paginate / summarize / clarify"]
+    RPOL --> EVCHK[Evidence Check]
+    EVCHK --> CTX[Context Builder]
+    CTX --> COMP[Compose]
+    COMP --> GRD["Guardrails<br/>evidence · scope · shape"]
+    GRD --> JUDGE["Judge<br/>(if claim)"]
+    JUDGE --> FIN[Finalizer]
+    FIN --> PERSIST["Persist<br/>+ session_state.<br/>last_search_results"]
+    PERSIST --> OUT([answer])
+
+    VAL -.missing required filter / output_shape.-> P83P["→ 8.3 pre_search_<br/>query_underspecified<br/>(BEFORE Tool Executor)"]
+    RPOL -.too many AND no safe<br/>presentation policy.-> P83R["→ 8.3 post_search_<br/>no_safe_presentation"]
+    EVCHK -.zero results.-> P85N["→ 8.5 no_evidence"]
+    PLAN -.user picks one from list.-> SS["consume session_state.<br/>last_search_results<br/>e.g. 'the 3rd one' / 'the IF-0042 one'<br/>→ resolve to UUID"]
+    SS --> P4["→ Path 4"]
+    PLAN -.ranking / winner / win_probability.-> P81["→ 8.1 unsupported_intent"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RPOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:5 3
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style P83P      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83R      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85N      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P4        fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-dasharray:3 3
+    style SS        fill:#2d2208,stroke:#9e6a03,color:#e3b341,stroke-dasharray:3 3
+    style P81       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> rfq_manager_ms</div>
+    <div><strong>Tools (registry):</strong> <code>search_portfolio</code> · <code>get_portfolio_stats</code></div>
+    <div><strong>PlannerProposal extras:</strong> <code>filters</code> · <code>output_shape</code> · <code>sort</code> · <code>limit</code> (structured query slots)</div>
+    <div><strong>Path Registry adds:</strong> <code>required_query_slots</code> per intent · <code>presentation_policy</code> (default_sort, default_limit, on_too_many_strategy)</div>
+    <div><strong>Pre-search ambiguity</strong> ("show me RFQs" with no filters): Validator → 8.3 <code>pre_search_query_underspecified</code> BEFORE Tool Executor runs</div>
+    <div><strong>Post-search size handling:</strong> presentation_policy paginates / summarizes by default; only escalates to 8.3 <code>post_search_no_safe_presentation</code> if no safe strategy applies</div>
+    <div><strong>Well-formed queries</strong> like "all deadlines in active RFQs" do NOT escalate — they paginate</div>
+    <div><strong>Forbidden subset:</strong> ranking / winner / win_probability → 8.1 unless explicitly registered</div>
+    <div><strong>Persistence + reclassification:</strong> <code>session_state.last_search_results</code> stored for accessible RFQs only (I9: never expose inaccessible counts). Used deterministically to resolve follow-ups like "the 3rd one" or "the IF-0042 one" into Path 4 with a specific UUID — no LLM speculation.</div>
+  </div>
+</div>
+
+<!-- ── Path 4 ── -->
+<div class="path-block lane-operational">
+  <div class="path-title">Path 4 — RFQ operational retrieval <span class="slice-pill slice-1">Slice 1 · foundation</span></div>
+  <div class="path-sub">One RFQ · operational truth (deadline, owner, status, stages, blockers, reminders)</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN[Planner] -->|Proposal| VAL[Validator] -->|Plan| RES["Resolver<br/>page_default in RFQ-bound mode<br/>OR search by code"]
+    RES --> ACC["Access<br/>via manager_ms"]
+    ACC --> MEM[Memory Load]
+    MEM --> TOOL["Tool Executor<br/>get_rfq_profile<br/>get_rfq_stages"]
+    TOOL --> EVCHK[Evidence Check]
+    EVCHK --> CTX["Context Builder<br/>per-target labels"]
+    CTX --> COMP[Compose]
+    COMP --> GRD["Guardrails<br/>evidence · scope · shape"]
+    GRD --> JUDGE["Judge<br/>(if factual claim)"]
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+
+    VAL -.forbidden_field / unsupported_intent.-> P81V["→ 8.1 unsupported<br/>(e.g. requested margin /<br/>bid_amount)"]
+    VAL -.unclear / low_confidence /<br/>no_target_proposed.-> P83V["→ 8.3 clarification"]
+    RES -.target_resolution_failed.-> P83NT["→ 8.3 no_target"]
+    RES -.ambiguous_target_count_exceeded.-> P83A["→ 8.3 ambiguous"]
+    ACC -.access_denied_explicit.-> P84["→ 8.4 access_denied_explicit"]
+    EVCHK -.evidence_empty.-> P85N["→ 8.5 no_evidence"]
+    TOOL -.manager_unreachable.-> P85S["→ 8.5 source_unavailable"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:5 3
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style P81V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83NT     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83A      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P84       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85N      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85S      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> rfq_manager_ms</div>
+    <div><strong>Resolver tools:</strong> <code>search_portfolio_by_code</code> · <code>page_default</code></div>
+    <div><strong>Evidence tools:</strong> <code>get_rfq_profile</code> · <code>get_rfq_stages</code></div>
+    <div><strong>Status:</strong> demo-defining path. Ships first with full Path 8 safety net.</div>
+    <div><strong>Escalations cover</strong>: missing target · ambiguous · denied · empty · sources down · LLM down — each with distinct <code>reason_code</code></div>
+  </div>
+</div>
+
+<!-- ── Path 5 ── -->
+<div class="path-block lane-intelligence">
+  <div class="path-title">Path 5 — RFQ intelligence retrieval <span class="slice-pill slice-4">Slice 4</span></div>
+  <div class="path-sub">One RFQ · derived intelligence (briefing, snapshot, workbook review, artifacts catalog)</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN[Planner] -->|Proposal| VAL[Validator] -->|Plan| RES[Resolver]
+    RES --> ACC["Access<br/>via manager_ms (I6)"]
+    ACC --> MEM[Memory Load]
+    MEM --> TOOL["Tool Executor<br/>get_briefing<br/>get_snapshot<br/>get_workbook_review"]
+    TOOL --> EVCHK[Evidence Check]
+    EVCHK --> CTX[Context Builder]
+    CTX --> COMP[Compose]
+    COMP --> GRD["Guardrails<br/>evidence · scope · shape<br/>+ forbidden_inferences"]
+    GRD --> JUDGE["Judge<br/>+ answer_makes_<br/>forbidden_inference"]
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+
+    VAL -.forbidden_field / unsupported_intent.-> P81V["→ 8.1 unsupported<br/>(e.g. judgment-style intent)"]
+    VAL -.unclear / low_confidence /<br/>no_target_proposed.-> P83V["→ 8.3 clarification"]
+    RES -.target_resolution_failed.-> P83NT["→ 8.3 no_target"]
+    RES -.ambiguous_target_count_exceeded.-> P83A["→ 8.3 ambiguous"]
+    ACC -.access_denied_explicit.-> P84["→ 8.4 access_denied_explicit"]
+    EVCHK -.evidence_empty.-> P85N["→ 8.5 no_evidence"]
+    TOOL -.intelligence_unreachable.-> P85S["→ 8.5 source_unavailable"]
+    GRD -.deterministic forbidden_inference.-> P85GF["→ 8.5 forbidden_inference<br/>caught pre-Judge by pattern match<br/>(readiness / risk / compliance phrasings)"]
+    JUDGE -.judge_verdict_<br/>forbidden_inference.-> P85F["→ 8.5 forbidden_inference<br/>(caught by Judge)"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style P81V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83NT     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83A      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P84       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85N      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85S      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85GF     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85F      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> rfq_intelligence_ms (access policy via manager — I6)</div>
+    <div><strong>Tools (registry):</strong> <code>get_briefing</code> · <code>get_snapshot</code> · <code>get_workbook_review</code> · <code>get_artifacts_catalog</code></div>
+    <div><strong>Special guardrail:</strong> <code>forbidden_inferences</code> (no readiness/risk/judgment claims without artifact support)</div>
+    <div><strong>Special judge trigger:</strong> <code>answer_makes_forbidden_inference</code> → 8.5</div>
+  </div>
+</div>
+
+<!-- ── Path 6 ── -->
+<div class="path-block lane-cross">
+  <div class="path-title">Path 6 — Cross-RFQ reference <span class="slice-pill slice-5">Slice 5</span></div>
+  <div class="path-sub">Talking about RFQ A while the thread owner is RFQ B · I8 cross-target memory fan-out</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart TD
+    MSG([msg]) --> PLAN[Planner]
+    PLAN -->|"Proposal<br/>target ≠ thread owner"| VAL[Validator]
+    VAL -->|Plan| RES[Resolver]
+    RES --> ACC[Access]
+    ACC --> MEMW["I8 · Working Memory<br/>FROM owner thread"]
+    ACC --> MEME["I8 · Episodic Memory<br/>FROM current target<br/>(cross-RFQ)"]
+    MEMW --> TOOL[Tool Executor]
+    MEME --> TOOL
+    TOOL --> EVCHK[Evidence Check]
+    EVCHK --> CTX["Context Builder<br/>per-target labels<br/>[owner: ...] [cross: ...]"]
+    CTX --> COMP[Compose]
+    COMP --> GRD["Guardrails<br/>+ target_isolation"]
+    GRD --> JUDGE[Judge]
+    JUDGE --> FIN[Finalizer]
+    FIN --> PERSISTW["I8 · Persist turn<br/>TO owner thread"]
+    FIN --> PERSISTE["I8 · Episodic contribution<br/>TO current target"]
+    PERSISTW --> OUT([answer])
+    PERSISTE --> OUT
+
+    PLAN -.user_persists_on_cross.-> CTXSW["→ suggest context switch<br/>(NEVER automatic)"]
+    VAL -.forbidden_field / unsupported_intent.-> P81V["→ 8.1 unsupported"]
+    VAL -.unclear / low_confidence /<br/>no_target_proposed.-> P83V["→ 8.3 clarification"]
+    RES -.target_resolution_failed.-> P83NT["→ 8.3 no_target"]
+    RES -.ambiguous_target_count_exceeded.-> P83A["→ 8.3 ambiguous"]
+    ACC -.access_denied_explicit.-> P84["→ 8.4 access_denied_explicit"]
+    TOOL -.manager / intelligence_unreachable.-> P85S["→ 8.5 source_unavailable"]
+    EVCHK -.evidence_empty.-> P85N["→ 8.5 no_evidence"]
+    GRD -.target_isolation_violation.-> P85T["→ 8.5 target_isolation<br/>(cross-RFQ field leakage)"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEMW      fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style MEME      fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSISTW  fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style PERSISTE  fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style CTXSW     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff,stroke-dasharray:3 3
+    style P81V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83NT     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83A      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P84       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85S      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85N      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85T      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> manager_ms or intelligence_ms (depends on the asked-about subject)</div>
+    <div><strong>Key invariant:</strong> I8 — working memory follows the thread owner; episodic loaded for the current target. Per-target labels in the prompt.</div>
+    <div><strong>Persistence:</strong> turn persisted to thread owner; episodic to current target — no leakage.</div>
+  </div>
+</div>
+
+<!-- ── Path 7 ── -->
+<div class="path-block lane-comparison">
+  <div class="path-title">Path 7 — Comparison <span class="slice-pill slice-6">Slice 6 · hardest</span></div>
+  <div class="path-sub">≥2 RFQs in one ask · per-target evidence packets · target_isolation guardrail</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart LR
+    MSG([msg]) --> PLAN[Planner] -->|"Proposal<br/>target_candidates 2+"| VAL["PlannerValidator<br/>LLM-failure structural checks<br/>NO Group C / policy<br/>then ExecutionPlanFactory<br/>F7 Group C reject"]
+    VAL -->|Plan| RES["Resolver<br/>per-target loop"]
+    RES --> ACC["Access<br/>per-target verdict"]
+    ACC --> MEM[Memory Load]
+    MEM --> TOOL["Tool Executor<br/>per-target invocations"]
+    TOOL --> EVCHK[Evidence Check]
+    EVCHK --> CTX["Context Builder<br/>[target_A] field=...<br/>[target_B] field=..."]
+    CTX --> COMP[Compose]
+    COMP --> GRD["Guardrails<br/>+ target_isolation<br/>+ comparable_field (backup)"]
+    GRD --> JUDGE["Judge<br/>+ comparison_violation"]
+    JUDGE --> FIN[Finalizer] --> PERSIST[Persist] --> OUT([answer])
+
+    VAL -.comparison_missing_target.-> P83C["→ 8.3 comparison_missing_target<br/>(NEVER silently downgrade)"]
+    VAL -.group_C_field_requested.-> P81["→ 8.1 group_C_field_requested<br/>early ExecutionPlanFactory reject (rule F7)<br/>Guardrail = backup only"]
+    VAL -.unclear / low_confidence /<br/>unsupported_field.-> P83V["→ 8.3 / 8.1 clarification"]
+    RES -.target_resolution_failed.-> P83NT["→ 8.3 no_target"]
+    RES -.ambiguous_target_count_exceeded.-> P83A["→ 8.3 ambiguous"]
+    ACC -.only 1 accessible remains.-> P84P1["→ 8.4 partial<br/>(NO comparison —<br/>1 target ≠ comparison)"]
+    ACC -.2+ accessible from larger set.-> EXNOTE["compare accessible only<br/>+ exclusion note"]
+    EXNOTE --> MEM
+    TOOL -.manager / intelligence_unreachable.-> P85S["→ 8.5 source_unavailable"]
+    EVCHK -.evidence_empty.-> P85N["→ 8.5 no_evidence"]
+    GRD -.target_isolation_violation.-> P85V1["→ 8.5 comparison_violation<br/>(cross-target field leakage)"]
+    JUDGE -.comparison_violation.-> P85V["→ 8.5 comparison_violation<br/>(Judge backup)"]
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EXNOTE    fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-dasharray:3 3
+    style P83C      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83NT     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P83A      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P84P1     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P81       fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85S      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85N      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85V1     fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+    style P85V      fill:#3a1515,stroke:#da3633,color:#ff7b72,stroke-dasharray:3 3
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Evidence source:</strong> manager_ms and/or intelligence_ms — per-target packets built independently</div>
+    <div><strong>Group C ownership:</strong> <code>ExecutionPlanFactory</code> rule F7 (early reject) · post-compose <code>comparable_field_policy</code> guardrail is backup only</div>
+    <div><strong>Special guardrails:</strong> <code>target_isolation</code> (cross-target leakage) · <code>comparable_field_policy</code> (backup)</div>
+    <div><strong>Hard rule:</strong> &lt;2 targets → always 8.3 <code>comparison_missing_target</code> (the freeze forbids silent downgrade to Path 4)</div>
+    <div><strong>Status:</strong> highest hallucination risk — ships LAST after lessons from 4/5/6</div>
+  </div>
+</div>
+
+<!-- ── Path 8 ── -->
+<div class="path-block lane-protected">
+  <div class="path-title">Path 8 — Protected / non-answerable family <span class="slice-pill foundation">Slice 1 · foundation</span></div>
+  <div class="path-sub">Five sub-cases · entered via Escalation Gate from any path · template selected by reason_code</div>
+  <div class="diagram-card">
+  <div class="mermaid">
+flowchart TD
+    ANY["Any stage failure trigger<br/>(from any path 1–7)"] --> GATE{{"Escalation Gate<br/>builds minimal Path 8.x<br/>TurnExecutionPlan with<br/>finalizer_template_key<br/>resolved by reason_code"}}
+    PLANDIR["Planner direct semantic emission<br/>8.1 unsupported · 8.2 out_of_scope<br/>8.3 multi_intent_detected"] -.bypasses Gate · Validator pass-through.-> P81
+    PLANDIR -.bypasses Gate.-> P82
+    PLANDIR -.bypasses Gate.-> P83
+
+    GATE -->|"unsupported_intent<br/>unsupported_field_requested<br/>forbidden_field_requested<br/>invalid_planner_proposal"| P81["Path 8.1<br/>Unsupported"]
+    GATE -->|"out_of_scope<br/>judge_scope_drift"| P82["Path 8.2<br/>Out of scope"]
+    GATE -->|"unclear_intent_topic<br/>no_target_proposed<br/>comparison_missing_target<br/>ambiguous · low confidence"| P83["Path 8.3<br/>Clarification<br/>writes session_state.<br/>pending_clarification"]
+    GATE -->|"access_denied_explicit<br/>all_inaccessible<br/>partial"| P84["Path 8.4<br/>Inaccessible"]
+    GATE -->|"no_evidence<br/>source_unavailable<br/>llm_unavailable<br/>fabrication · forbidden_inference<br/>comparison_violation"| P85["Path 8.5<br/>No evidence /<br/>system unavailable"]
+
+    P81 --> FIN["Finalizer<br/>template[reason_code]"]
+    P82 --> FIN
+    P83 --> FIN
+    P84 --> FIN
+    P85 --> FIN
+    FIN --> PERSIST["Persist (FULL)<br/>turn · execution_record<br/>+ session_state if 8.3<br/>status=ESCALATED<br/>error_stage + error_trigger<br/>populated for forensics"]
+    PERSIST --> OUT([safe answer])
+
+    style ANY       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style PLANDIR   fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style OUT       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style GATE      fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P81       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P82       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P83       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P84       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P85       fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+  </div>
+  </div>
+  <div class="path-meta">
+    <div><strong>Entry (usual):</strong> from another path's failure trigger via Escalation Gate</div>
+    <div><strong>Entry (direct):</strong> Planner can emit <code>8.1</code> (clear unsupported intent), <code>8.2</code> (clear out-of-scope), or <code>8.3</code> (only when <code>multi_intent_detected=True</code> on the proposal) DIRECTLY in its proposal, bypassing the Gate. Validator passes through with the appropriate default <code>reason_code</code>. Direct emission of <code>8.4</code> or <code>8.5</code> is invalid — those failure classes can only come from a stage trigger via the Escalation Gate.</div>
+    <div><strong>Sub-cases:</strong> 8.1 unsupported · 8.2 out-of-scope · 8.3 clarification · 8.4 inaccessible · 8.5 no evidence / source down / LLM down / judge fail</div>
+    <div><strong>Template selection:</strong> <code>finalizer_template_keys[reason_code]</code> from Path Registry — same path, different message per failure class</div>
+    <div><strong>Path 8.3 specifically</strong> writes <code>session_state.pending_clarification</code> so the next turn can resolve the clarification deterministically (Planner consumes it on the next turn, no LLM speculation about what was meant)</div>
+    <div><strong>Status discipline:</strong> execution_record marked <code>ESCALATED</code> (NOT <code>FAILED</code>) — the safety net worked. <code>error_stage</code> and <code>error_trigger</code> are populated for forensics, independent of <code>status</code>.</div>
+    <div><strong>Persistence:</strong> Path 8 turns get FULL persistence — turn, execution_record, audit, session_state. Nothing is skipped just because the answer was a safe template.</div>
+  </div>
+</div>
+
+<!-- ═════════════════ SECTION 3 — CANONICAL PIPELINE ═════════════════ -->
+<div class="section-heading">Section 3 — Canonical pipeline (one-shot view)</div>
+
+<div class="callout">
+  Two intake sources, one factory, then 11 downstream stages. Read top to bottom. Most blocks are blue (deterministic / code). Three are purple (LLM): Planner, Compose, Judge. The purple blocks are bracketed by blue blocks on every side — that's the defense-in-depth story rendered visually. <strong>FastIntake (Stage 0)</strong> short-circuits trivial messages straight to the factory, skipping the Planner LLM call.
+</div>
+
+<div class="diagram-card">
+<div class="mermaid">
+flowchart TD
+    USER([User message])
+    OUT([Final answer])
+
+    USER --> FAST["0 · FastIntake<br/>code · anchored regex<br/>greetings · thanks · empty · nonsense"]
+    FAST -->|"hit IntakeDecision"| FACTORY["2.5 · ExecutionPlanFactory<br/>code · the ONLY plan constructor<br/>policy enforcement F1-F8"]
+    FAST -->|miss| PLAN["1 · Planner<br/>GPT-4o · JSON schema · temp 0"]
+    PLAN -->|"PlannerProposal<br/>(untrusted)"| VAL["2 · PlannerValidator<br/>code · LLM-failure checks only<br/>NO registry reads"]
+    VAL -->|"ValidatedPlannerProposal"| FACTORY
+    FACTORY -->|"TurnExecutionPlan<br/>(trusted)"| RES["3 · Resolver<br/>code · per-path strategy"]
+    RES --> ACC["4 · Access<br/>code · via manager_ms"]
+    ACC --> MEM["5 · Memory Load<br/>code · working + episodic"]
+    MEM --> TOOL["6 · Tool Executor<br/>code · deterministic invocation"]
+    TOOL --> EVCHK["7 · Evidence Check<br/>code · gate"]
+    EVCHK --> CTX["8 · Context Builder<br/>code · per-target labels"]
+    CTX --> COMP["9 · Compose<br/>GPT-4o · evidence + history"]
+    COMP --> GRD["10 · Guardrails<br/>code · multiple, sequential"]
+    GRD --> JUDGE["11 · Judge<br/>GPT-4o · JSON schema"]
+    JUDGE --> FIN["12 · Finalizer<br/>code · template by reason_code"]
+    FIN --> PERSIST["13 · Persist<br/>code · per-path policy"]
+    PERSIST --> OUT
+
+    PR[("Path Registry<br/>policy: allowed_intake_sources · tools · fields · aliases<br/>guardrails · judge · memory · persistence · templates")]
+    GATE{{"Escalation Gate<br/>single intercept<br/>re-enters factory with EscalationRequest"}}
+    P8["Path 8.x<br/>8.1 unsupported · 8.2 out-of-scope<br/>8.3 clarification · 8.4 inaccessible · 8.5 no-evidence"]
+
+    PR -.read by factory.-> FACTORY
+    PR -.read on escalation.-> GATE
+    FACTORY -.copies policy into.-> PLAN_OBJ["TurnExecutionPlan<br/>self-contained · trusted<br/>read by all downstream stages"]
+    PLAN_OBJ -.tools · fields · guardrails<br/>judge · persistence · template.-> RES
+
+    PLAN -.llm_unreachable.-> GATE
+    VAL -.invalid · unclear · structural mismatch.-> GATE
+    FACTORY -.factory rejection F1-F8.-> GATE
+    RES -.no_target · ambiguous.-> GATE
+    ACC -.access_denied.-> GATE
+    TOOL -.manager_unreachable · tool_error.-> GATE
+    EVCHK -.evidence_empty.-> GATE
+    COMP -.llm_unreachable.-> GATE
+    GRD -.policy violation.-> GATE
+    JUDGE -.fabrication · scope_drift · forbidden_inference.-> GATE
+    GATE -.build_from_escalation.-> FACTORY
+    FACTORY -.escalation plan.-> P8
+    P8 --> FIN
+
+    subgraph EXT["External services"]
+        direction TB
+        AOAI["Azure OpenAI"]
+        MGR["rfq_manager_ms"]
+        INTEL["rfq_intelligence_ms<br/>(future)"]
+        RAG[("Domain KB / RAG<br/>(future)")]
+    end
+
+    PLAN -.-> AOAI
+    COMP -.-> AOAI
+    JUDGE -.-> AOAI
+    ACC -.-> MGR
+    TOOL -.-> MGR
+    TOOL -.-> INTEL
+    TOOL -.-> RAG
+
+    subgraph DB["Persistence"]
+        direction TB
+        EXEC[("execution_records<br/>forensics · partial-write · status · intake_path")]
+        TURNS[("turns / threads")]
+        AUDIT[("audit_log")]
+        SESS[("session_state")]
+    end
+
+    PERSIST -.-> EXEC
+    PERSIST -.-> TURNS
+    PERSIST -.-> AUDIT
+    PERSIST -.-> SESS
+
+    %% Trust-boundary colors
+    style USER      fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style OUT       fill:#0f3328,stroke:#238636,color:#3fb950
+
+    %% LLM (purple)
+    style PLAN      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style COMP      fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style JUDGE     fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+
+    %% Code (blue)
+    style FAST      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style VAL       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style FACTORY   fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style RES       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style ACC       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style MEM       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style TOOL      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style EVCHK     fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style CTX       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style GRD       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style FIN       fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style PERSIST   fill:#162032,stroke:#1f6feb,color:#79c0ff
+
+    %% Path Registry (indigo) — read ONLY by ExecutionPlanFactory + Escalation Gate
+    style PR        fill:#1f1240,stroke:#a371f7,color:#d2a8ff
+    style PLAN_OBJ  fill:#0f3328,stroke:#1D9E75,color:#56d364
+
+    %% Escalation Gate (red)
+    style GATE      fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P8        fill:#3a1515,stroke:#da3633,color:#ff7b72
+
+    %% External services (green)
+    style EXT       fill:#0d1117,stroke:#1D9E75,color:#56d364,stroke-dasharray:5 5
+    style AOAI      fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style MGR       fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style INTEL     fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style RAG       fill:#0f3328,stroke:#1D9E75,color:#56d364
+
+    %% Persistence (amber)
+    style DB        fill:#0d1117,stroke:#9e6a03,color:#e3b341,stroke-dasharray:5 5
+    style EXEC      fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style TURNS     fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style AUDIT     fill:#2d2208,stroke:#9e6a03,color:#e3b341
+    style SESS      fill:#2d2208,stroke:#9e6a03,color:#e3b341
+</div>
+</div>
+
+<!-- ═════════════════ SECTION 4 — THREE INTAKE SOURCES, ONE FACTORY ═════════════════ -->
+<div class="section-heading">Section 4 — Three intake sources, one factory (zoom on stages 0–2.5)</div>
+
+<div class="callout">
+  The freeze's central commitment: <strong>only the ExecutionPlanFactory may construct a TurnExecutionPlan</strong>. It accepts three input shapes — <code>IntakeDecision</code> from FastIntake, <code>ValidatedPlannerProposal</code> from the Planner+Validator chain, and <code>EscalationRequest</code> from the Escalation Gate. Each input source has a different trust profile (deterministic regex / LLM-classified / failure routing), but they converge into a single policy-enforcement chokepoint. CI guard §11.5.1 fails the build if any other code instantiates <code>TurnExecutionPlan</code>.
+</div>
+
+<div class="diagram-card">
+<div class="mermaid">
+flowchart LR
+    MSG([User message])
+
+    MSG --> FAST["FastIntake<br/>anchored full-match regex<br/>greetings · thanks · empty · nonsense"]
+    FAST -->|hit| INTAKE_DEC[/"IntakeDecision<br/>pattern_id · pattern_version<br/>path · intent_topic"/]
+    FAST -->|miss| LLM["GPT-4o Planner<br/>JSON schema · temp 0"]
+    LLM --> PROP[/"PlannerProposal<br/>path · intent_topic<br/>target_candidates<br/>requested_fields<br/>confidence · rationale"/]
+    PROP --> VALRULES["PlannerValidator rules<br/>LLM-failure checks ONLY<br/>NO Path Registry reads<br/>rule 1 valid PathId<br/>rule 2 direct 8_1 / 8_2 pass-through<br/>rule 2b 8_3 needs multi_intent flag<br/>rule 2c arbitrary 8_3 rejected<br/>rule 2d 8_4 / 8_5 forbidden direct<br/>rule 3 intent_topic non-empty<br/>rule 4 paths 4 / 5 / 6 need 1+ target<br/>rule 5 path 7 needs 2+ never downgrade"]
+    VALRULES -->|pass| VALPROP[/"ValidatedPlannerProposal"/]
+    VALRULES -->|fail| REPLAN{"Replan once?"}
+    REPLAN -->|yes| LLM
+    REPLAN -->|no| GATE{{"Escalation Gate"}}
+
+    INTAKE_DEC --> FACTORY["ExecutionPlanFactory<br/>SINGLE plan constructor<br/>F1 intent_topic exists in registry<br/>F2 allowed_intake_sources OK<br/>F3 field-alias normalization<br/>F4 fields subset allowed or forbidden<br/>F5 no forbidden fields<br/>F6 confidence above threshold<br/>F7 Path 7 Group C check<br/>F8 Path 3 query slots present"]
+    VALPROP --> FACTORY
+    FACTORY -->|"build OK"| PLAN_OK[/"TurnExecutionPlan<br/>trusted · executable<br/>source from fast_intake / planner / escalation"/]
+    FACTORY -->|"FactoryRejection"| GATE
+    GATE -->|"build_from_escalation"| FACTORY
+    FACTORY -.escalation plan.-> P8["Path 8 answer"]
+
+    PR[("Path Registry<br/>read ONLY by Factory + Gate")]
+    PR -.allowed_intake_sources.-> FACTORY
+    PR -.allowed and forbidden fields.-> FACTORY
+    PR -.field_aliases.-> FACTORY
+    PR -.confidence_threshold.-> FACTORY
+
+    style MSG       fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style FAST      fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style INTAKE_DEC fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style LLM       fill:#1c1f3a,stroke:#7c3aed,color:#c3b1ff
+    style PROP      fill:#3a1f1f,stroke:#da3633,color:#ff9a7b
+    style VALRULES  fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style VALPROP   fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style FACTORY   fill:#162032,stroke:#1f6feb,color:#79c0ff,stroke-width:3px
+    style PLAN_OK   fill:#0f3328,stroke:#1D9E75,color:#56d364
+    style REPLAN    fill:#162032,stroke:#1f6feb,color:#79c0ff
+    style GATE      fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style P8        fill:#3a1515,stroke:#da3633,color:#ff7b72
+    style PR        fill:#1f1240,stroke:#a371f7,color:#d2a8ff
+</div>
+</div>
+
+<div class="callout amber">
+  <strong>Why one factory matters:</strong> nothing in the pipeline accepts a <code>PlannerProposal</code>, <code>IntakeDecision</code>, or <code>EscalationRequest</code> downstream — only a <code>TurnExecutionPlan</code> flows past stage 2.5. The type system + the §11.5.1 CI guard make it impossible to bypass policy enforcement: the compiler refuses an unvalidated plan, and CI refuses any code that constructs one outside the factory. Add a regex to FastIntake that emits Path 4? Factory rule F2 rejects it. Forget to declare a new field as allowed in the registry? Factory rule F4 rejects it. The architecture catches the mistake before the user sees a wrong answer.
+</div>
+
+<!-- ═════════════════ SECTION 5 — EXECUTION_RECORD STATUS LIFECYCLE ═════════════════ -->
+<div class="section-heading">Section 5 — execution_record status lifecycle</div>
+
+<div class="callout">
+  Every turn writes one <code>execution_records</code> row. Stages update their slice as they run (partial writes survive crashes). The <code>status</code> field tells you immediately whether the user got a real answer (<code>COMPLETED</code>), a graceful failure message via Path 8.x (<code>ESCALATED</code>), or nothing (<code>FAILED</code>). <code>error_stage</code> + <code>error_trigger</code> are forensics, independent of <code>status</code>.
+</div>
+
+<div class="diagram-card">
+<div class="mermaid">
+stateDiagram-v2
+    direction LR
+    [*] --> PENDING : turn opened, user_message stored
+    PENDING --> RUNNING : Planner emitted
+    RUNNING --> COMPLETED : Finalizer wrote final_text<br/>(no escalation)
+    RUNNING --> ESCALATED : Escalation Gate routed to Path 8.x<br/>Finalizer rendered safe template<br/>safety net worked
+    RUNNING --> FAILED : Escalation Gate failed OR<br/>Finalizer template render crashed<br/>(unrecoverable, rare)
+    COMPLETED --> [*]
+    ESCALATED --> [*]
+    FAILED --> [*]
+
+    note right of ESCALATED
+      error_stage + error_trigger
+      are populated for forensics
+      but status reflects recovery
+    end note
+</div>
+</div>
+
+<!-- ═════════════════ SECTION 6 — ESCALATION MATRIX ═════════════════ -->
+<div class="section-heading">Section 6 — Escalation matrix (trigger → reason_code → Path 8.x)</div>
+
+<div class="callout">
+  This is the contract the Escalation Gate implements. Same Path 8.5 produces three different user-facing messages depending on whether the data is missing, the source is down, or the LLM is down — driven entirely by <code>reason_code</code> at the Finalizer template selection.
+</div>
+
+<div class="table-card">
+<table>
+  <thead>
+    <tr>
+      <th style="width:22%">Trigger</th>
+      <th style="width:10%">Source kind</th>
+      <th style="width:18%">Source stage / origin</th>
+      <th style="width:6%">Path</th>
+      <th style="width:20%">reason_code</th>
+      <th>What the user sees</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>invalid_planner_proposal</code></td><td>stage</td><td>PlannerValidator</td><td>8.1</td><td><code>invalid_planner_proposal</code></td><td>"I couldn't understand the request — please try again."</td></tr>
+    <tr><td><code>unsupported_intent_topic</code></td><td>stage</td><td>ExecutionPlanFactory (F1)</td><td>8.1</td><td><code>unsupported_intent</code></td><td>"I can't do {intent} yet — that's not built."</td></tr>
+    <tr><td><code>intake_source_not_allowed</code></td><td>stage</td><td>ExecutionPlanFactory (F2)</td><td>8.1</td><td><code>intake_source_not_allowed</code></td><td>"I can't handle that the way I tried — please rephrase."</td></tr>
+    <tr><td><code>unsupported_field_requested</code></td><td>stage</td><td>ExecutionPlanFactory (F3/F4)</td><td>8.1</td><td><code>unsupported_field_requested</code></td><td>"I don't expose the {field} field for this kind of question."</td></tr>
+    <tr><td><code>forbidden_field_requested</code></td><td>stage</td><td>ExecutionPlanFactory (F5)</td><td>8.1</td><td><code>forbidden_field_requested</code></td><td>"That information isn't available through this assistant."</td></tr>
+    <tr><td><code>unclear_intent_topic</code></td><td>stage</td><td>PlannerValidator (rule 3)</td><td>8.3</td><td><code>unclear_intent_topic</code></td><td>"Could you rephrase? I'm not sure what you'd like to know."</td></tr>
+    <tr><td><code>confidence_below_threshold</code></td><td>stage</td><td>ExecutionPlanFactory (F6)</td><td>8.3</td><td><code>confidence_below_threshold</code></td><td>Path-specific clarification template.</td></tr>
+    <tr><td><code>no_target_proposed</code></td><td>stage</td><td>PlannerValidator (P4/5/6, rule 4)</td><td>8.3</td><td><code>no_target_proposed</code></td><td>"Which RFQ are you asking about?"</td></tr>
+    <tr><td><code>comparison_missing_target</code></td><td>stage</td><td>PlannerValidator (P7, rule 5)</td><td>8.3</td><td><code>comparison_missing_target</code></td><td>"Compare {x} with which other RFQ?" (never silently downgrades to Path 4)</td></tr>
+    <tr><td><code>group_C_field_requested</code></td><td>stage</td><td>ExecutionPlanFactory (P7, F7)</td><td>8.1</td><td><code>group_C_field_requested</code></td><td>"I don't make win/margin/ranking judgments — that's outside what this assistant compares." (early reject; post-compose Guardrail is backup only)</td></tr>
+    <tr><td><code>target_resolution_failed</code></td><td>stage</td><td>Resolver</td><td>8.3</td><td><code>no_target</code></td><td>"I couldn't find that RFQ. Could you give me an RFQ code?"</td></tr>
+    <tr><td><code>ambiguous_target_count_exceeded</code></td><td>stage</td><td>Resolver (Path 4/5/6/7)</td><td>8.3</td><td><code>ambiguous</code></td><td>"I found N RFQs matching — which one?"</td></tr>
+    <tr><td><code>pre_search_query_underspecified</code></td><td>stage</td><td>ExecutionPlanFactory (Path 3, F8)</td><td>8.3</td><td><code>pre_search_query_underspecified</code></td><td>"Could you narrow it down? — by status, owner, deadline window, etc." (BEFORE Tool Executor runs)</td></tr>
+    <tr><td><code>post_search_no_safe_presentation</code></td><td>stage</td><td>Tool Executor / Result Policy (Path 3)</td><td>8.3</td><td><code>post_search_no_safe_presentation</code></td><td>"That returned a lot of RFQs and there's no safe way to summarize — could you filter further?" (only when presentation_policy can't apply)</td></tr>
+    <tr><td><code>access_denied_explicit</code></td><td>stage</td><td>Access</td><td>8.4</td><td><code>access_denied_explicit</code></td><td>"You don't have access to this RFQ."</td></tr>
+    <tr><td><code>all_targets_inaccessible</code></td><td>stage</td><td>Access</td><td>8.4</td><td><code>all_inaccessible</code></td><td>"None of the RFQs in your question are accessible to you."</td></tr>
+    <tr><td><code>partial_inaccessibility_below_min</code></td><td>stage</td><td>Access (Path 7, fewer than <code>min_accessible_targets_for_comparison</code> remain)</td><td>8.4</td><td><code>partial_inaccessibility_below_min</code></td><td>"I cannot compare because fewer than two of the requested RFQs are accessible."</td></tr>
+    <tr><td><code>partial_inaccessibility</code></td><td>stage</td><td>Access (Path 7, <strong>only</strong> when ≥2 accessible targets remain from a larger set)</td><td>8.4</td><td><code>partial</code></td><td>"Comparing the accessible RFQs only — {excluded_codes} omitted because they're not accessible to you." (compare accessible targets only with <strong>explicit exclusion note</strong>)</td></tr>
+    <tr><td><code>evidence_empty</code></td><td>stage</td><td>Evidence Check (Path 4/5/6/7)</td><td>8.5</td><td><code>no_evidence</code></td><td>"I don't have data on that for this RFQ."</td></tr>
+    <tr><td><code>rag_returned_zero_passages</code></td><td>stage</td><td>Tool Executor (Path 2)</td><td><strong>—</strong></td><td><strong>NOT auto-escalated</strong></td><td>Path 2 may still answer from the controlled domain prompt. Empty RAG is recorded as evidence; only escalates if Judge catches an unsourced specific citation in the resulting answer.</td></tr>
+    <tr><td><code>manager_unreachable</code></td><td>stage</td><td>Tool Executor</td><td>8.5</td><td><code>source_unavailable</code></td><td>"I couldn't reach the RFQ data service. Try again in a moment."</td></tr>
+    <tr><td><code>llm_unreachable</code></td><td>stage</td><td>Planner / Compose / Judge</td><td>8.5</td><td><code>llm_unavailable</code></td><td>"My language model is unavailable right now. Try again in a moment."</td></tr>
+    <tr><td><code>judge_verdict_fabrication</code></td><td>stage</td><td>Judge</td><td>8.5</td><td><code>judge_verdict_fabrication</code></td><td>Safe restatement: "I can't confirm that from the available data."</td></tr>
+    <tr><td><code>judge_verdict_forbidden_inference</code></td><td>stage</td><td>Judge (P5)</td><td>8.5</td><td><code>judge_verdict_forbidden_inference</code></td><td>Safe restatement: declines to make readiness/risk judgment.</td></tr>
+    <tr><td><code>judge_verdict_unsourced_citation</code></td><td>stage</td><td>Judge (P2)</td><td>8.5</td><td><code>judge_verdict_unsourced_citation</code></td><td>"I can't cite a specific paragraph without source evidence." (Path 2 controlled-prompt answer made a specific citation that no RAG passage backs.)</td></tr>
+    <tr><td><code>judge_verdict_scope_drift</code></td><td>stage</td><td>Judge</td><td>8.2</td><td><code>judge_scope_drift</code></td><td>"That's outside what I can answer here."</td></tr>
+    <tr><td><code>judge_verdict_comparison_violation</code></td><td>stage</td><td>Judge (P7)</td><td>8.5</td><td><code>judge_verdict_comparison_violation</code></td><td>Safe restatement: drops the cross-target leakage.</td></tr>
+    <tr><td><code>out_of_scope_detected_by_planner</code></td><td><strong>planner-direct</strong></td><td>Planner (semantic, <strong>bypasses Gate</strong>; factory builds 8.2 plan)</td><td>8.2</td><td><code>out_of_scope</code></td><td>"That's outside what I help with — I focus on RFQ, estimation, industrial questions."</td></tr>
+    <tr><td><code>unsupported_detected_by_planner</code></td><td><strong>planner-direct</strong></td><td>Planner (semantic, <strong>bypasses Gate</strong>; factory builds 8.1 plan)</td><td>8.1</td><td><code>unsupported_intent</code></td><td>"I can't do {intent} yet — that's not built."</td></tr>
+    <tr><td><code>multi_intent_detected</code></td><td><strong>planner-direct</strong></td><td>Planner (semantic, <strong>bypasses Gate</strong>; sets <code>multi_intent_detected=True</code>)</td><td>8.3</td><td><code>multi_intent_detected</code></td><td>"You asked two things at once — which would you like me to handle first?"</td></tr>
+    <tr><td><code>out_of_scope_nonsense</code></td><td><strong>fast-intake-direct</strong></td><td>FastIntake (pure punctuation/symbols pattern, <strong>bypasses Gate</strong>)</td><td>8.2</td><td><code>out_of_scope_nonsense</code></td><td>"I'm not sure what you're asking — could you write a question?"</td></tr>
+    <tr><td><code>empty_message</code></td><td><strong>fast-intake-direct</strong></td><td>FastIntake (whitespace-only pattern, <strong>bypasses Gate</strong>)</td><td>8.3</td><td><code>empty_message</code></td><td>"It looks like your message was empty — what would you like to know?"</td></tr>
+    <tr><td><code>ambiguity_loop_max_reached</code></td><td>stage</td><td>Ambiguity Loop guardrail</td><td>8.5</td><td><code>ambiguity_loop_max_reached</code></td><td>"I'm not making progress clarifying — let's start a new question."</td></tr>
+    <tr><td><code>turn_budget_exceeded</code></td><td>stage</td><td>Orchestrator (cumulative-budget rule, freeze §12.3 — sum of per-stage latencies crosses the 45s wall-clock cap; in-flight stage aborted)</td><td>8.5</td><td><code>turn_too_slow</code></td><td>"This took longer than expected — please try again."</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═════════════════ SECTION 7 — IMPLEMENTATION ORDER ═════════════════ -->
+<div class="section-heading">Section 7 — Implementation order (vertical slices)</div>
+
+<div class="callout">
+  Each slice ships <strong>one path end-to-end</strong> through the full pipeline. No horizontal "build all planners then all resolvers." Slice 1 is the foundation — it ships the architecture itself, with Path 4 as the first answer path and Path 8 as the safety net.
+</div>
+
+<div class="table-card">
+<table>
+  <thead>
+    <tr><th style="width:6%">#</th><th style="width:24%">Slice</th><th>Includes</th><th style="width:30%">Why this order</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Path 4 + Path 8 (8.1, 8.2, 8.3, 8.4, 8.5) + Path 1 trivial via FastIntake</strong></td>
+      <td><strong>FastIntake</strong> (Slice 1 pattern table — greeting / thanks / farewell / empty / nonsense), Planner, <strong>PlannerValidator</strong> (LLM-failure checks only), Path Registry (with <code>allowed_intake_sources</code> declarations), <strong>ExecutionPlanFactory</strong> (the only <code>TurnExecutionPlan</code> constructor — implements rules F1..F8 + field-alias normalization), Resolver, Access, Memory Load, Tool Executor, Evidence Check, Context Builder, Compose, Guardrails (evidence + scope + shape), Judge, Finalizer with reason_code template selection, <strong>Escalation Gate</strong> (re-enters factory via <code>build_from_escalation</code>), execution_record with partial-write support and <code>intake_path</code> forensic field, ExecutionState, <strong>CI guards</strong>: single-construction <code>TurnExecutionPlan</code>, registry-reader allow-list, no-LLM-SDK in deterministic stages, FastIntake path-range guard.</td>
+      <td>Path 4 is the demo-defining path. Path 8 is its safety net — they must ship together. Path 8.2 included so out-of-scope asks ("write me a recipe") are handled from day one. <strong>FastIntake + factory ship in Slice 1</strong> because the trust-boundary architecture (single plan constructor, source-aware policy) only holds if every entry path obeys it from day one — bolting them on later means rewriting every stage's contract.</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td>Path 1 (conversational)</td>
+      <td>Reuses Planner, Validator, Finalizer. Tiny new template set. No fetch / no judge needed.</td>
+      <td>Cheap, useful early, validates that the pipeline supports a path that <em>doesn't</em> fetch.</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td>Path 3 (portfolio)</td>
+      <td>Adds <code>portfolio_stats</code> + <code>list_rfqs</code> to Path Registry. Reuses everything else.</td>
+      <td>Builds on existing manager calls; refines the field whitelist pattern.</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td>Path 5 (intelligence)</td>
+      <td>Adds <code>intelligence_ms_connector</code>. New <code>forbidden_inferences</code> guardrail (Path 5-only).</td>
+      <td>Introduces the second source-of-truth service.</td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td>Path 6 (cross-RFQ)</td>
+      <td>Adds cross-target memory fan-out (I8). Per-target labelling stress-tested.</td>
+      <td>Prepares for Path 7.</td>
+    </tr>
+    <tr>
+      <td><strong>6</strong></td>
+      <td>Path 7 (comparison)</td>
+      <td>Adds <code>comparable_field_policy</code> and <code>target_isolation</code> guardrails. Multi-target evidence packets.</td>
+      <td>Hardest. Lessons from 4–6 inform this.</td>
+    </tr>
+    <tr>
+      <td><strong>7</strong></td>
+      <td>Path 2 (controlled domain + optional RAG)</td>
+      <td>Adds the <strong>Controlled Domain Prompt</strong> artifact (allowed/forbidden statement classes), <em>optional</em> RAG connector + vector DB + passage scoring, new Judge trigger <code>answer_makes_specific_citation_without_evidence</code> → 8.5 <code>judge_verdict_unsourced_citation</code>, domain-boundary detection at Planner. RAG is enrichment, not gating — zero passages does NOT auto-escalate.</td>
+      <td>Last because it requires both the new Judge trigger and the optional RAG infrastructure.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═════════════════ SECTION 8 — REFERENCE CARDS ═════════════════ -->
+<div class="section-heading">Section 8 — Reference cards (Path Registry, ExecutionState, what's forbidden)</div>
+
+<div class="ref-grid">
+
+  <div class="ref-card registry-block">
+    <div class="ref-title">Path Registry — what it owns</div>
+    <ul>
+      <li><code>allowed_intake_sources</code> per intent_topic (FAST_INTAKE / PLANNER / both)</li>
+      <li><code>evidence_tools</code> per <code>(path, intent_topic)</code></li>
+      <li><code>resolver_strategy</code></li>
+      <li><code>required_target_policy</code></li>
+      <li><code>access_policy</code></li>
+      <li><code>allowed_fields</code> + <code>forbidden_fields</code></li>
+      <li><code>field_aliases</code> (per intent_topic)</li>
+      <li><code>confidence_threshold</code> (per intent_topic)</li>
+      <li><code>active_guardrails</code></li>
+      <li><code>judge_policy</code> + triggers</li>
+      <li><code>memory_policy</code></li>
+      <li><code>persistence_policy</code></li>
+      <li><code>finalizer_template_keys[reason_code]</code></li>
+      <li><code>model_profile</code></li>
+      <li><strong>Read at runtime ONLY by ExecutionPlanFactory + Escalation Gate</strong> (CI-enforced — §11.5.2)</li>
+    </ul>
+  </div>
+
+  <div class="ref-card code-block">
+    <div class="ref-title">TurnExecutionPlan (trusted)</div>
+    <ul>
+      <li><code>path</code></li>
+      <li><code>intent_topic</code></li>
+      <li><code>source: IntakeSource</code> (fast_intake / planner / escalation — set by factory)</li>
+      <li><code>target_candidates</code> (LLM-proposed, not yet resolved)</li>
+      <li><code>resolver_strategy</code></li>
+      <li><code>required_target_policy</code></li>
+      <li><code>allowed_evidence_tools</code></li>
+      <li><code>allowed_resolver_tools</code></li>
+      <li><code>access_policy</code></li>
+      <li><code>allowed_fields</code> + <code>forbidden_fields</code></li>
+      <li><code>canonical_requested_fields</code> (post-alias normalize, applied in factory rule F3)</li>
+      <li><code>active_guardrails</code></li>
+      <li><code>judge_policy</code> · <code>memory_policy</code></li>
+      <li><code>persistence_policy</code></li>
+      <li><code>finalizer_template_key</code> · <code>finalizer_reason_code</code></li>
+      <li><code>model_profile</code> (Optional — None for template-only paths and <strong>all FastIntake plans</strong>)</li>
+      <li><code>min_accessible_targets_for_comparison</code> (Path 7 only)</li>
+      <li><code>comparable_field_groups</code> (Path 7 only)</li>
+      <li><strong>Constructed ONLY by ExecutionPlanFactory</strong> (CI-enforced — §11.5.1)</li>
+    </ul>
+  </div>
+
+  <div class="ref-card code-block">
+    <div class="ref-title">ExecutionState (runtime mutable)</div>
+    <ul>
+      <li><code>turn_id</code> · <code>actor</code> · <code>plan</code> · <code>user_message</code></li>
+      <li><code>intake_path</code> ∈ {fast_intake, planner} ← FastIntake / Planner</li>
+      <li><code>intake_decision</code> ← FastIntake (when intake_path=fast_intake)</li>
+      <li><code>planner_proposal</code> · <code>validated_planner_proposal</code> ← Planner / PlannerValidator</li>
+      <li><code>resolved_targets</code> ← Resolver</li>
+      <li><code>access_decisions</code> ← Access</li>
+      <li><code>working_memory</code> · <code>episodic_summaries</code> ← Memory Load</li>
+      <li><code>tool_invocations</code> ← Tool Executor</li>
+      <li><code>evidence_packets</code> ← Tool Executor (raw) → Context Builder (assembled)</li>
+      <li><code>draft_text</code> ← Compose</li>
+      <li><code>guardrail_strips</code> ← Guardrails</li>
+      <li><code>judge_verdict</code> ← Judge</li>
+      <li><code>final_text</code> · <code>final_path</code> ← Finalizer</li>
+      <li><code>escalations</code> ← Escalation Gate</li>
+    </ul>
+  </div>
+
+  <div class="ref-card persistence-block">
+    <div class="ref-title">execution_records — partial-write schema</div>
+    <ul>
+      <li><code>turn_id</code> (PK) · <code>thread_id</code> · <code>actor_id</code></li>
+      <li><code>status</code> ∈ {PENDING, RUNNING, COMPLETED, ESCALATED, FAILED}</li>
+      <li><code>intake_path</code> ∈ {fast_intake, planner} (forensic, drives FastIntake hit-rate metrics)</li>
+      <li><code>error_stage</code> · <code>error_trigger</code> (forensics, independent of status)</li>
+      <li><code>intake_decision</code> (when intake_path=fast_intake — pattern_id + pattern_version)</li>
+      <li><code>planner_proposal</code> · <code>turn_execution_plan</code></li>
+      <li><code>validation_rejections</code> (replan history)</li>
+      <li><code>factory_rejections</code> (F1..F8 history)</li>
+      <li><code>resolved_targets</code> · <code>access_decisions</code></li>
+      <li><code>tool_invocations</code> · <code>evidence_packets</code></li>
+      <li><code>draft_text</code> · <code>guardrail_strips</code> · <code>judge_verdict</code></li>
+      <li><code>final_text</code> (nullable) · <code>final_path</code> (nullable)</li>
+      <li><code>escalations</code> · <code>total_latency_ms</code> (nullable)</li>
+      <li>Per-stage latency + token counts</li>
+    </ul>
+  </div>
+
+  <div class="ref-card code-block">
+    <div class="ref-title">FastIntake (Stage 0) — Slice 1 pattern table</div>
+    <ul>
+      <li><code>^\s*$</code> → Path 8.3 <code>empty_message</code></li>
+      <li><code>^[^\w\s]+$</code> → Path 8.2 <code>out_of_scope_nonsense</code> (pure punctuation/symbols; word chars and digits never match — <code>IF-0001</code> is correctly handed to the Planner)</li>
+      <li><code>^(hi|hello|hey|salam|salut)[!.?\s]*$</code> → Path 1 <code>greeting</code></li>
+      <li><code>^(thanks|thank you|thx|merci)[!.?\s]*$</code> → Path 1 <code>thanks</code></li>
+      <li><code>^(bye|goodbye|cya|see you)[!.?\s]*$</code> → Path 1 <code>farewell</code></li>
+      <li><strong>Anchored full-match only</strong> — no fuzzy matching, no LLM, no DB</li>
+      <li><strong>When in doubt, miss</strong> (false negatives cost a planner round-trip; false positives short-circuit a real question)</li>
+      <li><strong>Path range:</strong> Path 1 / 8.2 / 8.3 only — CI guard §11.5.3 fails the build if a pattern emits any other path</li>
+    </ul>
+  </div>
+
+  <div class="ref-card code-block">
+    <div class="ref-title">ExecutionPlanFactory — rules F1..F8</div>
+    <ul>
+      <li><strong>F1.</strong> <code>(path, intent_topic)</code> exists in registry → else <code>unsupported_intent_topic</code> → 8.1</li>
+      <li><strong>F2.</strong> <code>IntakeSource</code> ∈ <code>IntentConfig.allowed_intake_sources</code> → else <code>intake_source_not_allowed</code> → 8.1</li>
+      <li><strong>F3.</strong> Field-alias normalization → <code>canonical_requested_fields</code> (unknown alias → <code>unsupported_field_requested</code> → 8.1)</li>
+      <li><strong>F4.</strong> <code>canonical_requested_fields</code> ⊆ <code>allowed_fields ∪ forbidden_fields</code> → else <code>unsupported_field_requested</code> → 8.1</li>
+      <li><strong>F5.</strong> <code>canonical_requested_fields ∩ forbidden_fields == ∅</code> → else <code>forbidden_field_requested</code> → 8.1</li>
+      <li><strong>F6.</strong> <code>confidence ≥ IntentConfig.confidence_threshold</code> → else <code>confidence_below_threshold</code> → 8.3</li>
+      <li><strong>F7.</strong> Path 7: <code>canonical_requested_fields ∩ comparable_field_groups.C == ∅</code> → else <code>group_C_field_requested</code> → 8.1</li>
+      <li><strong>F8.</strong> Path 3: <code>required_query_slots</code> ⊆ proposal slot keys → else <code>pre_search_query_underspecified</code> → 8.3</li>
+      <li><strong>Three input shapes:</strong> <code>build_from_intake</code> · <code>build_from_planner</code> · <code>build_from_escalation</code></li>
+    </ul>
+  </div>
+
+  <div class="ref-card gate-block">
+    <div class="ref-title">CI guards — mechanically enforced</div>
+    <ul>
+      <li><strong>§11.5.1</strong> — Only <code>execution_plan_factory.py</code> may instantiate <code>TurnExecutionPlan</code> (AST grep)</li>
+      <li><strong>§11.5.2</strong> — Only <code>execution_plan_factory.py</code> + <code>escalation_gate.py</code> may import <code>src.config.path_registry</code> (import grep)</li>
+      <li><strong>§11.5.3</strong> — FastIntake patterns may only emit Path 1 / 8.2 / 8.3 (static check on pattern table)</li>
+      <li><strong>§11.3</strong> — Tool Executor may not import any LLM SDK (openai · anthropic · langchain · langgraph · llama_index · litellm · …)</li>
+      <li>All four guards run on every PR. Any red turns the build red.</li>
+    </ul>
+  </div>
+
+  <div class="ref-card gate-block">
+    <div class="ref-title">Forbidden forever (by freeze)</div>
+    <ul>
+      <li>❌ LLM picks tools dynamically</li>
+      <li>❌ LLM chooses guardrails</li>
+      <li>❌ LLM decides what counts as evidence</li>
+      <li>❌ LLM owns escalation routing</li>
+      <li>❌ Stages handle their own escalation</li>
+      <li>❌ Pipeline accepts <code>PlannerProposal</code> directly</li>
+      <li>❌ <strong>Any code outside the factory constructs <code>TurnExecutionPlan</code></strong> (CI §11.5.1)</li>
+      <li>❌ <strong>Any code outside factory + gate imports the Path Registry</strong> (CI §11.5.2)</li>
+      <li>❌ <strong>PlannerValidator reads the Path Registry</strong> — LLM-failure checks only</li>
+      <li>❌ <strong>FastIntake fuzzy / substring / token-similarity matching, or LLM/DB/network</strong> — anchored full-match regex only</li>
+      <li>❌ <strong>FastIntake emits a path/intent without <code>IntakeSource.FAST_INTAKE</code></strong> (CI §11.5.3 + factory F2)</li>
+      <li>❌ <strong>Planner emits Path 8.4 or 8.5 directly</strong> — those arise only from stage triggers</li>
+      <li>❌ "Tiny LLM fallback" planner pattern</li>
+      <li>❌ Confidence-only routing decisions</li>
+      <li>❌ Free-text Planner / Judge output (must be JSON-schema-enforced)</li>
+      <li>❌ Cross-target field mixing in Path 7</li>
+      <li>❌ Silently downgrading Path 7 → Path 4</li>
+      <li>❌ Treating manager-down / LLM-down / no-evidence as same user-facing message</li>
+      <li>❌ Renaming "Tool Executor" back to "Agent" or letting it call an LLM</li>
+    </ul>
+  </div>
+
+  <div class="ref-card llm-block">
+    <div class="ref-title">The four known risks (with mitigations)</div>
+    <ul>
+      <li><strong>Multi-turn context drift</strong> → bounded history (5 pairs), "answer only what's asked" rule, episodic summarization (later)</li>
+      <li><strong>LLM-as-validator paradox (Judge)</strong> → deterministic Guardrails ALWAYS run before Judge; Judge is the last line, not the only line</li>
+      <li><strong>Per-target leakage in Path 7</strong> → per-target evidence packets, per-target labels, <code>target_isolation</code> guardrail, never silently downgrade</li>
+      <li><strong>The "agreeable LLM" trap</strong> → strict system prompt rule, <code>forbidden_inferences</code> detector (Path 5), per-field "not recorded" rendering so absent fields can't be silently skipped</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <strong>Canonical specification:</strong> <code>microservices/rfq_copilot_ms/docs/11-Architecture_Frozen_v2.md</code><br>
+  <strong>Supersedes:</strong> <code>rfq_copilot_architecture_v3.html</code> — the v3 "Path Planner = deterministic + tiny LLM fallback" framing and the "Agent" tool stage are explicitly forbidden by the freeze. Re-coloring matters: every block now declares its trust boundary visually.<br>
+  <strong>What this diagram covers:</strong> the 8-path mental map (Section 2 per-path traces), the canonical pipeline (Section 3 — now with FastIntake Stage 0 and ExecutionPlanFactory Stage 2.5), the three-intake-sources / one-factory zoom (Section 4), execution_record status lifecycle (Section 5), the full escalation matrix with reason_codes and source-kind column (Section 6), the slice-by-slice implementation order (Section 7), and the Path Registry / ExecutionState / FastIntake patterns / Factory rules / CI guards / forbidden-forever / risks reference cards (Section 8).<br>
+  <strong>What this diagram does NOT cover:</strong> the authoritative type contracts (see <code>11-Architecture_Frozen_v2.md §13</code>), per-intent IntentConfig content (lives in the Path Registry module, not a diagram), the 30-query stress test (<code>10-Stress_Test_Set_v1.md</code>), the nine global invariants (<code>9-Path_Config_Table_v1.md</code> §1, still in force).
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#161b22',
+      primaryColor: '#1c1f3a',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#7c3aed',
+      lineColor: '#8b949e',
+      secondaryColor: '#162032',
+      tertiaryColor: '#0f3328',
+      fontFamily: 'Segoe UI, system-ui, sans-serif',
+      fontSize: '13px'
+    },
+    flowchart: { curve: 'basis', padding: 20 }
+  });
+</script>
+
+</body>
+</html>
