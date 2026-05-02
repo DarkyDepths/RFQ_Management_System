@@ -1,1 +1,0 @@
-"""Context Packet Builder — assembles the prompt context per the path config. Enforces I1: only requested fields, never raw cached payloads. Per-target labelling for Paths 6 and 7 (I7, I8). Layers L1..L5."""

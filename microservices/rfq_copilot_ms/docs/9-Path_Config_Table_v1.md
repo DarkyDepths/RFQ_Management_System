@@ -1,8 +1,29 @@
 # Path Config Table v1.1
 
-**Status:** **draft v1.1** — paper-walkthrough validated, awaiting post-code stress test (phase B). The "frozen v1.0" label is reserved for after phase B passes.
+> ## ⚠ PARTIALLY SUPERSEDED
+>
+> This document predates the **Architecture Freeze v2** (2026-04-27). Most of it has been replaced by the canonical specification in [`11-Architecture_Frozen_v2.md`](11-Architecture_Frozen_v2.md) (frozen architecture + type contracts §14) and [`rfq_copilot_architecture_v4.html`](rfq_copilot_architecture_v4.html) (visual rendering).
+>
+> **Per Architecture_Frozen_v2 Appendix A, only two parts of this document are still inherited and in force:**
+>
+> - **§1 — the nine global invariants** (still authoritative).
+> - **§4 — per-path configurations** (the *content* moves into the v4 Path Registry; the structure here is the seed).
+>
+> **Superseded sections** include but are not limited to:
+>
+> - §2.1 — the prior planner-with-deterministic-fallback framing is replaced by **FastIntake (anchored full-match) + GPT-4o structured Planner + PlannerValidator (LLM-failure structural checks only) + ExecutionPlanFactory (single plan constructor, all policy enforcement)**.
+> - The companion v3 architecture HTML diagram is invalidated; use the v4 diagram instead.
+> - Any framing where "the Validator" constructs the executable plan — that responsibility now belongs exclusively to the `ExecutionPlanFactory` (§2.7), CI-enforced (§11.5.1).
+> - The prior LLM tool-calling stage naming — replaced by **Tool Executor (deterministic)**.
+>
+> Do not implement against this document directly. Use it for historical context and for the still-valid §1 / §4 references called out in Architecture_Frozen_v2 Appendix A.
+
+---
+
+**Status:** **draft v1.1 — partially superseded** (see banner above). Original status: paper-walkthrough validated, awaiting post-code stress test (phase B).
 **Date:** 2026-04-25
-**Companion:** [rfq_copilot_architecture_v3.html](rfq_copilot_architecture_v3.html) · [10-Stress_Test_Set_v1.md](10-Stress_Test_Set_v1.md)
+**Canonical replacement:** [`11-Architecture_Frozen_v2.md`](11-Architecture_Frozen_v2.md) + [`rfq_copilot_architecture_v4.html`](rfq_copilot_architecture_v4.html)
+**Companion (test set, still valid):** [10-Stress_Test_Set_v1.md](10-Stress_Test_Set_v1.md)
 **Philosophy basis:** [1-COPILOT_PHILOSOPHY.md](1-COPILOT_PHILOSOPHY.md) through [8-Challenges_(Known__Hidden).md](<8-Challenges_(Known__Hidden).md>)
 
 This document is the canonical contract that every turn of the copilot must respect. It defines:

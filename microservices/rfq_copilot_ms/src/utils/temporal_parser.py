@@ -1,1 +1,1 @@
-"""Temporal expression parser — maps natural temporal phrases to the deterministic filter set (F1) or returns None for tiny-LLM fallback."""
+"""Temporal expression parser — maps natural temporal phrases (e.g. "this week", "overdue", "next 30 days") to a deterministic filter set, or returns None when no anchored pattern matches and the caller should defer interpretation."""
