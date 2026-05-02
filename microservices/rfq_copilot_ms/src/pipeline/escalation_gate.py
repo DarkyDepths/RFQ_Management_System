@@ -37,12 +37,22 @@ Allowed registry reader (CI guard §11.5.2):
   look up ``PathConfig.finalizer_template_keys[reason_code]`` when
   constructing the ``EscalationRequest``.
 
-Status: SIGNATURE STUB. Type contracts wired in Batch 1; matrix +
-factory re-entry land in a later batch.
+Status: SIGNATURE STUB with registry import wired. Batch 2 makes the
+runtime config (``PATH_CONFIGS``) reachable from this module per the
+allowlist (§11.5.2 — only this file and ``execution_plan_factory.py``
+may import ``src.config.path_registry``). The Gate will use it in a
+later batch to look up ``PathConfig.finalizer_template_keys[reason_code]``
+when populating the ``EscalationRequest`` it hands to the factory.
 """
 
 from __future__ import annotations
 
+# Registry CONFIG import is restricted to this module + execution_plan_factory.py
+# by CI guard §11.5.2. Importing here makes Slice 1 Path 8.x template-key
+# lookup data reachable for the future route() implementation; it does
+# NOT execute any policy lookups in Batch 2 (route() still raises
+# NotImplementedError).
+from src.config.path_registry import PATH_CONFIGS  # noqa: F401
 from src.models.execution_state import ExecutionState
 from src.models.path_registry import ReasonCode
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory

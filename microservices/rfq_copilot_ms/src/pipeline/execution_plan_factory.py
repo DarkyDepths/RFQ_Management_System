@@ -38,11 +38,20 @@ For FastIntake-source plans, the factory emits a plan with
 ``model_profile=None``, etc. — every downstream stage skips per the
 §5.1 stage-skip convention, delivering the sub-100ms FastIntake path.
 
-Batch 0 status: STUB ONLY. No rules / no policy resolution yet.
+Status: SIGNATURE STUB with registry import wired. Batch 2 makes the
+runtime config (``PATH_CONFIGS``) reachable from this module per the
+allowlist (§11.5.2 — only this file and ``escalation_gate.py`` may
+import ``src.config.path_registry``). Rules F1..F8 + plan construction
+land in a later batch.
 """
 
 from __future__ import annotations
 
+# Registry CONFIG import is restricted to this module + escalation_gate.py
+# by CI guard §11.5.2. Importing here makes Slice 1 policy data reachable
+# for the future build_from_* implementations; it does NOT execute any
+# policy lookups in Batch 2 (bodies still raise NotImplementedError).
+from src.config.path_registry import PATH_CONFIGS, REGISTRY_VERSION  # noqa: F401
 from src.models.actor import Actor
 from src.models.execution_plan import (
     EscalationRequest,
@@ -57,7 +66,9 @@ class ExecutionPlanFactory:
     """The single ``TurnExecutionPlan`` constructor.
 
     CI guard §11.5.1 verifies that ``TurnExecutionPlan(...)`` is
-    instantiated **only** in this module.
+    instantiated **only** in this module. CI guard §11.5.2 verifies
+    that ``src.config.path_registry`` is imported **only** here and in
+    ``escalation_gate.py``.
     """
 
     def build_from_intake(
