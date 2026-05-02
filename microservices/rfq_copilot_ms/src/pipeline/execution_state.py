@@ -5,10 +5,9 @@ See ``docs/11-Architecture_Frozen_v2.md`` §2.5.
 The runtime mutable state object that flows through the canonical
 pipeline. Stages mutate it as they run. The ``ExecutionState`` Pydantic
 type itself lives in ``src/models/execution_state.py``; this module
-holds the helper functions stages use to update it (factory, slice
-mutators, snapshot-for-persist).
+holds the helper functions stages use to construct + update it.
 
-Key invariants:
+Key invariants (§2.5):
 
 * ``state.plan`` is **immutable after the factory emits it**. The
   Escalation Gate replaces ``state.plan`` with a new factory-built
@@ -20,8 +19,10 @@ Key invariants:
   the Planner emits, and is persisted as a forensic column in
   ``execution_records`` (§4.2).
 
-Status: SIGNATURE STUB. Type contracts wired in Batch 1; mutators land
-in a later batch.
+Status: Batch 4 implements only ``init_state_from_intake`` (the
+constructor for the FastIntake → factory → finalizer slice). The
+Planner-source constructor and the Gate-source plan replacement land
+in later batches when those flows ship.
 """
 
 from __future__ import annotations
@@ -29,29 +30,32 @@ from __future__ import annotations
 from src.models.actor import Actor
 from src.models.execution_plan import TurnExecutionPlan
 from src.models.execution_state import ExecutionState
+from src.models.intake_decision import IntakeDecision
 
 
-def init_state(
-    turn_id: str,  # noqa: ARG001
-    actor: Actor,  # noqa: ARG001
-    user_message: str,  # noqa: ARG001
-    plan: TurnExecutionPlan,  # noqa: ARG001
+def init_state_from_intake(
+    *,
+    turn_id: str,
+    actor: Actor,
+    user_message: str,
+    plan: TurnExecutionPlan,
+    decision: IntakeDecision,
 ) -> ExecutionState:
-    """Build the initial ExecutionState for a turn (after the factory
-    has emitted the plan and the intake source has been recorded)."""
-    raise NotImplementedError(
-        "execution_state.init_state() scaffolded only. "
-        "See docs/11-Architecture_Frozen_v2.md §2.5."
-    )
+    """Construct an ``ExecutionState`` for a FastIntake-source turn.
 
+    Sets ``intake_path="fast_intake"`` and attaches the original
+    ``IntakeDecision`` for forensics (lands in ``execution_records``
+    when Persist ships in a later batch).
 
-def replace_plan_for_escalation(
-    state: ExecutionState,  # noqa: ARG001
-    p8_plan: TurnExecutionPlan,  # noqa: ARG001
-) -> None:
-    """Escalation Gate helper: swap ``state.plan`` for the Path 8.x
-    plan freshly built by the factory's ``build_from_escalation``."""
-    raise NotImplementedError(
-        "execution_state.replace_plan_for_escalation() scaffolded only. "
-        "See docs/11-Architecture_Frozen_v2.md §5.2."
+    All runtime-outcome fields default to empty per the
+    ``ExecutionState`` model (Resolver / Tool Executor / Compose / Judge
+    don't run for template-only paths).
+    """
+    return ExecutionState(
+        turn_id=turn_id,
+        actor=actor,
+        plan=plan,
+        user_message=user_message,
+        intake_path="fast_intake",
+        intake_decision=decision,
     )
