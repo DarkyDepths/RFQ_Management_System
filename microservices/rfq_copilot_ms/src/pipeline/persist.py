@@ -174,6 +174,13 @@ def _dump_state(state: ExecutionState) -> dict:
 
     Uses ``model_dump(mode="json")`` and then strips the duplicated
     fields so the row stays compact.
+
+    ``draft_text`` is also stripped (Batch 8): on success it duplicates
+    ``final_answer``; on Judge failure it's the rejected-and-unsafe
+    candidate that the user never saw — and we don't want to persist
+    fabricated / scope-violating content even for forensics. The
+    ``judge_verdict.violations[*].excerpt`` is enough forensic signal
+    for "what tripped the Judge" without storing the full unsafe draft.
     """
     dumped = state.model_dump(mode="json")
     # Strip duplicates to keep the row compact (these have dedicated columns).
@@ -183,6 +190,7 @@ def _dump_state(state: ExecutionState) -> dict:
         "validated_planner_proposal",
         "tool_invocations",
         "escalations",
+        "draft_text",
     ):
         dumped.pop(k, None)
     return _to_jsonable(dumped)

@@ -46,12 +46,14 @@ from src.models.planner_proposal import (
 from src.models.v2_turn import V2TurnRequest, V2TurnResponse
 from src.pipeline import (
     access as access_stage,
+    compose as compose_stage,
     context_builder as context_stage,
     evidence_check as evidence_stage,
     execution_state as exec_state_helpers,
     fast_intake,
     finalizer as finalizer_stage,
     guardrails as guardrails_stage,
+    judge as judge_stage,
     path4_renderer,
     persist as persist_stage,
     resolver as resolver_stage,
@@ -66,6 +68,17 @@ from src.utils.errors import LlmUnreachable
 
 
 logger = logging.getLogger(__name__)
+
+
+# Path 4 intents whose answers are produced by the LLM Compose stage
+# (with Judge verification) instead of the deterministic path4_renderer.
+# Synthesis intents — multi-field, fluent prose, deterministic renderers
+# can't naturally produce them at quality.
+#
+# TODO: Move this to PATH_CONFIGS as a per-intent render policy in a
+# future batch (e.g. ``IntentConfig.compose_eligible: bool``). Slice 1
+# keeps it module-local so the registry stays free of behavior knobs.
+COMPOSE_ELIGIBLE_PATH4_INTENTS: frozenset[str] = frozenset({"summary", "blockers"})
 
 
 class V2TurnController:
@@ -83,6 +96,7 @@ class V2TurnController:
         gate: EscalationGate,
         planner: Planner | None = None,
         manager: ManagerConnector | None = None,
+        llm_connector: LlmConnector | None = None,
         session: Session | None = None,
         registry_version: str | None = None,
     ):
@@ -95,6 +109,12 @@ class V2TurnController:
         # surfaces a clean 200 (Path 8.5 template).
         self._planner = planner
         self._manager = manager
+        # LLM connector is used by Compose + Judge for Path 4 synthesis
+        # intents (summary, blockers). When None, those intents fall
+        # back to the deterministic path4_renderer — single-field intents
+        # already use it. Tests that don't care about Compose/Judge can
+        # leave this None.
+        self._llm_connector = llm_connector
         # Session is optional — when None (e.g. tests that don't care
         # about persistence), Persist is skipped. In production DI
         # always provides a Session.
@@ -357,7 +377,25 @@ class V2TurnController:
         # Context Builder — defensive whitelist filter.
         context_stage.build_path_4(state)
 
-        # Path 4 Renderer — deterministic grounded answer.
+        intent = state.plan.intent_topic
+        use_compose = (
+            intent in COMPOSE_ELIGIBLE_PATH4_INTENTS
+            and self._llm_connector is not None
+        )
+
+        if use_compose:
+            # ── Path 4 LLM Compose + Judge branch (Batch 8) ──
+            # Compose drafts; we promote draft to final_text so the
+            # deterministic guardrails (the safety floor) inspect the
+            # actual user-facing answer; then Judge verifies grounding.
+            # Single guardrail run — Judge runs after, on the same text.
+            compose_stage.compose_path_4(state, self._llm_connector)
+            state.final_text = state.draft_text
+            guardrails_stage.run_path_4_guardrails(state)
+            judge_stage.judge_path_4(state, self._llm_connector)
+            return
+
+        # ── Deterministic Path 4 renderer branch (default) ──
         rendered = path4_renderer.render_path_4(state)
         if rendered is None:
             # Shouldn't happen — Evidence Check passed but renderer

@@ -287,7 +287,9 @@ def test_unknown_template_key_via_finalize_also_raises():
     plan = _make_template_only_plan(
         path=PathId.PATH_8_5,
         intent_topic="x",
-        finalizer_template_key="path_8_5.fabrication",  # not in Batch 4 dict
+        # Synthetic key that is intentionally not registered in
+        # finalizer._TEMPLATES — exercises the "loud failure" path.
+        finalizer_template_key="path_8_5.completely_unregistered_key",
     )
     state = _make_state(plan)
     with pytest.raises(ValueError):

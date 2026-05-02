@@ -127,6 +127,27 @@ _TEMPLATES: dict[str, str] = {
         "I can't safely combine information across those RFQs right "
         "now. Please ask about one RFQ at a time."
     ),
+    # LLM Judge failure templates (Batch 8) — composed draft was
+    # rejected by the Judge as ungrounded / unsafe. Generic neutral
+    # wording; never expose the rejected draft or which Judge trigger
+    # fired.
+    "path_8_5.fabrication": (
+        "I can't safely confirm that from the available data. Please "
+        "ask about a specific field of the RFQ."
+    ),
+    "path_8_5.forbidden_inference": (
+        "I can only share grounded operational facts about this RFQ. "
+        "I can't speak to readiness, win probability, or similar "
+        "judgments."
+    ),
+    "path_8_5.unsourced_citation": (
+        "I can't cite that without source evidence. Please ask "
+        "something I can answer from the RFQ data."
+    ),
+    "path_8_5.comparison_violation": (
+        "I can't safely combine information across those RFQs right "
+        "now. Please ask about one RFQ at a time."
+    ),
 }
 
 

@@ -167,12 +167,27 @@ def get_planner() -> Planner | None:
         return None
 
 
+def get_llm_connector_optional() -> LlmConnector | None:
+    """Returns the LLM connector if Azure OpenAI is configured, else None.
+
+    Mirrors :func:`get_planner` semantics — Slice 1 deployments may run
+    without LLM credentials. The Compose + Judge stages (Batch 8) accept
+    None and fall back to the deterministic path4_renderer for synthesis
+    intents. Tests inject ``FakeLlmConnector`` via ``dependency_overrides``.
+    """
+    try:
+        return get_llm_connector()
+    except LlmUnreachable:
+        return None
+
+
 def get_v2_turn_controller(
     factory: ExecutionPlanFactory = Depends(get_factory),
     validator: PlannerValidator = Depends(get_validator),
     gate: EscalationGate = Depends(get_gate),
     planner: Planner | None = Depends(get_planner),
     manager: ManagerConnector = Depends(get_manager_connector),
+    llm_connector: LlmConnector | None = Depends(get_llm_connector_optional),
     db: Session = Depends(get_session),
 ) -> V2TurnController:
     """Per-request /v2 controller. ``db`` is per-request so each turn
@@ -184,6 +199,7 @@ def get_v2_turn_controller(
         gate=gate,
         planner=planner,
         manager=manager,
+        llm_connector=llm_connector,
         session=db,
         registry_version=REGISTRY_VERSION,
     )
