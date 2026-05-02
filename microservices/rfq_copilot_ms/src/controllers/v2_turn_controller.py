@@ -181,7 +181,24 @@ class V2TurnController:
             duration_ms=duration_ms,
             error_payload=error_payload,
         )
-        return self._build_response(thread_id, state, execution_record_id=record_id)
+        response = self._build_response(
+            thread_id, state, execution_record_id=record_id
+        )
+        # One safe info-line per turn — Batch 9 operational diagnostic.
+        # Approved fields only: NO prompts, NO draft_text, NO LLM output,
+        # NO stack traces, NO secrets.
+        logger.info(
+            "v2.turn path=%s intent=%s reason_code=%s target=%s "
+            "duration_ms=%d execution_record_id=%s status=%s",
+            response.path,
+            response.intent_topic,
+            response.reason_code,
+            response.target_rfq_code,
+            duration_ms,
+            response.execution_record_id,
+            status.value if hasattr(status, "value") else str(status),
+        )
+        return response
 
     # ── FastIntake hit branch ─────────────────────────────────────────────
 
@@ -484,10 +501,15 @@ class V2TurnController:
         execution_record_id: str | None = None,
     ) -> V2TurnResponse:
         """Serialize the final state into the v2 response shape."""
+        target_rfq_code: str | None = None
+        if state.resolved_targets:
+            # Slice 1 is single-target; first resolved target wins.
+            target_rfq_code = state.resolved_targets[0].rfq_code
         return V2TurnResponse(
             lane="v2",
             status="answered",
             thread_id=thread_id,
+            turn_id=state.turn_id,
             answer=state.final_text or "",
             path=state.final_path.value if state.final_path else None,
             intent_topic=state.plan.intent_topic,
@@ -496,6 +518,7 @@ class V2TurnController:
                 if state.plan.finalizer_reason_code is not None
                 else None
             ),
+            target_rfq_code=target_rfq_code,
             execution_record_id=execution_record_id,
         )
 
