@@ -173,11 +173,17 @@ def get_v2_turn_controller(
     gate: EscalationGate = Depends(get_gate),
     planner: Planner | None = Depends(get_planner),
     manager: ManagerConnector = Depends(get_manager_connector),
+    db: Session = Depends(get_session),
 ) -> V2TurnController:
+    """Per-request /v2 controller. ``db`` is per-request so each turn
+    gets its own SQLAlchemy session for the Persist write."""
+    from src.config.path_registry import REGISTRY_VERSION
     return V2TurnController(
         factory=factory,
         validator=validator,
         gate=gate,
         planner=planner,
         manager=manager,
+        session=db,
+        registry_version=REGISTRY_VERSION,
     )

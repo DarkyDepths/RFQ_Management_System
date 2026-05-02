@@ -246,6 +246,13 @@ class ExecutionState(BaseModel):
     plan: TurnExecutionPlan
     user_message: str
 
+    # ── Forensics: registry shape at plan-build time (§4.2) ──
+    # The factory copies REGISTRY_VERSION into here so a misroute weeks
+    # later can be diagnosed against the exact registry that built the
+    # plan. None when the controller didn't have a registry version
+    # (rare — only for tests that bypass the factory).
+    registry_version: Optional[str] = None
+
     # ── Intake forensics — set by FastIntake / Planner ──
     intake_path: Literal["fast_intake", "planner"]
     intake_decision: Optional[IntakeDecision] = None

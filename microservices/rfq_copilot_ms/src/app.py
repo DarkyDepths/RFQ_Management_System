@@ -36,7 +36,12 @@ from src.routes.v2.turn_routes import router as v2_turn_router
 from src.utils.errors import AppError
 
 # Register ORM tables with Base.metadata so create_all sees them.
-from src.models.db import AuditLogRow, ThreadRow, TurnRow  # noqa: F401
+from src.models.db import (  # noqa: F401
+    AuditLogRow,
+    ExecutionRecordRow,
+    ThreadRow,
+    TurnRow,
+)
 
 
 logger = logging.getLogger(__name__)

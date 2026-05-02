@@ -202,3 +202,44 @@ def fake_manager() -> FakeManagerConnector:
 @pytest.fixture
 def actor() -> Actor:
     return Actor(user_id="u1", display_name="User One", role="estimator")
+
+
+# ── In-memory SQLite fixture for persistence tests ───────────────────────
+
+
+@pytest.fixture
+def db_session():
+    """Yield a SQLAlchemy session bound to a fresh in-memory SQLite DB.
+
+    Uses ``StaticPool`` so all sessions in the test share one connection
+    (otherwise ``:memory:`` SQLite gives each connection its own private
+    DB and the schema vanishes).
+    """
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from src.database import Base
+    # Import every ORM model so Base.metadata.create_all sees them.
+    from src.models.db import (  # noqa: F401
+        AuditLogRow,
+        ExecutionRecordRow,
+        ThreadRow,
+        TurnRow,
+    )
+
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    SessionFactory = sessionmaker(
+        bind=engine, autocommit=False, autoflush=False
+    )
+    session = SessionFactory()
+    try:
+        yield session
+    finally:
+        session.close()
+        engine.dispose()

@@ -27,12 +27,16 @@ deterministic functions or LLM-injected services).
 from __future__ import annotations
 
 import logging
+import time
 import uuid
+
+from sqlalchemy.orm import Session
 
 from src.connectors.llm_connector import LlmConnector
 from src.connectors.manager_ms_connector import ManagerConnector
 from src.models.actor import Actor
 from src.models.execution_plan import FactoryRejection
+from src.models.execution_record import ExecutionRecordStatus
 from src.models.execution_state import ExecutionState
 from src.models.path_registry import PathId, ReasonCode
 from src.models.planner_proposal import (
@@ -48,6 +52,7 @@ from src.pipeline import (
     fast_intake,
     finalizer as finalizer_stage,
     path4_renderer,
+    persist as persist_stage,
     resolver as resolver_stage,
     tool_executor as tool_executor_stage,
 )
@@ -77,6 +82,8 @@ class V2TurnController:
         gate: EscalationGate,
         planner: Planner | None = None,
         manager: ManagerConnector | None = None,
+        session: Session | None = None,
+        registry_version: str | None = None,
     ):
         self._factory = factory
         self._validator = validator
@@ -87,6 +94,11 @@ class V2TurnController:
         # surfaces a clean 200 (Path 8.5 template).
         self._planner = planner
         self._manager = manager
+        # Session is optional — when None (e.g. tests that don't care
+        # about persistence), Persist is skipped. In production DI
+        # always provides a Session.
+        self._session = session
+        self._registry_version = registry_version
 
     # ── Public entry ──────────────────────────────────────────────────────
 
@@ -97,22 +109,58 @@ class V2TurnController:
         request: V2TurnRequest,
         actor: Actor,
     ) -> V2TurnResponse:
-        """Run the pipeline; return the v2 response on success.
+        """Run the pipeline; persist the execution_record; return the
+        v2 response.
 
         On any failure that the pipeline can recover from (StageError,
         LlmUnreachable, FactoryRejection, ValidationRejection), the
-        Escalation Gate routes to a Path 8.x plan and we still return
-        a 200 success with the safe template answer. True 500s only
-        for the truly-unrecovered case (gate failed AND finalizer
-        crashed).
-        """
-        # Stage 0 — FastIntake.
-        decision = fast_intake.try_match(request.message)
-        if decision is not None:
-            return self._handle_fast_intake_hit(thread_id, request, actor, decision)
+        Escalation Gate routes to a Path 8.x plan, the Finalizer
+        renders the safe template, and we persist with status=
+        ``escalated``. On truly-unexpected exceptions (gate failure,
+        finalizer crash) we recover to a generic Path 8.5 fallback and
+        persist with status=``failed`` + error_payload.
 
-        # FastIntake miss — proceed to Planner-based pipeline.
-        return self._handle_planner_path(thread_id, request, actor)
+        Persistence is fire-and-forget in production: a DB blip never
+        breaks the user-facing answer (Persist runs with strict=False).
+        ``execution_record_id`` is None in the response when
+        persistence was unavailable or failed.
+        """
+        started_at = time.monotonic()
+        error_payload: dict | None = None
+        state: ExecutionState
+
+        try:
+            # Stage 0 — FastIntake.
+            decision = fast_intake.try_match(request.message)
+            if decision is not None:
+                state = self._handle_fast_intake_hit(
+                    thread_id, request, actor, decision
+                )
+            else:
+                state = self._handle_planner_path(thread_id, request, actor)
+        except Exception as exc:
+            # Unexpected — gate / finalizer / something downstream
+            # crashed. Recover to a Path 8.5 placeholder so the user
+            # gets a safe reply, and persist as "failed" with the
+            # error payload for forensics.
+            logger.exception("V2 pipeline unrecovered failure")
+            error_payload = {
+                "type": exc.__class__.__name__,
+                "message": str(exc),
+            }
+            state = self._recover_unexpected_failure(thread_id, request, actor)
+
+        duration_ms = int((time.monotonic() - started_at) * 1000)
+        status = self._derive_status(state, had_error=error_payload is not None)
+        record_id = self._persist(
+            thread_id=thread_id,
+            state=state,
+            user_message=request.message,
+            status=status,
+            duration_ms=duration_ms,
+            error_payload=error_payload,
+        )
+        return self._build_response(thread_id, state, execution_record_id=record_id)
 
     # ── FastIntake hit branch ─────────────────────────────────────────────
 
@@ -122,7 +170,7 @@ class V2TurnController:
         request: V2TurnRequest,
         actor: Actor,
         decision,
-    ) -> V2TurnResponse:
+    ) -> ExecutionState:
         plan_or_rejection = self._factory.build_from_intake(
             decision=decision, actor=actor
         )
@@ -132,8 +180,6 @@ class V2TurnController:
                 "FastIntake -> factory rejection for %s/%s: %s",
                 decision.path.value, decision.intent_topic, plan_or_rejection.trigger,
             )
-            # Build a minimal state with a stand-in Path 8.1 plan and
-            # finalize a generic unsupported template.
             state = self._init_state_from_failed_intake(
                 thread_id, request, actor, decision
             )
@@ -145,7 +191,7 @@ class V2TurnController:
                 details={"factory_rule": plan_or_rejection.factory_rule},
             )
             finalizer_stage.finalize(state)
-            return self._build_response(thread_id, state)
+            return state
 
         plan = plan_or_rejection
         state = exec_state_helpers.init_state_from_intake(
@@ -155,8 +201,9 @@ class V2TurnController:
             plan=plan,
             decision=decision,
         )
+        state.registry_version = self._registry_version
         finalizer_stage.finalize(state)
-        return self._build_response(thread_id, state)
+        return state
 
     # ── Planner branch ────────────────────────────────────────────────────
 
@@ -165,7 +212,7 @@ class V2TurnController:
         thread_id: str,
         request: V2TurnRequest,
         actor: Actor,
-    ) -> V2TurnResponse:
+    ) -> ExecutionState:
         # Planner availability check — Slice 1 may run with planner=None
         # for the FastIntake-only deployment. Until LLM is configured,
         # we route any non-FastIntake message to Path 8.5 llm_unavailable.
@@ -179,7 +226,7 @@ class V2TurnController:
                 details={"reason": "no Planner injected"},
             )
             finalizer_stage.finalize(state)
-            return self._build_response(thread_id, state)
+            return state
 
         # ── Planner.classify (LLM call) ──
         try:
@@ -198,12 +245,13 @@ class V2TurnController:
                 details={"cause": str(exc)},
             )
             finalizer_stage.finalize(state)
-            return self._build_response(thread_id, state)
+            return state
 
         # ── PlannerValidator.validate ──
         validated_or_rejection = self._validator.validate(proposal)
         if isinstance(validated_or_rejection, ValidationRejection):
             state = self._init_state_for_failure(thread_id, request, actor)
+            state.planner_proposal = proposal
             self._gate.route(
                 state,
                 trigger=validated_or_rejection.trigger,
@@ -212,13 +260,15 @@ class V2TurnController:
                 details={"rule_number": validated_or_rejection.rule_number},
             )
             finalizer_stage.finalize(state)
-            return self._build_response(thread_id, state)
+            return state
         validated: ValidatedPlannerProposal = validated_or_rejection
 
         # ── ExecutionPlanFactory.build_from_planner ──
         plan_or_rejection = self._factory.build_from_planner(validated, actor=actor)
         if isinstance(plan_or_rejection, FactoryRejection):
             state = self._init_state_for_failure(thread_id, request, actor)
+            state.planner_proposal = proposal
+            state.validated_planner_proposal = validated
             self._gate.route(
                 state,
                 trigger=plan_or_rejection.trigger,
@@ -227,7 +277,7 @@ class V2TurnController:
                 details={"factory_rule": plan_or_rejection.factory_rule},
             )
             finalizer_stage.finalize(state)
-            return self._build_response(thread_id, state)
+            return state
         plan = plan_or_rejection
 
         # ── Build the state for downstream stages ──
@@ -239,6 +289,7 @@ class V2TurnController:
             intake_path="planner",
             planner_proposal=validated.proposal,
             validated_planner_proposal=validated,
+            registry_version=self._registry_version,
         )
 
         # ── Path-specific downstream (Path 4 only in Slice 1) ──
@@ -257,7 +308,7 @@ class V2TurnController:
                 )
 
         finalizer_stage.finalize(state)
-        return self._build_response(thread_id, state)
+        return state
 
     # ── Path 4 deterministic stage chain ─────────────────────────────────
 
@@ -381,7 +432,11 @@ class V2TurnController:
         )
 
     def _build_response(
-        self, thread_id: str, state: ExecutionState
+        self,
+        thread_id: str,
+        state: ExecutionState,
+        *,
+        execution_record_id: str | None = None,
     ) -> V2TurnResponse:
         """Serialize the final state into the v2 response shape."""
         return V2TurnResponse(
@@ -396,4 +451,86 @@ class V2TurnController:
                 if state.plan.finalizer_reason_code is not None
                 else None
             ),
+            execution_record_id=execution_record_id,
         )
+
+    # ── Unexpected-failure recovery + status derivation + persist ────────
+
+    def _recover_unexpected_failure(
+        self,
+        thread_id: str,  # noqa: ARG002
+        request: V2TurnRequest,
+        actor: Actor,
+    ) -> ExecutionState:
+        """Build a Path 8.5 placeholder state for unexpected exceptions.
+
+        Mirrors ``_init_state_for_failure`` but reaches a guaranteed
+        Path 8.5 ``llm_unavailable`` plan via the factory's
+        ``build_from_escalation`` (the most generic safe template).
+        Used by ``handle_turn``'s outer try/except.
+        """
+        from src.models.execution_plan import EscalationRequest
+
+        plan = self._factory.build_from_escalation(
+            EscalationRequest(
+                target_path=PathId.PATH_8_5,
+                reason_code=ReasonCode("llm_unavailable"),
+                source_stage="orchestrator",
+                trigger="unexpected_pipeline_failure",
+            ),
+            actor=actor,
+        )
+        state = ExecutionState(
+            turn_id=str(uuid.uuid4()),
+            actor=actor,
+            plan=plan,
+            user_message=request.message,
+            intake_path="planner",
+            registry_version=self._registry_version,
+        )
+        finalizer_stage.finalize(state)
+        return state
+
+    @staticmethod
+    def _derive_status(
+        state: ExecutionState, *, had_error: bool
+    ) -> ExecutionRecordStatus:
+        """Derive the persistence status from the final state shape.
+
+        * unhandled exception caught by handle_turn -> ``failed``
+        * any escalation fired -> ``escalated``
+        * normal completion -> ``answered``
+        """
+        if had_error:
+            return ExecutionRecordStatus.FAILED
+        if state.escalations:
+            return ExecutionRecordStatus.ESCALATED
+        return ExecutionRecordStatus.ANSWERED
+
+    def _persist(
+        self,
+        *,
+        thread_id: str,
+        state: ExecutionState,
+        user_message: str,
+        status: ExecutionRecordStatus,
+        duration_ms: int,
+        error_payload: dict | None,
+    ) -> str | None:
+        """Write the execution record. Returns the row id on success,
+        ``None`` if persistence is unavailable (no session) or fails
+        (production strict=False)."""
+        if self._session is None:
+            return None
+        record = persist_stage.persist_execution_record(
+            session=self._session,
+            state=state,
+            thread_id=thread_id,
+            user_message=user_message,
+            final_answer=state.final_text,
+            status=status,
+            duration_ms=duration_ms,
+            error_payload=error_payload,
+            strict=False,  # production: never break the user answer
+        )
+        return record.id if record is not None else None

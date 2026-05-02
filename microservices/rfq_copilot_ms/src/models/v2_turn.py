@@ -55,3 +55,7 @@ class V2TurnResponse(BaseModel):
     path: Optional[str] = None
     intent_topic: Optional[str] = None
     reason_code: Optional[str] = None
+    execution_record_id: Optional[str] = None
+    """ID of the persisted ``execution_records`` row for this turn.
+    None when persistence was unavailable or failed (production
+    ``strict=False`` mode); see Batch 6 / freeze §4."""
