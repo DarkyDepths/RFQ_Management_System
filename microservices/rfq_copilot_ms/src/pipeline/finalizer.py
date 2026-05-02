@@ -69,6 +69,36 @@ _TEMPLATES: dict[str, str] = {
     "path_8_3.empty_message": (
         "Please type a question or tell me which RFQ you want to look at."
     ),
+    "path_8_3.no_target": (
+        "Which RFQ are you asking about? Please share an RFQ code "
+        "(like IF-0001) or open the RFQ page first."
+    ),
+    "path_8_3.unclear_intent": (
+        "Could you rephrase that? I'm not sure what you'd like to know."
+    ),
+    "path_8_3.low_confidence": (
+        "I'm not sure I understood that — could you rephrase or share "
+        "more detail?"
+    ),
+    "path_8_3.ambiguous": (
+        "I found more than one match — could you specify which RFQ "
+        "you mean?"
+    ),
+    "path_8_3.multi_intent": (
+        "You asked more than one thing in that message — which would "
+        "you like me to handle first?"
+    ),
+    "path_8_3.comparison_missing_target": (
+        "Which RFQs would you like me to compare? Please share two or "
+        "more RFQ codes."
+    ),
+    "path_8_3.pre_search_underspecified": (
+        "Could you narrow that down? Try filtering by status, owner, "
+        "or a deadline window."
+    ),
+    "path_8_3.post_search_unrenderable": (
+        "That returned a lot of RFQs — could you filter further?"
+    ),
     # ── Path 8.4 — inaccessible / missing ────────────────────────────
     "path_8_4.denied": "I can't access that RFQ.",
     "path_8_4.all_inaccessible": (
@@ -114,16 +144,26 @@ def finalize(state: ExecutionState) -> None:
     """Render the user-facing message and write it back to the
     ExecutionState.
 
+    Two cases:
+
+    1. **Already-grounded answer** (``state.final_text`` is already set)
+       — typically Path 4 where ``path4_renderer.render_path_4()``
+       populated ``final_text`` from manager evidence. Finalizer is a
+       no-op for content; just sets ``final_path`` for forensics.
+    2. **Template-only path** (``state.final_text`` is None) — Path 1
+       conversational, Path 8.x safety paths. Look up the template via
+       ``state.plan.finalizer_template_key`` and render.
+
     Sets:
 
-    * ``state.final_text`` — the rendered template string.
+    * ``state.final_text`` — the rendered template string (case 2 only).
     * ``state.final_path`` — copies ``state.plan.path`` so the caller
-      can record the actual path used (which may differ from
-      ``state.plan.path`` only after escalation has replaced the plan,
-      but Batch 4 has no escalation flow yet).
+      can record the actual path used (which may differ from the
+      original plan.path after escalation).
 
     Does NOT call into Persist (§13) — that's a separate stage in a
     later batch.
     """
-    state.final_text = render_template(state.plan)
+    if state.final_text is None:
+        state.final_text = render_template(state.plan)
     state.final_path = state.plan.path

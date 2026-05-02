@@ -192,6 +192,13 @@ class EscalationEvent(BaseModel):
 
     Appended to ``ExecutionState.escalations`` whenever the Gate routes
     a stage failure trigger.
+
+    NOTE: ``source_stage`` includes ``"factory"`` and ``"orchestrator"``
+    in addition to the freeze §14.4 ten core stages. Factory rejections
+    (rules F1..F8) and orchestrator-level catches (turn-budget,
+    unhandled exceptions) need distinct source labels for forensics.
+    Additive extension introduced in Batch 5; no breaking change to
+    callers that emit the original ten values.
     """
 
     model_config = _FROZEN_RECORD
@@ -201,6 +208,7 @@ class EscalationEvent(BaseModel):
     source_stage: Literal[
         "planner",
         "validator",
+        "factory",
         "resolver",
         "access",
         "tool_executor",
@@ -209,6 +217,7 @@ class EscalationEvent(BaseModel):
         "compose",
         "guardrail",
         "judge",
+        "orchestrator",
     ]
     fired_at: datetime
     details: Optional[dict] = None
