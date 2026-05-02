@@ -36,16 +36,19 @@ Batch 0 status: STUB ONLY. No template registry / no rendering yet.
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   def finalize(state) -> None:
-#       """Render plan.finalizer_template_key (with reason_code variant
-#       for Path 8.x), write state.final_text + state.final_path, set
-#       status=COMPLETED or ESCALATED."""
+from src.models.execution_state import ExecutionState
 
 
-def finalize(state):  # noqa: ARG001
+def finalize(state: ExecutionState) -> None:  # noqa: ARG001
+    """Render ``state.plan.finalizer_template_key`` (with the
+    ``finalizer_reason_code`` variant for Path 8.x), write
+    ``state.final_text`` + ``state.final_path``, transition the turn
+    status to ``COMPLETED`` or ``ESCALATED``.
+
+    Policy-stupid: never inspects ``state.escalations[-1]`` to choose
+    the template. The Escalation Gate already re-entered the factory
+    and the appropriate Path 8.x plan is in ``state.plan``.
+    """
     raise NotImplementedError(
         "finalizer.finalize() scaffolded only. "
         "See docs/11-Architecture_Frozen_v2.md §5 (Finalizer) / §12.6."

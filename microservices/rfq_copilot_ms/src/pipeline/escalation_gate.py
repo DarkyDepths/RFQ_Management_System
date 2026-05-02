@@ -37,28 +37,36 @@ Allowed registry reader (CI guard §11.5.2):
   look up ``PathConfig.finalizer_template_keys[reason_code]`` when
   constructing the ``EscalationRequest``.
 
-Batch 0 status: STUB ONLY. No matrix / no routing implemented yet.
+Status: SIGNATURE STUB. Type contracts wired in Batch 1; matrix +
+factory re-entry land in a later batch.
 """
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   from src.pipeline.execution_plan_factory import ExecutionPlanFactory
-#   from src.models.execution_plan import EscalationRequest
-#
-#   class EscalationGate:
-#       def __init__(self, factory: ExecutionPlanFactory): ...
-#       def route(self, state, trigger: str, reason_code, source_stage: str) -> None:
-#           """Build EscalationRequest, re-enter factory, replace state.plan,
-#           append EscalationEvent. Never instantiates TurnExecutionPlan."""
+from src.models.execution_state import ExecutionState
+from src.models.path_registry import ReasonCode
+from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 
 
 class EscalationGate:
-    """Stub class. Routing matrix lands in Slice 1."""
+    """Cross-cutting failure-trigger intercept.
 
-    def route(self, state, trigger, reason_code, source_stage):  # noqa: ARG002
+    Routes to Path 8.x by building an ``EscalationRequest`` and calling
+    ``ExecutionPlanFactory.build_from_escalation(...)``. **Never
+    instantiates ``TurnExecutionPlan`` directly** — CI guard §11.5.1
+    enforces this.
+    """
+
+    def __init__(self, factory: ExecutionPlanFactory):
+        self._factory = factory
+
+    def route(
+        self,
+        state: ExecutionState,  # noqa: ARG002
+        trigger: str,  # noqa: ARG002
+        reason_code: ReasonCode,  # noqa: ARG002
+        source_stage: str,  # noqa: ARG002
+    ) -> None:
         raise NotImplementedError(
             "EscalationGate.route() scaffolded only. "
             "Must call ExecutionPlanFactory.build_from_escalation() per §5.2."

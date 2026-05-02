@@ -36,16 +36,17 @@ Batch 0 status: STUB ONLY. No tool invocation wired yet.
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   def execute(state) -> None:
-#       """For each tool in plan.allowed_evidence_tools: build args
-#       deterministically, invoke, append to state.tool_invocations,
-#       populate state.evidence_packets."""
+from src.models.execution_state import ExecutionState
 
 
-def execute(state):  # noqa: ARG001
+def execute(state: ExecutionState) -> None:  # noqa: ARG001
+    """For each tool in ``state.plan.allowed_evidence_tools``: build
+    args deterministically, invoke, append a ``ToolInvocation`` to
+    ``state.tool_invocations``, populate ``state.evidence_packets``.
+
+    Pure deterministic invocation — no LLM call, no tool selection.
+    CI guard §11.3 forbids any LLM SDK import in this module.
+    """
     raise NotImplementedError(
         "tool_executor.execute() scaffolded only. "
         "See docs/11-Architecture_Frozen_v2.md §5 (Tool Executor)."

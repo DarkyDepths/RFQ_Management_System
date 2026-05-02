@@ -23,24 +23,20 @@ Hard discipline (CI-enforced — §11.5.3):
   (cheap). False positives short-circuit a real question into a canned
   reply (broken UX).
 
-Batch 0 status: STUB ONLY. No behavior implemented yet.
+Status: SIGNATURE STUB. Type contracts wired in Batch 1; matching logic
+lands in a later batch.
 """
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   from src.models.intake_decision import IntakeDecision
-#
-#   def try_match(user_message: str) -> IntakeDecision | None:
-#       """Return an IntakeDecision on hit, None on miss."""
+from src.models.intake_decision import IntakeDecision
 
 
-def try_match(user_message: str):  # noqa: ARG001 — stub signature
-    """Stub: always returns ``None`` (miss). Real implementation in Slice 1.
+def try_match(user_message: str) -> IntakeDecision | None:  # noqa: ARG001
+    """Return an ``IntakeDecision`` on a hit, ``None`` on a miss.
 
-    Returns ``None`` so Batch 0 callers (none yet) fall through to the
-    Planner path, preserving /v1 behavior unchanged.
+    Stub: always returns ``None``. Callers (none yet in Batch 1) fall
+    through to the Planner path, preserving /v1 behavior unchanged.
+    Real anchored-regex implementation lands in a later batch.
     """
     return None

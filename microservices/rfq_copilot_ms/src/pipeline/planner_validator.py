@@ -35,26 +35,29 @@ as feedback. A second failure routes to the Escalation Gate. Factory
 rejections (rules F1..F8) are NOT replanned — the registry will not
 change between retries.
 
-Batch 0 status: STUB ONLY. No rules implemented yet.
+Status: SIGNATURE STUB. Type contracts wired in Batch 1; rule logic
+lands in a later batch.
 """
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   from src.models.planner_proposal import (
-#       PlannerProposal, ValidatedPlannerProposal, ValidationRejection,
-#   )
-#
-#   def validate(proposal: PlannerProposal) -> ValidatedPlannerProposal | ValidationRejection:
-#       """Run rules 1, 2, 2b, 2c, 2d, 3, 4, 5 in order; first failure wins."""
+from src.models.planner_proposal import (
+    PlannerProposal,
+    ValidatedPlannerProposal,
+    ValidationRejection,
+)
 
 
 class PlannerValidator:
-    """Stub class. Rules + replan logic land in Slice 1."""
+    """LLM-failure structural checks only (rules 1, 2, 2b, 2c, 2d, 3, 4, 5).
 
-    def validate(self, proposal):  # noqa: ARG002
+    Pure deterministic function — no Path Registry reads, no policy
+    enforcement (those move to ExecutionPlanFactory rules F1..F8).
+    """
+
+    def validate(
+        self, proposal: PlannerProposal  # noqa: ARG002
+    ) -> ValidatedPlannerProposal | ValidationRejection:
         raise NotImplementedError(
             "PlannerValidator.validate() is scaffolded but not implemented. "
             "See docs/11-Architecture_Frozen_v2.md §2.3."

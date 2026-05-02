@@ -43,41 +43,51 @@ Batch 0 status: STUB ONLY. No rules / no policy resolution yet.
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   from src.models.execution_plan import (
-#       TurnExecutionPlan, EscalationRequest, FactoryRejection,
-#   )
-#   from src.models.intake_decision import IntakeDecision
-#   from src.models.planner_proposal import ValidatedPlannerProposal
-#
-#   class ExecutionPlanFactory:
-#       def build_from_intake(self, decision, actor, session) -> TurnExecutionPlan: ...
-#       def build_from_planner(self, validated, actor, session) -> TurnExecutionPlan | FactoryRejection: ...
-#       def build_from_escalation(self, request, actor, session) -> TurnExecutionPlan: ...
+from src.models.actor import Actor
+from src.models.execution_plan import (
+    EscalationRequest,
+    FactoryRejection,
+    TurnExecutionPlan,
+)
+from src.models.intake_decision import IntakeDecision
+from src.models.planner_proposal import ValidatedPlannerProposal
 
 
 class ExecutionPlanFactory:
-    """Stub class. The single TurnExecutionPlan constructor.
+    """The single ``TurnExecutionPlan`` constructor.
 
-    CI guard §11.5.1 (anti-drift test) verifies that
-    ``TurnExecutionPlan(...)`` is instantiated **only** in this module.
+    CI guard §11.5.1 verifies that ``TurnExecutionPlan(...)`` is
+    instantiated **only** in this module.
     """
 
-    def build_from_intake(self, decision, actor, session):  # noqa: ARG002
+    def build_from_intake(
+        self,
+        decision: IntakeDecision,  # noqa: ARG002
+        actor: Actor,  # noqa: ARG002
+        session: object,  # noqa: ARG002 — SessionState type lands in a later batch
+    ) -> TurnExecutionPlan:
         raise NotImplementedError(
             "ExecutionPlanFactory.build_from_intake() scaffolded only. "
             "See docs/11-Architecture_Frozen_v2.md §2.7."
         )
 
-    def build_from_planner(self, validated, actor, session):  # noqa: ARG002
+    def build_from_planner(
+        self,
+        validated: ValidatedPlannerProposal,  # noqa: ARG002
+        actor: Actor,  # noqa: ARG002
+        session: object,  # noqa: ARG002
+    ) -> TurnExecutionPlan | FactoryRejection:
         raise NotImplementedError(
             "ExecutionPlanFactory.build_from_planner() scaffolded only. "
             "See docs/11-Architecture_Frozen_v2.md §2.7."
         )
 
-    def build_from_escalation(self, request, actor, session):  # noqa: ARG002
+    def build_from_escalation(
+        self,
+        request: EscalationRequest,  # noqa: ARG002
+        actor: Actor,  # noqa: ARG002
+        session: object,  # noqa: ARG002
+    ) -> TurnExecutionPlan:
         raise NotImplementedError(
             "ExecutionPlanFactory.build_from_escalation() scaffolded only. "
             "See docs/11-Architecture_Frozen_v2.md §2.7 / §5.2."

@@ -27,27 +27,23 @@ Hard discipline:
 * Reads NO Path Registry entries directly. The validator + factory own
   policy enforcement.
 
-Batch 0 status: STUB ONLY. No LLM call wired yet.
+Status: SIGNATURE STUB. Type contracts wired in Batch 1; LLM call lands
+in a later batch.
 """
 
 from __future__ import annotations
 
-# Implementation deferred to Slice 1 batch.
-# Future signature (illustrative — do not import yet):
-#
-#   from src.connectors.llm_connector import LlmConnector
-#   from src.models.planner_proposal import PlannerProposal
-#
-#   class Planner:
-#       def __init__(self, llm: LlmConnector): ...
-#       def classify(self, user_message: str, history: list) -> PlannerProposal:
-#           """One LLM call, JSON schema enforced, returns untrusted proposal."""
+from src.models.planner_proposal import PlannerProposal
 
 
 class Planner:
-    """Stub class. Real GPT-4o structured-output wiring lands in Slice 1."""
+    """GPT-4o structured Planner — emits untrusted ``PlannerProposal``."""
 
-    def classify(self, user_message: str, history: list | None = None):  # noqa: ARG002
+    def classify(
+        self,
+        user_message: str,  # noqa: ARG002
+        history: list | None = None,  # noqa: ARG002
+    ) -> PlannerProposal:
         raise NotImplementedError(
             "Planner.classify() is scaffolded but not implemented. "
             "See docs/11-Architecture_Frozen_v2.md §2.1 / §3.5."
