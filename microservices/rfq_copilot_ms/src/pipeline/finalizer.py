@@ -116,6 +116,17 @@ _TEMPLATES: dict[str, str] = {
         "The language model I rely on isn't available right now. "
         "Please try again shortly."
     ),
+    # Guardrail-failure templates (Batch 7) — deterministic safety floor
+    # caught the answer before it reached the user. Generic, neutral
+    # wording: never leak which guardrail fired or why.
+    "path_8_5.forbidden_inference_deterministic": (
+        "I can't safely answer that question right now. Please try "
+        "rephrasing or ask about a different field."
+    ),
+    "path_8_5.target_isolation_violation": (
+        "I can't safely combine information across those RFQs right "
+        "now. Please ask about one RFQ at a time."
+    ),
 }
 
 

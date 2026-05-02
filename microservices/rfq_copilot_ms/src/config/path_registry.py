@@ -425,6 +425,8 @@ PATH_CONFIGS: PathRegistry = {
         persistence_policy=_PERSISTENCE_PATH_4,
         active_guardrails=[
             GuardrailId("evidence"),
+            GuardrailId("forbidden_field"),
+            GuardrailId("internal_label"),
             GuardrailId("scope"),
             GuardrailId("shape"),
         ],

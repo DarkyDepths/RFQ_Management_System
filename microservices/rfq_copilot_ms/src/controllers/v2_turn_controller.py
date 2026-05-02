@@ -51,6 +51,7 @@ from src.pipeline import (
     execution_state as exec_state_helpers,
     fast_intake,
     finalizer as finalizer_stage,
+    guardrails as guardrails_stage,
     path4_renderer,
     persist as persist_stage,
     resolver as resolver_stage,
@@ -368,6 +369,12 @@ class V2TurnController:
                 details={"reason": "renderer returned None despite evidence check"},
             )
         state.final_text = rendered
+
+        # Guardrails (Batch 7) — deterministic safety floor between
+        # render and finalize. Any failure raises StageError; the
+        # outer try/except in _handle_planner_path catches and routes
+        # via the gate to a safe Path 8.5 template.
+        guardrails_stage.run_path_4_guardrails(state)
 
     # ── Helpers ───────────────────────────────────────────────────────────
 
