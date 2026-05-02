@@ -130,7 +130,23 @@ body {
 </head>
 <body>
 
-<div class="header-label">rfq_copilot_ms — v3 path-aware</div>
+<div style="background:#3a1515;border:2px solid #da3633;border-radius:8px;padding:20px 24px;margin-bottom:32px;color:#ff7b72;font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6;">
+  <div style="font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;color:#ff7b72;">⚠ SUPERSEDED — DO NOT USE FOR IMPLEMENTATION</div>
+  <div style="font-size:14px;color:#ffa198;">
+    This document is the prior <strong>v3</strong> architecture. It has been <strong>invalidated by the freeze</strong> dated 2026-04-27.
+    The canonical specification is <code style="background:#2d2208;padding:2px 6px;border-radius:3px;color:#e3b341;">docs/11-Architecture_Frozen_v2.md</code>;
+    the visual rendering is <code style="background:#2d2208;padding:2px 6px;border-radius:3px;color:#e3b341;">docs/rfq_copilot_architecture_v4.html</code>.
+    See <strong>Architecture_Frozen_v2 Appendix A</strong> for the full list of supersessions.
+    <br><br>
+    Specifically forbidden by the freeze: the prior planner-with-deterministic-fallback framing, the prior LLM tool-calling stage naming,
+    LLM-driven tool selection, LLM-owned escalation routing, free-text Planner/Judge output, and any pipeline that accepts an unvalidated
+    Planner proposal directly.
+    <br><br>
+    The diagram below is preserved for historical context only.
+  </div>
+</div>
+
+<div class="header-label">rfq_copilot_ms — v3 path-aware (SUPERSEDED)</div>
 <div class="header-title">Architecture v3 — One canonical pipeline, 8 path profiles</div>
 <div class="header-sub">
   The architecture is a single deterministic pipeline. The Path Planner classifies every turn into one of 8 paths, and each path activates only the stages it needs.<br>

@@ -1,1 +1,0 @@
-"""Intelligence tools — agent-exposed wrappers around intelligence_ms_connector: snapshot, briefing, workbook_profile, workbook_review, artifacts_catalog, artifact_metadata. Carries partial / cold-start markers from the translator. Path 5 forbidden_inference policy is enforced by the judge, not here."""

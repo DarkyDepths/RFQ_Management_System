@@ -9,18 +9,23 @@ from src.models.thread import GeneralMode, RfqBoundMode
 
 
 _GENERAL = (
-    "Backend connected — your message is now persisted on the copilot service. "
-    "I'm still in MVP demo mode without grounding; manager-side RFQ data lands "
-    "in the next batch."
+    "I can answer questions about a specific RFQ when you open me from "
+    "an RFQ page. Portfolio-wide and intelligence-side answers are still "
+    "being connected — coming in the next batches."
 )
 
 
 def generate_canned_reply(mode: GeneralMode | RfqBoundMode) -> str:
+    """Used by TurnController for general mode only (Batch 4 onward).
+
+    rfq_bound mode is now handled by RfqGroundedReplyService. The
+    rfq_bound branch here remains as a defensive fallback for cases
+    where the service was somehow not wired (should be unreachable in
+    production paths).
+    """
     if isinstance(mode, GeneralMode):
         return _GENERAL
     return (
-        f"Backend connected for {mode.rfq_label} — your message is now persisted "
-        "on the copilot service. I'm still in MVP demo mode without RFQ-side "
-        "grounding; deadline, stage, owner, and blockers will be answered through "
-        "rfq_manager_ms in the next batch."
+        f"I'm ready for {mode.rfq_label} but my RFQ grounding service is "
+        "not currently wired. Please retry in a moment."
     )

@@ -1,1 +1,0 @@
-"""Finalizer templates — registry keyed by (PathId, outcome). Renders the user-facing message for each path's terminal cases (success, partial, stale, unsupported, out_of_scope, access_denied, evidence_missing, ambiguity_max_rounds). Soft triggers (staleness/partial caveats) appended here. Strict mode toggle (I4) governs caveat verbosity."""

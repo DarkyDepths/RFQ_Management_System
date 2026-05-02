@@ -1,1 +1,0 @@
-"""Manager tools — agent-exposed wrappers around manager_ms_connector for evidence retrieval: profile, stages, reminders, dashboard_metrics, analytics. Each tool declares schema + target backend + per-path exposure (tools_registry); emits source_refs the evidence guardrail can verify."""

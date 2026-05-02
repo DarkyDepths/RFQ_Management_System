@@ -1,10 +1,13 @@
 """TurnController — persists one turn and emits the assistant reply.
 
-Batch 3 flow: persist user turn -> generate canned reply -> persist
-assistant turn -> touch thread activity -> audit-log -> return.
+Batch 4.2 flow:
+- general mode    -> PortfolioGroundedReplyService (manager stats + list + LLM)
+- rfq_bound mode  -> RfqGroundedReplyService (manager detail + stages + LLM)
+- defensive fallback (rfq_bound w/ missing rfq_id) -> canned_reply
 
-Batch 5 will replace the canned-reply import with the LLM-backed
-pipeline. The controller's shape does not change.
+Persistence + audit + activity-touch are mode-agnostic. The controller
+stays thin: prompt construction, RFQ fetching, and LLM calls all live
+in the service / connector layers.
 """
 
 from __future__ import annotations
@@ -15,8 +18,10 @@ from src.datasources.audit_log_datasource import AuditLogDatasource
 from src.datasources.thread_datasource import ThreadDatasource
 from src.datasources.turn_datasource import TurnDatasource
 from src.models.actor import Actor
-from src.models.thread import GeneralMode, RfqBoundMode
+from src.models.thread import RfqBoundMode
 from src.models.turn import MessageView, TurnResponse
+from src.services.portfolio_grounded_reply import PortfolioGroundedReplyService
+from src.services.rfq_grounded_reply import RfqGroundedReplyService
 from src.utils.canned_reply import generate_canned_reply
 from src.utils.errors import NotFoundError
 
@@ -28,11 +33,15 @@ class TurnController:
         turn_ds: TurnDatasource,
         audit_ds: AuditLogDatasource,
         session: Session,
+        grounded_reply_service: RfqGroundedReplyService,
+        portfolio_reply_service: PortfolioGroundedReplyService,
     ):
         self.thread_ds = thread_ds
         self.turn_ds = turn_ds
         self.audit_ds = audit_ds
         self.session = session
+        self.grounded_reply_service = grounded_reply_service
+        self.portfolio_reply_service = portfolio_reply_service
 
     def process_turn(
         self,
@@ -53,16 +62,32 @@ class TurnController:
             payload={"thread_id": thread.id},
         )
 
-        if thread.mode_kind == "general":
-            mode = GeneralMode(kind="general")
+        # Real prior history (excluding the user_row we just appended).
+        # The service will window this to the last N pairs.
+        all_turns = self.turn_ds.list_for_thread(thread.id)
+        history = all_turns[:-1]
+
+        if thread.mode_kind == "rfq_bound" and thread.rfq_id:
+            reply_text = self.grounded_reply_service.generate(
+                actor=actor,
+                rfq_id=thread.rfq_id,
+                user_message=user_message,
+                history=history,
+            )
+        elif thread.mode_kind == "general":
+            reply_text = self.portfolio_reply_service.generate(
+                actor=actor,
+                user_message=user_message,
+                history=history,
+            )
         else:
+            # Defensive fallback for rfq_bound thread missing rfq_id.
             mode = RfqBoundMode(
                 kind="rfq_bound",
-                rfq_id=thread.rfq_id,
-                rfq_label=thread.rfq_label,
+                rfq_id=thread.rfq_id or "",
+                rfq_label=thread.rfq_label or "",
             )
-
-        reply_text = generate_canned_reply(mode)
+            reply_text = generate_canned_reply(mode)
 
         assistant_row = self.turn_ds.append(thread.id, "assistant", reply_text)
         self.audit_ds.record(

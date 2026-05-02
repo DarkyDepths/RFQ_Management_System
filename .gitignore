@@ -1,0 +1,6 @@
+# Dev runtime logs (Next.js dev server)
+.next-dev.err.log
+.next-dev.out.log
+
+# Local archive/backup artifacts
+*.zip
