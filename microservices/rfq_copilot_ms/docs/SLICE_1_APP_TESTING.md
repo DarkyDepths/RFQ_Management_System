@@ -62,9 +62,12 @@ with at least:
 # DB — defaults to local SQLite, fine for dev
 DATABASE_URL=sqlite:///./rfq_copilot.db
 
-# Manager wiring — must point at the running rfq_manager_ms
-# Example (adjust the port to wherever you launched manager_ms):
-MANAGER_BASE_URL=http://localhost:8000/rfq-manager/v1
+# Manager wiring — service ROOT only. The copilot's ManagerConnector
+# appends the API path "/rfq-manager/v1" itself, so do NOT include
+# it here or every URL gets doubled and 404s.
+# Adjust the port to wherever you launched rfq_manager_ms (its
+# default is :8000):
+MANAGER_BASE_URL=http://localhost:8000
 
 # Azure OpenAI — required for Planner + Compose + Judge
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com
@@ -78,6 +81,9 @@ AZURE_OPENAI_CHAT_DEPLOYMENT=<your-gpt4o-deployment>
 - `MANAGER_BASE_URL` is empty by default; you must set it for Path 4.
   If unset, Path 4 questions safely route to Path 8.5
   `source_unavailable` rather than crashing.
+- **Set the service root only** (e.g. `http://localhost:8000`). The
+  `ManagerConnector` appends `/rfq-manager/v1` internally — including
+  it in the env var causes `/rfq-manager/v1/rfq-manager/v1/...` 404s.
 - Azure variables are empty by default. Missing Azure -> non-FastIntake
   messages route to Path 8.5 `llm_unavailable`. Boot will not fail.
 - **Never commit `.env`.** Never paste keys into chat. The copilot logs
@@ -323,7 +329,7 @@ the redacted `state_json`.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Every non-FastIntake message returns Path 8.5 `llm_unavailable` | Azure env vars missing or wrong | Verify `AZURE_OPENAI_*` in `.env`; restart copilot. Check `/health/readiness`. |
-| Every Path 4 query returns Path 8.5 `source_unavailable` | Manager not running, or `MANAGER_BASE_URL` wrong | Start `rfq_manager_ms`; verify the port + base path; `curl` `MANAGER_BASE_URL/rfqs/<known-id>` directly. |
+| Every Path 4 query returns Path 8.5 `source_unavailable` | Manager not running, or `MANAGER_BASE_URL` set to the wrong value (e.g. duplicates the API path) | Start `rfq_manager_ms`. Verify the *service-root* form: `curl $MANAGER_BASE_URL/rfq-manager/v1/rfqs/<known-id>` should return 200 with JSON. If you instead see 404, you likely included `/rfq-manager/v1` in `MANAGER_BASE_URL` — strip it. |
 | Real RFQ code returns Path 8.4 inaccessible | Manager doesn't have that RFQ, or the RFQ was deleted, or auth-bypass user lacks access | Check the manager DB. The copilot does not invent access. |
 | Response missing `execution_record_id` | DB write failed (file permissions, locked SQLite, etc.) | Check copilot logs; persistence failures are logged but never break the user answer. |
 | Frontend gets a 500 | An unexpected internal exception escaped the gate-recovery path | Inspect the copilot log line for the turn id; investigate the trace there. The user should still have received a Path 8.5 fallback in normal operation — a real 500 means a bug in the orchestrator. |

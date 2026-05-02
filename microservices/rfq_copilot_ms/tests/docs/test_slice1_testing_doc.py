@@ -99,10 +99,30 @@ def test_doc_documents_env_vars(doc_text: str, env_var: str):
     )
 
 
-def test_doc_uses_real_manager_base_path_format(doc_text: str):
-    """Spec call: don't document a fake '-style' URL — use the real
-    project's base path (/rfq-manager/v1)."""
+def test_doc_documents_manager_base_url_as_service_root_only(doc_text: str):
+    """The connector appends ``/rfq-manager/v1`` to ``MANAGER_BASE_URL``
+    (see ``manager_ms_connector._url``). The env var must therefore be
+    the *service root* only — never include the API path or the
+    connector will produce ``/rfq-manager/v1/rfq-manager/v1/...`` 404s.
+
+    This pin guards two things:
+    1. No example shows the doubled form ``MANAGER_BASE_URL=...rfq-manager/v1``.
+    2. The doc mentions that the connector appends the path internally,
+       so a tester knows why the env var is "just the host".
+    """
+    import re
+    # 1. No assignment-style example with /rfq-manager/v1 baked in.
+    bad_assignment = re.compile(
+        r"MANAGER_BASE_URL\s*=\s*\S*/rfq-manager/v1"
+    )
+    assert not bad_assignment.search(doc_text), (
+        "Doc must not show MANAGER_BASE_URL set with /rfq-manager/v1 "
+        "appended — the connector adds that itself."
+    )
+    # 2. The path should still be mentioned as the appended-internally
+    #    convention so the curl troubleshooting test is valid.
     assert "/rfq-manager/v1" in doc_text
+    assert "appends" in doc_text.lower()
 
 
 # ── 5. Documents request body shape (message + current_rfq_code) ────────

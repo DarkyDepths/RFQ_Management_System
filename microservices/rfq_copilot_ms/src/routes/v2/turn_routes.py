@@ -1,25 +1,32 @@
 """POST /rfq-copilot/v2/threads/{thread_id}/turn — full v4 pipeline (Slice 1).
 
-Batch 5 wires the Path 4 manager-grounded operational core. The route
-is now thin: parse + delegate to ``V2TurnController`` + serialize. All
-pipeline logic lives in the controller / stages.
+The route is intentionally thin: parse + delegate to
+``V2TurnController`` + serialize. All pipeline logic lives in the
+controller / stages.
 
-Active stages in Batch 5:
+Active Slice 1 pipeline:
 
   FastIntake -> ExecutionPlanFactory                    -> Finalizer (template)
+                                                        -> Persist
   Planner -> PlannerValidator -> ExecutionPlanFactory
           -> Resolver -> Access -> ToolExecutor -> EvidenceCheck
-          -> ContextBuilder -> Path4Renderer (grounded) -> Finalizer (pass-through)
+          -> ContextBuilder
+            -> (single-field intent) Path4Renderer (deterministic)
+                                  -> Guardrails -> Finalizer
+            -> (synthesis intent: summary | blockers)
+                                  Compose -> Guardrails -> Judge -> Finalizer
+          -> Persist
 
 Failures route via ``EscalationGate`` to Path 8.x — the response is
 still 200 with the safe template. True 5xx only on the truly
 unrecovered case (gate failed AND finalizer crashed).
 
-Stages NOT active (return None / NotImplementedError if reached):
+Slice 1 does NOT implement Path 2 / 3 / 5 / 6 / 7. Questions targeting
+those paths route to safe Path 8 fallbacks rather than fabricated
+answers.
 
-  Compose (LLM), Guardrails, Judge, Persist — Slice 5+ batches.
-
-See ``docs/11-Architecture_Frozen_v2.md`` (canonical) and
+See ``docs/11-Architecture_Frozen_v2.md`` (canonical), the operational
+guide ``docs/SLICE_1_APP_TESTING.md``, and
 ``docs/rfq_copilot_architecture_v4.html`` (visual) for the full pipeline.
 """
 

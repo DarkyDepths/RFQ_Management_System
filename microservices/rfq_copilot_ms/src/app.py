@@ -9,13 +9,22 @@ Endpoints (two parallel lanes):
     POST /rfq-copilot/v1/threads/new
     POST /rfq-copilot/v1/threads/{thread_id}/turn
 
-  v2 -- frozen v4 architecture lane (scaffolded, returns 501):
+  v2 -- frozen v4 architecture lane (Slice 1 active):
     POST /rfq-copilot/v2/threads/{thread_id}/turn
+    GET  /health/readiness
 
-The /v2 lane is the implementation surface of the trust-boundary
-architecture frozen in ``docs/11-Architecture_Frozen_v2.md``. It
-returns 501 in Batch 0 so the lane is reachable and discoverable
-without any v4 behavior shipping yet. /v1 remains the working surface.
+The /v2 lane implements the trust-boundary architecture frozen in
+``docs/11-Architecture_Frozen_v2.md``. Slice 1 ships Path 1
+(FastIntake conversational templates), Path 4 (manager-grounded RFQ
+operational answers — single-field deterministic + Compose+Judge for
+synthesis intents), and Path 8.x safe fallbacks. Paths 2/3/5/6/7 are
+intentionally NOT implemented in Slice 1 — they route to safe Path 8
+templates rather than producing fabricated answers. See
+``docs/SLICE_1_APP_TESTING.md`` for the operational testing guide.
+
+Failures route via the EscalationGate to Path 8.x — the response is
+still 200 with the safe template. True 5xx only on the truly
+unrecovered case (gate failed AND finalizer crashed).
 
 Run with: uvicorn src.app:app --reload --port 8003
 """
@@ -118,9 +127,13 @@ def create_app() -> FastAPI:
     v1.include_router(turn_router)
     app.include_router(v1)
 
-    # API v2 — frozen v4 architecture lane (scaffolded only — Batch 0).
-    # Returns 501 from every endpoint until Slice 1 batches wire the
-    # real pipeline. See docs/11-Architecture_Frozen_v2.md.
+    # API v2 — frozen v4 architecture lane (Slice 1 active).
+    # Wires the FastIntake -> Factory / Planner -> Validator -> Factory
+    # -> Resolver -> Access -> ToolExecutor -> EvidenceCheck ->
+    # ContextBuilder -> Renderer or Compose+Judge -> Guardrails ->
+    # Finalizer -> Persist pipeline behind a single thin route.
+    # See docs/11-Architecture_Frozen_v2.md (architecture) and
+    # docs/SLICE_1_APP_TESTING.md (operational testing guide).
     v2 = APIRouter(prefix="/rfq-copilot/v2")
     v2.include_router(v2_turn_router)
     app.include_router(v2)
