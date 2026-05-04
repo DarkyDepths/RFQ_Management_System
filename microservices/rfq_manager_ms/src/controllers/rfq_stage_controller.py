@@ -77,6 +77,21 @@ class RfqStageController:
         stages = self.stage_ds.list_by_rfq(rfq_id)
         return {"data": [rfq_stage_translator.to_response(s) for s in stages]}
 
+    def list_by_code(self, rfq_code: str) -> dict:
+        """List stages for an RFQ identified by its rfq_code (e.g. 'IF-0001').
+
+        Returns the same shape as :meth:`list`. Raises ``NotFoundError``
+        when the code does not resolve. Used by the
+        ``GET /rfqs/by-code/{rfq_code}/stages`` route so callers that
+        only know the code (e.g. the copilot's planner) don't need a
+        prior UUID lookup.
+        """
+        rfq = self.rfq_ds.get_by_code(rfq_code)
+        if not rfq:
+            raise NotFoundError(f"RFQ with code '{rfq_code}' not found")
+        stages = self.stage_ds.list_by_rfq(rfq.id)
+        return {"data": [rfq_stage_translator.to_response(s) for s in stages]}
+
     # ══════════════════════════════════════════════════
     # #11 — GET STAGE DETAIL
     # ══════════════════════════════════════════════════

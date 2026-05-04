@@ -193,6 +193,20 @@ class RfqController:
 
         return self._to_detail_response(rfq)
 
+    def get_by_code(self, rfq_code: str) -> rfq_translator.RfqDetail:
+        """Fetch one RFQ by its human-readable rfq_code (e.g. 'IF-0001').
+
+        Returns the same RfqDetail shape as :meth:`get`. Raises
+        ``NotFoundError`` if the code does not match any RFQ. Used by
+        the ``GET /rfqs/by-code/{rfq_code}`` route — needed so callers
+        like the copilot can look up an RFQ from a planner-extracted
+        code without first resolving it to a UUID.
+        """
+        rfq = self.rfq_ds.get_by_code(rfq_code)
+        if not rfq:
+            raise NotFoundError(f"RFQ with code '{rfq_code}' not found")
+        return self._to_detail_response(rfq)
+
     # ══════════════════════════════════════════════════
     # LIST
     # ══════════════════════════════════════════════════

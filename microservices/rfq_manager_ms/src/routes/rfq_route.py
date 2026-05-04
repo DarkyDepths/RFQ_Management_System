@@ -126,6 +126,26 @@ def rfq_analytics(
     return ctrl.get_analytics()
 
 
+# ── #4b — Get RFQ Detail by code ─────────────────────
+# IMPORTANT: must be declared BEFORE /{rfq_id} so FastAPI's prefix
+# match doesn't try to coerce 'by-code' into a UUID. Same convention
+# /stats and /analytics already follow above.
+@router.get("/by-code/{rfq_code}", response_model=RfqDetail)
+def get_rfq_by_code(
+    rfq_code: str,
+    _auth=Depends(require_permission(Permissions.RFQ_READ)),
+    ctrl: RfqController = Depends(get_rfq_controller),
+):
+    """Full RFQ detail by human-readable code (e.g. IF-0001).
+
+    Same response shape as ``GET /rfqs/{rfq_id}``. Returns 404 when no
+    RFQ matches the code. Added so callers that only know the code
+    (e.g. the copilot's planner-extracted reference) don't need a
+    pre-flight list-and-filter to discover the UUID.
+    """
+    return ctrl.get_by_code(rfq_code)
+
+
 # ── #4 — Get RFQ Detail ──────────────────────────────
 @router.get("/{rfq_id}", response_model=RfqDetail)
 def get_rfq(

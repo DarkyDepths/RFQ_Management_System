@@ -46,6 +46,16 @@ class RfqDatasource:
         """Fetch one RFQ by primary key."""
         return self.session.query(RFQ).filter(RFQ.id == rfq_id).first()
 
+    def get_by_code(self, rfq_code: str) -> RFQ | None:
+        """Fetch one RFQ by its human-readable rfq_code (e.g. 'IF-0001').
+
+        ``rfq_code`` is unique+indexed at the DB level (see RFQ model).
+        Returns None if no row matches; caller maps to 404.
+        """
+        if not rfq_code:
+            return None
+        return self.session.query(RFQ).filter(RFQ.rfq_code == rfq_code).first()
+
     def list(
         self,
         search: str = None,
