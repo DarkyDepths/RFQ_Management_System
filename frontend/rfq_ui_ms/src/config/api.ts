@@ -14,5 +14,9 @@ export const apiConfig = {
   intelligenceApiPath: "/intelligence/v1",
   copilotBaseUrl:
     process.env.NEXT_PUBLIC_COPILOT_API_URL ?? "http://localhost:8003",
+  // /v1 retains thread management (open / new / list / load) -- the v4
+  // architecture's Slice 1 only ships the turn endpoint on /v2. Keep
+  // both bases until /v2 ships thread management in a later slice.
   copilotApiPath: "/rfq-copilot/v1",
+  copilotV2ApiPath: "/rfq-copilot/v2",
 } as const;

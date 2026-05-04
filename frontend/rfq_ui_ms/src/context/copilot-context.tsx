@@ -285,7 +285,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           dispatch({ type: "SET_THREAD_ID", threadId });
         }
 
-        const turnResult = await sendTurn(threadId, trimmed);
+        const turnResult = await sendTurn(threadId, trimmed, modeAtSend);
         if (token !== fetchTokenRef.current) return;
         dispatch({
           type: "RECEIVE_ASSISTANT",
