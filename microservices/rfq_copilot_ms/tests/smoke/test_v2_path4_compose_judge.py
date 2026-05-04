@@ -174,7 +174,7 @@ def test_v2_blockers_compose_judge_happy_path(smoke):
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Cost estimation", "order": 1, "status": "Active",
-         "blocker_status": "blocked", "blocker_reason_code": "missing_quotes"},
+         "blocker_status": "Blocked", "blocker_reason_code": "missing_quotes"},
     ])
     fake_llm.set_responses([
         _planner("blockers"),
@@ -295,12 +295,17 @@ def test_v2_compose_llm_unreachable_routes_to_path_8_5(smoke):
     original_complete = fake_llm.complete
     state = {"calls": 0}
 
-    def wrapped(messages, max_tokens=500):
+    def wrapped(messages, max_tokens=500, *, response_format=None, temperature=None):
         state["calls"] += 1
         if state["calls"] >= 2:
             from src.utils.errors import LlmUnreachable
             raise LlmUnreachable("compose call simulated down")
-        return original_complete(messages, max_tokens=max_tokens)
+        return original_complete(
+            messages,
+            max_tokens=max_tokens,
+            response_format=response_format,
+            temperature=temperature,
+        )
 
     fake_llm.complete = wrapped  # type: ignore[method-assign]
 

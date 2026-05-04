@@ -127,9 +127,12 @@ def test_v2_current_stage_with_page_context(client_with_overrides):
 def test_v2_blockers_with_page_context(client_with_overrides):
     client, fake_llm, fake_manager = client_with_overrides
     fake_manager.set_rfq_detail("IF-0042")
+    # Manager normalizes blocker_status to {"Blocked", "Resolved"} (Title-case);
+    # use the real contract here so the Tool Executor's "is this an active
+    # blocker?" check (== "Blocked") matches (Batch 9.1 fix P1-1).
     fake_manager.set_rfq_stages("IF-0042", [
         {"name": "Cost estimation", "order": 1, "status": "Active",
-         "blocker_status": "blocked", "blocker_reason_code": "missing_quotes"},
+         "blocker_status": "Blocked", "blocker_reason_code": "missing_quotes"},
     ])
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="blockers",

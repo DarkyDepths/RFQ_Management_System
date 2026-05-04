@@ -5,27 +5,55 @@ make real Azure / manager_ms calls. Each fake exposes the same method
 surface the production class does, so they slot into
 ``V2TurnController`` (or any /v2 stage) via constructor injection
 without monkeypatching.
+
+Batch 9.1 changes (driven by the cross-service audit):
+
+* ``FakeLlmConnector.complete`` accepts and records ``response_format``
+  and ``temperature`` kwargs. The fake doesn't enforce the schema —
+  tests still queue valid JSON — but recording lets anti-drift tests
+  assert that the production callers DO pass them.
+
+* ``FakeManagerConnector`` now keys its detail/stages stores by UUID
+  (matching the real manager) with a separate code→UUID index.
+  ``get_rfq_detail(uuid)`` and ``get_rfq_detail_by_code(code)`` are
+  separate methods, mirroring the real connector. The previous
+  by-code-only fake was the latent contract drift behind Batch 9.1.
+
+* Default priority on ``set_rfq_detail`` is the lowercase
+  ``"critical"`` to match the manager's ``Literal["normal", "critical"]``
+  contract. Tests that care about case can pass an explicit value.
 """
 
 from __future__ import annotations
 
 import json
 from datetime import date, datetime
-from typing import Iterable
+from typing import Any, Iterable
 from uuid import UUID, uuid4
 
 import pytest
 
 from src.models.actor import Actor
 from src.models.manager_dto import ManagerRfqDetailDto, ManagerRfqStageDto
-from src.utils.errors import LlmUnreachable, ManagerUnreachable, RfqNotFound
+from src.utils.errors import (
+    LlmUnreachable,
+    ManagerAuthFailed,
+    ManagerUnreachable,
+    RfqAccessDenied,
+    RfqNotFound,
+)
 
 
 # ── Fake LLM connector ────────────────────────────────────────────────────
 
 
 class FakeLlmConnector:
-    """Stand-in for ``src.connectors.llm_connector.LlmConnector``."""
+    """Stand-in for ``src.connectors.llm_connector.LlmConnector``.
+
+    Records ``response_format`` and ``temperature`` per call (Batch 9.1)
+    so anti-drift tests can verify Planner / Compose / Judge actually
+    pass them.
+    """
 
     def __init__(self):
         self.calls: list[dict] = []
@@ -42,9 +70,19 @@ class FakeLlmConnector:
         self._unreachable = True
 
     def complete(
-        self, messages: Iterable[dict[str, str]], max_tokens: int = 500
+        self,
+        messages: Iterable[dict[str, str]],
+        max_tokens: int = 500,
+        *,
+        response_format: dict[str, Any] | None = None,
+        temperature: float | None = None,
     ) -> str:
-        self.calls.append({"messages": list(messages), "max_tokens": max_tokens})
+        self.calls.append({
+            "messages": list(messages),
+            "max_tokens": max_tokens,
+            "response_format": response_format,
+            "temperature": temperature,
+        })
         if self._unreachable:
             raise LlmUnreachable("Fake LLM marked unreachable.")
         if not self._responses:
@@ -94,20 +132,65 @@ def planner_proposal_json(
 
 
 class FakeManagerConnector:
-    """Stand-in for ``src.connectors.manager_ms_connector.ManagerConnector``."""
+    """Stand-in for ``src.connectors.manager_ms_connector.ManagerConnector``.
+
+    Models the real manager's identifier semantics (Batch 9.1):
+
+    * Detail + stages are stored keyed by UUID (matches the real DB
+      primary key).
+    * A code -> UUID index allows by-code lookups; ``rfq_code`` is the
+      friendly identifier the planner extracts from user messages.
+    * ``get_rfq_detail(uuid)`` and ``get_rfq_detail_by_code(code)``
+      are separate methods, mirroring the real connector. Mixing them
+      (passing a code to the by-id method, or vice versa) raises a
+      not-found just like the real manager would.
+
+    Convenience for tests: ``set_rfq_detail("IF-0001", ...)`` creates a
+    record with the given code AND a generated UUID; both lookups work.
+    Authors can also pass ``rfq_id=<uuid>`` to fix the UUID for tests
+    that need a specific value (e.g. /v1 paths that send UUIDs).
+    """
 
     def __init__(self):
-        self._details: dict[str, ManagerRfqDetailDto] = {}
-        self._stages: dict[str, list[ManagerRfqStageDto]] = {}
+        # Internal stores keyed by UUID (string form).
+        self._details_by_uuid: dict[str, ManagerRfqDetailDto] = {}
+        self._stages_by_uuid: dict[str, list[ManagerRfqStageDto]] = {}
+        # Friendly-code -> UUID index for by-code lookups.
+        self._uuid_by_code: dict[str, str] = {}
+
         self._unreachable: bool = False
-        self._not_found: set[str] = set()
+        # Per-identifier outage simulation.
+        self._not_found_codes: set[str] = set()
+        self._not_found_uuids: set[str] = set()
+        self._access_denied_codes: set[str] = set()
+        self._access_denied_uuids: set[str] = set()
+        self._auth_failed: bool = False
+
         self.calls: list[tuple[str, str, str]] = []
 
+    # ── Outage / failure simulation helpers ─────────────────────────────
+
     def set_unreachable(self) -> None:
+        """Network-level outage: ALL calls raise ManagerUnreachable."""
         self._unreachable = True
 
-    def mark_not_found(self, rfq_code: str) -> None:
-        self._not_found.add(rfq_code)
+    def set_auth_failed(self) -> None:
+        """Manager rejects auth (HTTP 401): ALL calls raise ManagerAuthFailed."""
+        self._auth_failed = True
+
+    def mark_not_found(self, identifier: str) -> None:
+        """Make the given identifier (code OR UUID string) raise
+        RfqNotFound on lookup."""
+        self._not_found_codes.add(identifier)
+        self._not_found_uuids.add(identifier)
+
+    def mark_access_denied(self, identifier: str) -> None:
+        """Make the given identifier (code OR UUID string) raise
+        RfqAccessDenied (HTTP 403) on lookup."""
+        self._access_denied_codes.add(identifier)
+        self._access_denied_uuids.add(identifier)
+
+    # ── Seed helpers ────────────────────────────────────────────────────
 
     def set_rfq_detail(
         self,
@@ -122,12 +205,13 @@ class FakeManagerConnector:
         current_stage_name: str | None = "Cost estimation",
         current_stage_id: UUID | None = None,
         workflow_name: str | None = "Standard Workflow",
-        priority: str = "Critical",
+        priority: str = "critical",  # Batch 9.1: lowercase to match manager
         owner: str = "Mohamed",
         description: str | None = None,
     ) -> ManagerRfqDetailDto:
+        uid = rfq_id or uuid4()
         detail = ManagerRfqDetailDto(
-            id=rfq_id or uuid4(),
+            id=uid,
             rfq_code=rfq_code,
             name=name,
             client=client,
@@ -142,7 +226,9 @@ class FakeManagerConnector:
             description=description,
             updated_at=datetime(2026, 5, 1, 12, 0, 0),
         )
-        self._details[rfq_code] = detail
+        self._details_by_uuid[str(uid)] = detail
+        if rfq_code:
+            self._uuid_by_code[rfq_code] = str(uid)
         return detail
 
     def set_rfq_stages(
@@ -150,6 +236,12 @@ class FakeManagerConnector:
         rfq_code: str,
         stages: list[dict],
     ) -> list[ManagerRfqStageDto]:
+        """Seed stages for an RFQ. ``rfq_code`` must have been seeded
+        via ``set_rfq_detail`` first so the code -> UUID index exists.
+
+        Tests that don't care about details can call ``set_rfq_detail``
+        with default values.
+        """
         objs = []
         for s in stages:
             objs.append(
@@ -162,28 +254,84 @@ class FakeManagerConnector:
                     blocker_reason_code=s.get("blocker_reason_code"),
                 )
             )
-        self._stages[rfq_code] = objs
+        if rfq_code not in self._uuid_by_code:
+            # Auto-seed a detail with default values so by-code stage
+            # lookups succeed without forcing every test to seed both.
+            self.set_rfq_detail(rfq_code)
+        uid = self._uuid_by_code[rfq_code]
+        self._stages_by_uuid[uid] = objs
         return objs
 
+    # ── Lookup methods (mirror the real connector) ──────────────────────
+
     def get_rfq_detail(self, rfq_id: str, actor: Actor) -> ManagerRfqDetailDto:
+        """By-UUID lookup. Mirrors GET /rfqs/{uuid}.
+
+        Note: passing a friendly code (e.g. 'IF-0001') here will NOT
+        resolve — same as the real manager. Use
+        ``get_rfq_detail_by_code`` for code-based lookups.
+        """
         self.calls.append(("get_rfq_detail", rfq_id, actor.user_id))
-        if self._unreachable:
-            raise ManagerUnreachable("Fake manager marked unreachable.")
-        if rfq_id in self._not_found:
-            raise RfqNotFound(f"Fake manager: {rfq_id} not found.")
-        if rfq_id not in self._details:
-            raise RfqNotFound(f"Fake manager has no detail set for {rfq_id}.")
-        return self._details[rfq_id]
+        self._raise_if_outage(rfq_id, by_code=False)
+        if rfq_id not in self._details_by_uuid:
+            raise RfqNotFound(f"Fake manager has no detail for UUID {rfq_id}.")
+        return self._details_by_uuid[rfq_id]
+
+    def get_rfq_detail_by_code(
+        self, rfq_code: str, actor: Actor,
+    ) -> ManagerRfqDetailDto:
+        """By-code lookup. Mirrors GET /rfqs/by-code/{code} (Batch 9.1)."""
+        self.calls.append(("get_rfq_detail_by_code", rfq_code, actor.user_id))
+        self._raise_if_outage(rfq_code, by_code=True)
+        uid = self._uuid_by_code.get(rfq_code)
+        if uid is None:
+            raise RfqNotFound(f"Fake manager has no RFQ with code {rfq_code!r}.")
+        return self._details_by_uuid[uid]
 
     def get_rfq_stages(
         self, rfq_id: str, actor: Actor
     ) -> list[ManagerRfqStageDto]:
+        """By-UUID stages lookup. Mirrors GET /rfqs/{uuid}/stages."""
         self.calls.append(("get_rfq_stages", rfq_id, actor.user_id))
+        self._raise_if_outage(rfq_id, by_code=False)
+        if rfq_id not in self._details_by_uuid:
+            raise RfqNotFound(f"Fake manager has no RFQ for UUID {rfq_id}.")
+        return list(self._stages_by_uuid.get(rfq_id, []))
+
+    def get_rfq_stages_by_code(
+        self, rfq_code: str, actor: Actor,
+    ) -> list[ManagerRfqStageDto]:
+        """By-code stages lookup. Mirrors GET /rfqs/by-code/{code}/stages
+        (Batch 9.1)."""
+        self.calls.append(("get_rfq_stages_by_code", rfq_code, actor.user_id))
+        self._raise_if_outage(rfq_code, by_code=True)
+        uid = self._uuid_by_code.get(rfq_code)
+        if uid is None:
+            raise RfqNotFound(f"Fake manager has no RFQ with code {rfq_code!r}.")
+        return list(self._stages_by_uuid.get(uid, []))
+
+    # ── Internals ───────────────────────────────────────────────────────
+
+    def _raise_if_outage(self, identifier: str, *, by_code: bool) -> None:
+        """Apply the configured outage / not-found / access-denied
+        behavior in the priority order: network outage > auth fail >
+        per-identifier denial > per-identifier not-found."""
         if self._unreachable:
             raise ManagerUnreachable("Fake manager marked unreachable.")
-        if rfq_id in self._not_found:
-            raise RfqNotFound(f"Fake manager: {rfq_id} not found.")
-        return list(self._stages.get(rfq_id, []))
+        if self._auth_failed:
+            raise ManagerAuthFailed("Fake manager: auth rejected (401).")
+        denied = (
+            self._access_denied_codes if by_code else self._access_denied_uuids
+        )
+        if identifier in denied:
+            raise RfqAccessDenied(
+                f"Fake manager: access denied for {identifier!r} (403)."
+            )
+        not_found = (
+            self._not_found_codes if by_code else self._not_found_uuids
+        )
+        if identifier in not_found:
+            raise RfqNotFound(f"Fake manager: {identifier} not found (404).")
 
 
 # ── pytest fixtures ──────────────────────────────────────────────────────

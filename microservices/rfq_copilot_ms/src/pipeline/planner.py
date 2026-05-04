@@ -47,6 +47,18 @@ from src.utils.errors import LlmUnreachable
 logger = logging.getLogger(__name__)
 
 
+# ── Planner model parameters ──────────────────────────────────────────────
+#
+# Mirrored from src/config/path_registry.py PLANNER_MODEL_CONFIG. The
+# registry is the design-time source of truth; we mirror here because
+# CI guard §11.5.2 forbids the Planner (and any pipeline module other
+# than Factory + Gate) from importing the runtime config. An anti-drift
+# test in tests/config/ asserts these values stay in sync with the
+# registry — change one, change both.
+_PLANNER_TEMPERATURE: float = 0.0
+_PLANNER_MAX_TOKENS: int = 800
+
+
 # System prompt — explains the classification task. The LLM emits ONLY
 # the JSON proposal; downstream code does the rest. The prompt is the
 # entire LLM-facing surface; keep it terse and rule-driven.
@@ -231,13 +243,26 @@ class Planner:
                 messages.append(turn)
         messages.append({"role": "user", "content": user_message})
 
-        # Call the LLM. The LlmConnector wraps Azure OpenAI; for
-        # structured output we'd pass response_format — extend
-        # LlmConnector in a future batch when JSON-schema-enforced calls
-        # are needed beyond the Planner. For Slice 1 we rely on the
-        # system prompt to enforce JSON output and parse defensively.
+        # Call the LLM with Azure's structured-output enforcement
+        # (Batch 9.1). response_format pins the JSON shape at the API
+        # level -- the parse + Pydantic validation below become defense
+        # in depth against an Azure schema bug, not the primary contract.
+        #
+        # Temperature + max_tokens are mirrored module-level constants
+        # below so the Planner stays inside CI guard §11.5.2 (only
+        # Factory + Gate may import the registry config). Source of
+        # truth lives in src/config/path_registry.py PLANNER_MODEL_CONFIG;
+        # an anti-drift test asserts the values stay in sync.
         try:
-            raw = self._llm.complete(messages, max_tokens=500)
+            raw = self._llm.complete(
+                messages,
+                max_tokens=_PLANNER_MAX_TOKENS,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": _PROPOSAL_JSON_SCHEMA,
+                },
+                temperature=_PLANNER_TEMPERATURE,
+            )
         except LlmUnreachable:
             raise  # re-raise as-is; orchestrator routes to 8.5
 
