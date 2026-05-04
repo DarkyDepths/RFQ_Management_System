@@ -105,15 +105,23 @@ class LlmConnector:
         try:
             response = self._client.chat.completions.create(**kwargs)
         except APIError as exc:
+            # Log the exception MESSAGE (not just the class name) so an
+            # operator can tell apart "deployment not found" from
+            # "auth rejected" from "model doesn't support response_format".
+            # Azure error bodies don't contain credentials.
             logger.warning(
-                "Azure OpenAI request failed: %s", exc.__class__.__name__,
+                "Azure OpenAI request failed: %s: %s",
+                exc.__class__.__name__,
+                str(exc)[:500],
             )
             raise LlmUnreachable(
                 f"Azure OpenAI request failed ({exc.__class__.__name__})."
             ) from exc
         except Exception as exc:
             logger.warning(
-                "Unexpected Azure OpenAI failure: %s", exc.__class__.__name__,
+                "Unexpected Azure OpenAI failure: %s: %s",
+                exc.__class__.__name__,
+                str(exc)[:500],
             )
             raise LlmUnreachable(
                 f"Unexpected Azure OpenAI failure ({exc.__class__.__name__})."

@@ -190,7 +190,14 @@ _PROPOSAL_JSON_SCHEMA = {
                 "description": "One short sentence on why this classification. Audit/debug only.",
             },
             "multi_intent_detected": {"type": "boolean"},
-            "filters": {"type": ["object", "null"]},
+            # Azure's strict json_schema mode requires every object
+            # schema to declare additionalProperties: false. ``filters``
+            # is Path-3-specific (Slice 1 does not use it) and must be
+            # null on every Slice 1 emission. When Path 3 ships, widen
+            # this to an explicit object shape with declared properties
+            # + required list (strict-mode also requires every property
+            # to be in `required`). For now: null only.
+            "filters": {"type": "null"},
             "output_shape": {"type": ["string", "null"]},
             "sort": {"type": ["string", "null"]},
             "limit": {"type": ["integer", "null"]},
