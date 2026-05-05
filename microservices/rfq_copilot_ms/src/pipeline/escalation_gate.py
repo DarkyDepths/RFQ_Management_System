@@ -111,6 +111,9 @@ _TRIGGER_TO_PATH: dict[str, PathId] = {
     "no_evidence": PathId.PATH_8_5,
     "manager_unreachable": PathId.PATH_8_5,
     "source_unavailable": PathId.PATH_8_5,
+    # Manager-auth misconfig (manager 401) -- distinct from "source down"
+    # so operators see a clearly-different reason_code (Batch 9.1).
+    "manager_auth_failed": PathId.PATH_8_5,
     "intelligence_unreachable": PathId.PATH_8_5,
     "llm_unreachable": PathId.PATH_8_5,
     "llm_unavailable": PathId.PATH_8_5,

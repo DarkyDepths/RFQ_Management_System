@@ -65,3 +65,64 @@ def test_access_does_not_invent_rfq_data(actor, fake_manager: FakeManagerConnect
     )
     assert detail.owner == "Alice"
     assert detail.deadline.isoformat() == "2026-07-01"
+
+
+# ── Fake alias-symmetry regression (Batch 9.1 PR review fix) ────────────
+
+
+def test_fake_mark_not_found_propagates_code_to_uuid(actor, fake_manager: FakeManagerConnector):
+    """When a test calls ``mark_not_found("IF-0001")`` against an
+    already-seeded RFQ, the fake must ALSO raise RfqNotFound on the
+    by-id lookup of the same RFQ's UUID. Otherwise UUID-path tests
+    silently pass while the real manager would 404 both endpoints."""
+    detail = fake_manager.set_rfq_detail("IF-0001")
+    fake_manager.mark_not_found("IF-0001")
+
+    # by-code lookup -> not found (the obvious case).
+    with pytest.raises(StageError):
+        check_path_4_access(
+            target=_target("IF-0001"), actor=actor, manager=fake_manager,
+        )
+
+    # by-uuid lookup -> ALSO not found (the fix).
+    with pytest.raises(StageError):
+        check_path_4_access(
+            target=_target(str(detail.id)), actor=actor, manager=fake_manager,
+        )
+
+
+def test_fake_mark_not_found_propagates_uuid_to_code(actor, fake_manager: FakeManagerConnector):
+    """Symmetric: marking the UUID also marks every code that aliases
+    it. Without this, a by-code lookup would silently succeed while
+    the real manager would 404."""
+    detail = fake_manager.set_rfq_detail("IF-0001")
+    fake_manager.mark_not_found(str(detail.id))
+
+    with pytest.raises(StageError):
+        check_path_4_access(
+            target=_target(str(detail.id)), actor=actor, manager=fake_manager,
+        )
+    with pytest.raises(StageError):
+        check_path_4_access(
+            target=_target("IF-0001"), actor=actor, manager=fake_manager,
+        )
+
+
+def test_fake_mark_access_denied_propagates_code_to_uuid(
+    actor, fake_manager: FakeManagerConnector,
+):
+    """Same alias symmetry for mark_access_denied (HTTP 403)."""
+    detail = fake_manager.set_rfq_detail("IF-0001")
+    fake_manager.mark_access_denied("IF-0001")
+
+    with pytest.raises(StageError) as exc_info:
+        check_path_4_access(
+            target=_target("IF-0001"), actor=actor, manager=fake_manager,
+        )
+    assert exc_info.value.trigger == "access_denied_explicit"
+
+    with pytest.raises(StageError) as exc_info:
+        check_path_4_access(
+            target=_target(str(detail.id)), actor=actor, manager=fake_manager,
+        )
+    assert exc_info.value.trigger == "access_denied_explicit"

@@ -47,6 +47,18 @@ from src.utils.errors import LlmUnreachable
 logger = logging.getLogger(__name__)
 
 
+# ── Planner model parameters ──────────────────────────────────────────────
+#
+# Mirrored from src/config/path_registry.py PLANNER_MODEL_CONFIG. The
+# registry is the design-time source of truth; we mirror here because
+# CI guard §11.5.2 forbids the Planner (and any pipeline module other
+# than Factory + Gate) from importing the runtime config. An anti-drift
+# test in tests/config/ asserts these values stay in sync with the
+# registry — change one, change both.
+_PLANNER_TEMPERATURE: float = 0.0
+_PLANNER_MAX_TOKENS: int = 800
+
+
 # System prompt — explains the classification task. The LLM emits ONLY
 # the JSON proposal; downstream code does the rest. The prompt is the
 # entire LLM-facing surface; keep it terse and rule-driven.
@@ -132,12 +144,29 @@ _PROPOSAL_JSON_SCHEMA = {
         "properties": {
             "path": {
                 "type": "string",
+                # Restricted to the EXACT set of paths the Planner is
+                # allowed to emit in Slice 1 (matches the system prompt
+                # above). Tightened in Batch 9.1 after a Copilot review
+                # flagged that a wider enum + null-only filters meant
+                # any accidental ``path_3`` emission would land at the
+                # Azure schema rejection layer instead of the proper
+                # PlannerValidator F1 (intent_not_in_registry) routing.
+                #
+                # NEVER add path_1 here -- FastIntake owns Path 1; the
+                # Planner is the second-line classifier. NEVER add
+                # path_8_4 / path_8_5 -- those are Escalation-Gate-only
+                # emissions per the freeze doc.
+                #
+                # When Path 2 / 3 / 5 / 6 / 7 ship, add them here AND
+                # update the system prompt above AND widen the
+                # ``filters`` / ``output_shape`` slots if needed.
                 "enum": [
-                    "path_1", "path_2", "path_3", "path_4",
-                    "path_5", "path_6", "path_7",
-                    "path_8_1", "path_8_2", "path_8_3",
+                    "path_4",
+                    "path_8_1",
+                    "path_8_2",
+                    "path_8_3",
                 ],
-                "description": "Which path applies. Slice 1 supports path_4, path_8_1, path_8_2, path_8_3.",
+                "description": "Which path applies. Slice 1 emittable set only.",
             },
             "intent_topic": {
                 "type": "string",
@@ -178,7 +207,14 @@ _PROPOSAL_JSON_SCHEMA = {
                 "description": "One short sentence on why this classification. Audit/debug only.",
             },
             "multi_intent_detected": {"type": "boolean"},
-            "filters": {"type": ["object", "null"]},
+            # Azure's strict json_schema mode requires every object
+            # schema to declare additionalProperties: false. ``filters``
+            # is Path-3-specific (Slice 1 does not use it) and must be
+            # null on every Slice 1 emission. When Path 3 ships, widen
+            # this to an explicit object shape with declared properties
+            # + required list (strict-mode also requires every property
+            # to be in `required`). For now: null only.
+            "filters": {"type": "null"},
             "output_shape": {"type": ["string", "null"]},
             "sort": {"type": ["string", "null"]},
             "limit": {"type": ["integer", "null"]},
@@ -231,13 +267,26 @@ class Planner:
                 messages.append(turn)
         messages.append({"role": "user", "content": user_message})
 
-        # Call the LLM. The LlmConnector wraps Azure OpenAI; for
-        # structured output we'd pass response_format — extend
-        # LlmConnector in a future batch when JSON-schema-enforced calls
-        # are needed beyond the Planner. For Slice 1 we rely on the
-        # system prompt to enforce JSON output and parse defensively.
+        # Call the LLM with Azure's structured-output enforcement
+        # (Batch 9.1). response_format pins the JSON shape at the API
+        # level -- the parse + Pydantic validation below become defense
+        # in depth against an Azure schema bug, not the primary contract.
+        #
+        # Temperature + max_tokens are mirrored module-level constants
+        # below so the Planner stays inside CI guard §11.5.2 (only
+        # Factory + Gate may import the registry config). Source of
+        # truth lives in src/config/path_registry.py PLANNER_MODEL_CONFIG;
+        # an anti-drift test asserts the values stay in sync.
         try:
-            raw = self._llm.complete(messages, max_tokens=500)
+            raw = self._llm.complete(
+                messages,
+                max_tokens=_PLANNER_MAX_TOKENS,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": _PROPOSAL_JSON_SCHEMA,
+                },
+                temperature=_PLANNER_TEMPERATURE,
+            )
         except LlmUnreachable:
             raise  # re-raise as-is; orchestrator routes to 8.5
 

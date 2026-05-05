@@ -89,6 +89,32 @@ AZURE_OPENAI_CHAT_DEPLOYMENT=<your-gpt4o-deployment>
 - **Never commit `.env`.** Never paste keys into chat. The copilot logs
   do not echo secrets.
 
+### Manager auth bypass — required for actor attribution
+
+The copilot sends `X-Debug-User-Id` + `X-Debug-User-Name` headers so
+the manager attributes audit/history rows to the actual end user, not
+its own bypass account. The manager honors those headers **only**
+when *both* of these flags are set on the manager's `.env`:
+
+```
+# microservices/rfq_manager_ms/.env
+AUTH_BYPASS_ENABLED=true
+AUTH_BYPASS_DEBUG_HEADERS_ENABLED=true
+```
+
+If `AUTH_BYPASS_DEBUG_HEADERS_ENABLED=false` (the manager's default),
+the manager logs a warning and falls back to its own bypass user —
+copilot turns will succeed, but every audit row will read as the
+bypass user, not the real user. Useful for solo local testing;
+misleading once multiple people share a manager instance.
+
+If `AUTH_BYPASS_ENABLED=false` (the manager's production default),
+the manager requires a bearer token. The copilot doesn't send one
+yet (Slice 1) — every Path 4 turn would 401. The copilot now maps
+that to Path 8.5 with reason_code `manager_auth_failed` (distinct
+from `source_unavailable`) so the misconfig is visible in
+`execution_records` rather than masquerading as "the manager is down."
+
 ---
 
 ## Run the copilot locally
@@ -329,7 +355,8 @@ the redacted `state_json`.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Every non-FastIntake message returns Path 8.5 `llm_unavailable` | Azure env vars missing or wrong | Verify `AZURE_OPENAI_*` in `.env`; restart copilot. Check `/health/readiness`. |
-| Every Path 4 query returns Path 8.5 `source_unavailable` | Manager not running, or `MANAGER_BASE_URL` set to the wrong value (e.g. duplicates the API path) | Start `rfq_manager_ms`. Verify the *service-root* form: `curl $MANAGER_BASE_URL/rfq-manager/v1/rfqs/<known-id>` should return 200 with JSON. If you instead see 404, you likely included `/rfq-manager/v1` in `MANAGER_BASE_URL` — strip it. |
+| Every Path 4 query returns Path 8.5 `source_unavailable` | Manager not running, or `MANAGER_BASE_URL` set to the wrong value (e.g. duplicates the API path) | Start `rfq_manager_ms`. Verify the *service-root* form: `curl $MANAGER_BASE_URL/rfq-manager/v1/rfqs/by-code/<known-code>` should return 200 with JSON. If you instead see 404, you likely included `/rfq-manager/v1` in `MANAGER_BASE_URL` — strip it. |
+| Every Path 4 query returns Path 8.5 `manager_auth_failed` | Manager has `AUTH_BYPASS_ENABLED=false` and the copilot doesn't send a bearer token (Slice 1 limitation) | Set `AUTH_BYPASS_ENABLED=true` in `microservices/rfq_manager_ms/.env`; restart manager_ms. (Slice 2+ ships real IAM token relay.) |
 | Real RFQ code returns Path 8.4 inaccessible | Manager doesn't have that RFQ, or the RFQ was deleted, or auth-bypass user lacks access | Check the manager DB. The copilot does not invent access. |
 | Response missing `execution_record_id` | DB write failed (file permissions, locked SQLite, etc.) | Check copilot logs; persistence failures are logged but never break the user answer. |
 | Frontend gets a 500 | An unexpected internal exception escaped the gate-recovery path | Inspect the copilot log line for the turn id; investigate the trace there. The user should still have received a Path 8.5 fallback in normal operation — a real 500 means a bug in the orchestrator. |

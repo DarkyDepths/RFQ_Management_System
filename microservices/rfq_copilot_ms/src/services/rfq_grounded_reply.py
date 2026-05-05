@@ -29,7 +29,13 @@ from src.models.actor import Actor
 from src.models.db import TurnRow
 from src.models.manager_dto import ManagerRfqStageDto
 from src.translators.manager_translator import format_rfq_for_prompt
-from src.utils.errors import LlmUnreachable, ManagerUnreachable, RfqNotFound
+from src.utils.errors import (
+    LlmUnreachable,
+    ManagerAuthFailed,
+    ManagerUnreachable,
+    RfqAccessDenied,
+    RfqNotFound,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +55,13 @@ _SYSTEM_PROMPT_TEMPLATE = (
 
 _FALLBACK_MANAGER_UNREACHABLE = (
     "I couldn't reach the RFQ data service right now. Try again in a moment."
+)
+_FALLBACK_MANAGER_AUTH_FAILED = (
+    "I couldn't reach the RFQ data service due to a configuration "
+    "issue on my side. Please notify the team."
+)
+_FALLBACK_RFQ_ACCESS_DENIED = (
+    "I'm not allowed to read this RFQ."
 )
 _FALLBACK_LLM_UNREACHABLE = (
     "My language model is unavailable right now. Try again in a moment."
@@ -81,6 +94,15 @@ class RfqGroundedReplyService:
             detail = self.manager.get_rfq_detail(rfq_id, actor)
         except RfqNotFound:
             return _FALLBACK_RFQ_NOT_FOUND
+        except RfqAccessDenied:
+            # Manager 403 (Batch 9.1 typed error). Surface a distinct
+            # message but stay graceful -- never raise out of /v1.
+            return _FALLBACK_RFQ_ACCESS_DENIED
+        except ManagerAuthFailed:
+            # Manager 401 -- copilot's credentials rejected. Distinct
+            # from "service unreachable" so operators can spot it in
+            # the response copy.
+            return _FALLBACK_MANAGER_AUTH_FAILED
         except ManagerUnreachable:
             return _FALLBACK_MANAGER_UNREACHABLE
 
@@ -89,7 +111,18 @@ class RfqGroundedReplyService:
         all_stages: list[ManagerRfqStageDto] = []
         try:
             all_stages = self.manager.get_rfq_stages(rfq_id, actor)
-        except (ManagerUnreachable, RfqNotFound) as exc:
+        except (
+            ManagerUnreachable,
+            ManagerAuthFailed,
+            RfqAccessDenied,
+            RfqNotFound,
+        ) as exc:
+            # Best-effort: any manager failure on stages is recoverable.
+            # The detail call above already succeeded, so we have enough
+            # context; the stage list is just nice-to-have. Batch 9.1
+            # added ManagerAuthFailed / RfqAccessDenied to the catch
+            # list so a permission downgrade between calls doesn't
+            # bubble out as an uncaught AppError.
             logger.warning(
                 "Stages fetch failed for rfq %s; continuing without stage context: %s",
                 rfq_id,

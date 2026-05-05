@@ -543,6 +543,10 @@ PATH_CONFIGS: PathRegistry = {
         finalizer_template_keys={
             "no_evidence": "path_8_5.no_evidence",
             "source_unavailable": "path_8_5.source_unavailable",
+            # Manager 401 — distinct template so operators see a
+            # deployment misconfig, not a generic "source is down"
+            # (Batch 9.1).
+            "manager_auth_failed": "path_8_5.manager_auth_failed",
             "llm_unavailable": "path_8_5.llm_unavailable",
             "judge_verdict_fabrication": "path_8_5.fabrication",
             "judge_verdict_forbidden_inference": "path_8_5.forbidden_inference",

@@ -46,6 +46,34 @@ from src.utils.errors import LlmUnreachable
 logger = logging.getLogger(__name__)
 
 
+_COMPOSE_JSON_SCHEMA: dict = {
+    "name": "ComposeOutput",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["draft_text", "used_source_refs"],
+        "properties": {
+            "draft_text": {
+                "type": "string",
+                "description": "User-facing answer; concise, grounded ONLY in the EVIDENCE FIELDS section.",
+            },
+            "used_source_refs": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "source_id values from EVIDENCE the draft used. Empty array if none.",
+            },
+        },
+    },
+}
+"""Azure OpenAI ``response_format`` schema for Compose (Batch 9.1).
+
+Pins the wire shape at the API level so the model can never return
+free-form prose. The Pydantic ``ComposeOutput`` validation in
+``compose_path_4`` becomes defense in depth, not the primary contract.
+"""
+
+
 _SYSTEM_PROMPT = """\
 You are RFQ Copilot Compose for the Gulf Heavy Industries estimation
 team. Render a SHORT, GROUNDED answer about ONE RFQ.
@@ -135,8 +163,27 @@ def compose_path_4(
         {"role": "user", "content": user_content},
     ]
 
+    # Compose temperature comes from the plan -- the factory copies
+    # the per-path ModelProfile from the registry into the plan at
+    # construction time, so reading state.plan keeps Compose inside
+    # CI guard §11.5.2 (only Factory + Gate may import the registry
+    # config). Falls back to 0.3 if no profile was attached.
+    compose_temperature = (
+        state.plan.model_profile.temperature
+        if state.plan.model_profile is not None
+        else 0.3
+    )
+
     try:
-        raw = llm_connector.complete(messages, max_tokens=600)
+        raw = llm_connector.complete(
+            messages,
+            max_tokens=600,
+            response_format={
+                "type": "json_schema",
+                "json_schema": _COMPOSE_JSON_SCHEMA,
+            },
+            temperature=compose_temperature,
+        )
     except LlmUnreachable as exc:
         logger.warning("Compose LLM unreachable: %s", exc)
         raise StageError(

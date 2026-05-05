@@ -64,6 +64,8 @@ def _state(plan: TurnExecutionPlan, actor, target_code: str = "IF-0001") -> Exec
 
 
 def test_get_rfq_profile_calls_manager(actor, fake_manager: FakeManagerConnector):
+    """Resolved target carries a code (e.g. 'IF-0001') -> connector
+    dispatches to the by-code endpoint (Batch 9.1)."""
     fake_manager.set_rfq_detail("IF-0001")
     plan = _build_path_4_plan(
         allowed_evidence_tools=[ToolId("get_rfq_profile")],
@@ -72,11 +74,12 @@ def test_get_rfq_profile_calls_manager(actor, fake_manager: FakeManagerConnector
     state = _state(plan, actor)
     execute_path_4(state=state, actor=actor, manager=fake_manager)
     methods_called = [m for m, *_ in fake_manager.calls]
-    assert "get_rfq_detail" in methods_called
+    assert "get_rfq_detail_by_code" in methods_called
     assert state.tool_invocations[0].tool_name == "get_rfq_profile"
 
 
 def test_get_rfq_stages_calls_manager(actor, fake_manager: FakeManagerConnector):
+    """Same: code -> by-code endpoint."""
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Cost estimation", "order": 1, "status": "Active"},
@@ -90,7 +93,7 @@ def test_get_rfq_stages_calls_manager(actor, fake_manager: FakeManagerConnector)
     state = _state(plan, actor)
     execute_path_4(state=state, actor=actor, manager=fake_manager)
     methods_called = [m for m, *_ in fake_manager.calls]
-    assert "get_rfq_stages" in methods_called
+    assert "get_rfq_stages_by_code" in methods_called
     # Stages were projected into the packet.
     packet = state.evidence_packets[0]
     assert "stages" in packet.fields

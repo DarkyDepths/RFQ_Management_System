@@ -501,9 +501,18 @@ class V2TurnController:
         execution_record_id: str | None = None,
     ) -> V2TurnResponse:
         """Serialize the final state into the v2 response shape."""
+        # Prefer the EvidencePacket's target_label -- it's the
+        # manager-confirmed rfq_code (set by tool_executor after
+        # access succeeded). Fall back to the raw resolved target
+        # when no evidence was packed (Path 8.x turns where
+        # tool_executor never ran). Without this preference, callers
+        # that pass a UUID via current_rfq_code would receive that
+        # UUID back in target_rfq_code instead of "IF-0001"-style
+        # business code (Batch 9.1 PR review fix).
         target_rfq_code: str | None = None
-        if state.resolved_targets:
-            # Slice 1 is single-target; first resolved target wins.
+        if state.evidence_packets:
+            target_rfq_code = state.evidence_packets[0].target_label
+        elif state.resolved_targets:
             target_rfq_code = state.resolved_targets[0].rfq_code
         return V2TurnResponse(
             lane="v2",

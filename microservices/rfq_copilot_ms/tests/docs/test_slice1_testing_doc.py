@@ -125,6 +125,24 @@ def test_doc_documents_manager_base_url_as_service_root_only(doc_text: str):
     assert "appends" in doc_text.lower()
 
 
+def test_doc_documents_manager_auth_bypass_requirements(doc_text: str):
+    """Batch 9.1: the manager honors the copilot's X-Debug-* headers
+    only when both auth-bypass flags are true. The doc must call this
+    out so testers don't end up with all-bypass-user audit rows.
+    """
+    assert "AUTH_BYPASS_ENABLED=true" in doc_text
+    assert "AUTH_BYPASS_DEBUG_HEADERS_ENABLED=true" in doc_text
+    # Mention of the X-Debug headers contract.
+    assert "X-Debug-User-Id" in doc_text
+
+
+def test_doc_documents_manager_auth_failed_reason_code(doc_text: str):
+    """Manager 401 maps to a distinct reason_code (not the generic
+    source_unavailable). Testers need to know what they'll see when
+    the manager rejects the copilot's auth (Batch 9.1 P2-2)."""
+    assert "manager_auth_failed" in doc_text
+
+
 # ── 5. Documents request body shape (message + current_rfq_code) ────────
 
 
@@ -172,11 +190,20 @@ def test_doc_documents_readiness_endpoint(doc_text: str):
 def test_doc_does_not_contain_real_secrets(doc_text: str):
     """Defensive scan — the doc must use placeholder syntax for any
     secrets, never a real-looking key. Detects common leak patterns."""
+    import re
     lower = doc_text.lower()
     # Detect "AKIA"-style AWS keys, "sk-..." OpenAI-style keys, etc.
     assert "akia" not in lower, "Possible AWS key in doc"
     assert "sk-live-" not in lower
-    assert "bearer " not in lower
+    # ``Bearer <token>`` only — match the Authorization-header form,
+    # NOT the prose phrase "a bearer token" (case-insensitive ``bearer``
+    # followed by whitespace AND a token-like 20+ char alphanumeric blob).
+    bearer_header = re.compile(
+        r"\bbearer\s+[A-Za-z0-9_\-\.]{20,}", re.IGNORECASE,
+    )
+    assert not bearer_header.search(doc_text), (
+        "Possible bearer token leak in doc"
+    )
     # Azure key would look like a 32+ char hex blob; don't try to
     # pattern-match (false positives), but ensure documented examples
     # use angle-bracket placeholders.

@@ -116,6 +116,13 @@ _TEMPLATES: dict[str, str] = {
         "The language model I rely on isn't available right now. "
         "Please try again shortly."
     ),
+    # Manager 401 — distinct from "source unavailable" so operators
+    # see a deployment misconfig in the logs / record. Wording stays
+    # neutral; never leaks auth details to end users (Batch 9.1).
+    "path_8_5.manager_auth_failed": (
+        "I can't reach the RFQ data service right now due to a "
+        "configuration issue on my side. Please notify the team."
+    ),
     # Guardrail-failure templates (Batch 7) — deterministic safety floor
     # caught the answer before it reached the user. Generic, neutral
     # wording: never leak which guardrail fired or why.

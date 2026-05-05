@@ -47,6 +47,46 @@ from src.utils.errors import LlmUnreachable
 logger = logging.getLogger(__name__)
 
 
+_JUDGE_TRIGGER_VALUES = sorted(JUDGE_TRIGGER_TO_REASON_CODE.keys())
+_JUDGE_JSON_SCHEMA: dict = {
+    "name": "JudgeVerdict",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["verdict", "violations", "rationale"],
+        "properties": {
+            "verdict": {"type": "string", "enum": ["pass", "fail"]},
+            "violations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["trigger", "excerpt"],
+                    "properties": {
+                        "trigger": {
+                            "type": "string",
+                            "enum": _JUDGE_TRIGGER_VALUES,
+                        },
+                        "excerpt": {"type": "string"},
+                    },
+                },
+            },
+            "rationale": {
+                "type": "string",
+                "description": "One short sentence explaining the verdict.",
+            },
+        },
+    },
+}
+"""Azure OpenAI ``response_format`` schema for Judge (Batch 9.1).
+
+Pins verdict shape + violation trigger enum at the API level. The
+post-call parsing + fail-closed defenses below stay (defense in depth
+against an Azure schema bug or an out-of-date deployment).
+"""
+
+
 _SYSTEM_PROMPT = """\
 You are RFQ Copilot Judge for the Gulf Heavy Industries estimation
 team. You verify a DRAFT answer against the EVIDENCE.
@@ -142,7 +182,17 @@ def judge_path_4(
 
     started = datetime.now(timezone.utc)
     try:
-        raw = llm_connector.complete(messages, max_tokens=400)
+        # Judge runs at temperature=0.0 — verification is deterministic
+        # by design; any creativity would defeat the safety contract.
+        raw = llm_connector.complete(
+            messages,
+            max_tokens=400,
+            response_format={
+                "type": "json_schema",
+                "json_schema": _JUDGE_JSON_SCHEMA,
+            },
+            temperature=0.0,
+        )
     except LlmUnreachable as exc:
         logger.warning("Judge LLM unreachable: %s", exc)
         raise StageError(

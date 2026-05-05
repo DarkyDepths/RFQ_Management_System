@@ -81,17 +81,34 @@ def test_greeting_followed_by_real_question_misses(msg: str):
 
 @pytest.mark.parametrize(
     "msg",
-    ["thanks", "Thanks", "THANKS", "thank you", "Thank You", "thx", "merci"],
+    [
+        # Formal English
+        "thanks", "Thanks", "THANKS", "thank you", "Thank You",
+        # Shortform
+        "thx",
+        # Other languages
+        "merci",
+        # Informal English variants -- added in PATTERN_VERSION 1.1.0-batch9.1
+        # after live testing surfaced "thank u" routing to Path 8.2 out_of_scope.
+        "thank u", "Thank U", "thanku", "Thanku",
+        "thanx", "Thanx",
+        "ty", "TY", "tysm", "Tysm",
+    ],
 )
 def test_thanks_matches(msg: str):
     result = try_match(msg)
-    assert isinstance(result, IntakeDecision)
+    assert isinstance(result, IntakeDecision), (
+        f"{msg!r} should hit FastIntake's thanks pattern -- without "
+        f"FastIntake catching it, the message falls through to the "
+        f"Planner which has no Path 1 thanks option in its prompt and "
+        f"emits Path 8.2 out_of_scope (real bug from Slice 1 live testing)."
+    )
     assert result.path is PathId.PATH_1
     assert result.intent_topic == "thanks"
 
 
 def test_thanks_with_punctuation_matches():
-    for msg in ["thanks!", "thank you!", "thanks."]:
+    for msg in ["thanks!", "thank you!", "thanks.", "thank u!", "ty!"]:
         result = try_match(msg)
         assert isinstance(result, IntakeDecision), f"{msg!r} should match"
         assert result.intent_topic == "thanks"

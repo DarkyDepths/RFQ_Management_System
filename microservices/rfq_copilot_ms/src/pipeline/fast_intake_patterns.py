@@ -17,7 +17,7 @@ Pattern (anchored full-match)                 Path     Intent topic
 ``^\\s*$``                                     8.3      empty_message
 ``^[^\\w\\s]+$``                               8.2      out_of_scope_nonsense
 ``^(hi|hello|hey|salam|salut)[!.?\\s]*$``      1        greeting
-``^(thanks|thank you|thx|merci)[!.?\\s]*$``    1        thanks
+``^(thanks|thank you|thank u|thanku|thx|thanx|ty|tysm|merci)[!.?\\s]*$``  1   thanks
 ``^(bye|goodbye|cya|see you)[!.?\\s]*$``       1        farewell
 ============================================  =======  =====================
 
@@ -51,9 +51,17 @@ from dataclasses import dataclass
 from src.models.path_registry import IntakePatternId, PathId
 
 
-PATTERN_VERSION: str = "1.0.0-batch4"
+PATTERN_VERSION: str = "1.1.0-batch9.1"
 """Semver of the pattern table at intake time. Carried into IntakeDecision
-so forensics can diagnose pattern-table regressions."""
+so forensics can diagnose pattern-table regressions.
+
+1.1.0-batch9.1 (Slice 1 live testing finding): thanks pattern widened
+to cover ``thank u`` / ``thanku`` / ``thanx`` / ``ty`` / ``tysm``.
+Without these, informal thank-you variants fell through to the
+Planner, which (correctly per its prompt) had no Path 1 option and
+emitted Path 8.2 out_of_scope. Same Path 1 thanks intent, just
+matches more spellings.
+"""
 
 
 @dataclass(frozen=True)
@@ -81,7 +89,15 @@ _GREETING_REGEX = re.compile(
     r"^(hi|hello|hey|salam|salut)[!.?\s]*$", re.IGNORECASE
 )
 _THANKS_REGEX = re.compile(
-    r"^(thanks|thank you|thx|merci)[!.?\s]*$", re.IGNORECASE
+    # English formal: thanks / thank you
+    # English informal: thank u (texting), thanku (no space),
+    #                   thanx (alt spelling), ty / tysm (chat shorthand)
+    # French: merci
+    # Widened in PATTERN_VERSION 1.1.0-batch9.1 after live testing
+    # showed "thank u" routing to Path 8.2 out_of_scope -- same
+    # intent, just an informal spelling.
+    r"^(thanks|thank you|thank u|thanku|thx|thanx|ty|tysm|merci)[!.?\s]*$",
+    re.IGNORECASE,
 )
 _FAREWELL_REGEX = re.compile(
     r"^(bye|goodbye|cya|see you)[!.?\s]*$", re.IGNORECASE

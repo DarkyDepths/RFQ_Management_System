@@ -48,8 +48,14 @@ from src.models.manager_dto import (
     ManagerRfqStageDto,
 )
 from src.models.path_registry import ReasonCode, ToolId
+from src.pipeline.access import _is_uuid
 from src.pipeline.errors import StageError
-from src.utils.errors import ManagerUnreachable, RfqNotFound
+from src.utils.errors import (
+    ManagerAuthFailed,
+    ManagerUnreachable,
+    RfqAccessDenied,
+    RfqNotFound,
+)
 
 
 # Slice 1 tool ID -> manager method mapping. Adding a tool requires
@@ -137,11 +143,28 @@ def execute_path_4(
             )
 
     # Build the per-target evidence packet from accumulated fields.
+    #
+    # ``target_label`` MUST be the manager-confirmed rfq_code (e.g.
+    # "IF-0001"), NOT the raw input -- otherwise a UUID arriving via
+    # ``current_rfq_code`` (e.g. /v2 page-context flow from the
+    # frontend, where mode.rfqId is the manager UUID) would surface
+    # in user answers as ``"<uuid> deadline is 2026-05-17"`` instead
+    # of ``"IF-0001 deadline is 2026-05-17"``.
+    #
+    # Resolution order (Batch 9.1 PR review fix):
+    #   1. cached_rfq_detail.rfq_code -- always present when Access
+    #      succeeded (which it must have for tool_executor to run).
+    #   2. target.rfq_label -- pre-Access fallback; matches the input.
     if fields_for_packet:
+        confirmed_label = (
+            cached_rfq_detail.rfq_code
+            if cached_rfq_detail is not None and cached_rfq_detail.rfq_code
+            else target.rfq_label
+        )
         state.evidence_packets.append(
             EvidencePacket(
                 target_id=target.rfq_id,
-                target_label=target.rfq_label,
+                target_label=confirmed_label,
                 fields=fields_for_packet,
                 source_refs=source_refs,
             )
@@ -168,7 +191,15 @@ def _execute_get_rfq_profile(
         status = "ok"
     else:
         try:
-            detail = manager.get_rfq_detail(target.rfq_code, actor)
+            # Dispatch by identifier shape (Batch 9.1) — same logic as
+            # access.py so /v1 (UUID-passing) and /v2 (code-passing)
+            # both reach the right manager endpoint.
+            if _is_uuid(target.rfq_code):
+                detail = manager.get_rfq_detail(target.rfq_code, actor)
+            else:
+                detail = manager.get_rfq_detail_by_code(
+                    target.rfq_code, actor
+                )
             latency_ms = max(
                 1,
                 int(
@@ -182,6 +213,24 @@ def _execute_get_rfq_profile(
             raise StageError(
                 trigger="access_denied_explicit",
                 reason_code=ReasonCode("access_denied_explicit"),
+                source_stage="tool_executor",
+                details={"tool_name": "get_rfq_profile", "cause": str(exc)},
+            ) from exc
+        except RfqAccessDenied as exc:
+            raise StageError(
+                trigger="access_denied_explicit",
+                reason_code=ReasonCode("access_denied_explicit"),
+                source_stage="tool_executor",
+                details={
+                    "tool_name": "get_rfq_profile",
+                    "cause": str(exc),
+                    "manager_status": 403,
+                },
+            ) from exc
+        except ManagerAuthFailed as exc:
+            raise StageError(
+                trigger="manager_auth_failed",
+                reason_code=ReasonCode("manager_auth_failed"),
                 source_stage="tool_executor",
                 details={"tool_name": "get_rfq_profile", "cause": str(exc)},
             ) from exc
@@ -233,9 +282,11 @@ def _execute_get_rfq_stages(
     into the packet, projecting only plan-allowed fields."""
     started = datetime.now(timezone.utc)
     try:
-        stages: list[ManagerRfqStageDto] = manager.get_rfq_stages(
-            target.rfq_code, actor
-        )
+        # Dispatch by identifier shape (Batch 9.1) — see _execute_get_rfq_profile.
+        if _is_uuid(target.rfq_code):
+            stages = manager.get_rfq_stages(target.rfq_code, actor)
+        else:
+            stages = manager.get_rfq_stages_by_code(target.rfq_code, actor)
         latency_ms = max(
             1,
             int(
@@ -247,6 +298,24 @@ def _execute_get_rfq_stages(
         raise StageError(
             trigger="access_denied_explicit",
             reason_code=ReasonCode("access_denied_explicit"),
+            source_stage="tool_executor",
+            details={"tool_name": "get_rfq_stages", "cause": str(exc)},
+        ) from exc
+    except RfqAccessDenied as exc:
+        raise StageError(
+            trigger="access_denied_explicit",
+            reason_code=ReasonCode("access_denied_explicit"),
+            source_stage="tool_executor",
+            details={
+                "tool_name": "get_rfq_stages",
+                "cause": str(exc),
+                "manager_status": 403,
+            },
+        ) from exc
+    except ManagerAuthFailed as exc:
+        raise StageError(
+            trigger="manager_auth_failed",
+            reason_code=ReasonCode("manager_auth_failed"),
             source_stage="tool_executor",
             details={"tool_name": "get_rfq_stages", "cause": str(exc)},
         ) from exc
@@ -289,12 +358,14 @@ def _execute_get_rfq_stages(
             fields_for_packet["stages"] = projected_stages
 
     if "blocker_status" in requested or "blocker_reason_code" in requested:
-        # Blockers projection: scan stages for any non-empty blocker_status.
-        # The current-stage blocker is the most relevant; we surface it
-        # if found. The renderer interprets None / absence safely.
+        # Blockers projection: scan stages for an ACTIVE blocker.
+        # Manager normalizes blocker_status to {"Blocked", "Resolved",
+        # None}; "Resolved" means the blocker is RESOLVED, not active
+        # (Batch 9.1 audit P1-1: previous truthy check surfaced
+        # resolved blockers as active, lying to the user).
         active_blocker = None
         for stage in stages:
-            if stage.blocker_status:
+            if stage.blocker_status == "Blocked":
                 active_blocker = {
                     "stage_name": stage.name,
                     "blocker_status": stage.blocker_status,
