@@ -27,7 +27,12 @@ from src.connectors.manager_ms_connector import ManagerConnector
 from src.models.actor import Actor
 from src.models.db import TurnRow
 from src.translators.manager_translator import format_portfolio_for_prompt
-from src.utils.errors import LlmUnreachable, ManagerUnreachable
+from src.utils.errors import (
+    LlmUnreachable,
+    ManagerAuthFailed,
+    ManagerUnreachable,
+    RfqAccessDenied,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +59,13 @@ _SYSTEM_PROMPT_TEMPLATE = (
 _FALLBACK_MANAGER_UNREACHABLE = (
     "I couldn't reach the portfolio data service right now. "
     "Try again in a moment."
+)
+_FALLBACK_MANAGER_AUTH_FAILED = (
+    "I couldn't reach the portfolio data service due to a configuration "
+    "issue on my side. Please notify the team."
+)
+_FALLBACK_ACCESS_DENIED = (
+    "I'm not allowed to read the portfolio data."
 )
 _FALLBACK_LLM_UNREACHABLE = (
     "My language model is unavailable right now. Try again in a moment."
@@ -88,6 +100,15 @@ class PortfolioGroundedReplyService:
                 sort="deadline",
                 statuses=_RFQ_LIST_STATUSES,
             )
+        except RfqAccessDenied:
+            # Manager 403 (Batch 9.1 typed error). Surface a distinct
+            # message but stay graceful -- never raise out of /v1.
+            return _FALLBACK_ACCESS_DENIED
+        except ManagerAuthFailed:
+            # Manager 401 -- copilot's credentials rejected. Distinct
+            # from "service unreachable" so operators can spot it in
+            # the response copy.
+            return _FALLBACK_MANAGER_AUTH_FAILED
         except ManagerUnreachable:
             return _FALLBACK_MANAGER_UNREACHABLE
 

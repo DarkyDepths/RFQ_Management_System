@@ -143,11 +143,28 @@ def execute_path_4(
             )
 
     # Build the per-target evidence packet from accumulated fields.
+    #
+    # ``target_label`` MUST be the manager-confirmed rfq_code (e.g.
+    # "IF-0001"), NOT the raw input -- otherwise a UUID arriving via
+    # ``current_rfq_code`` (e.g. /v2 page-context flow from the
+    # frontend, where mode.rfqId is the manager UUID) would surface
+    # in user answers as ``"<uuid> deadline is 2026-05-17"`` instead
+    # of ``"IF-0001 deadline is 2026-05-17"``.
+    #
+    # Resolution order (Batch 9.1 PR review fix):
+    #   1. cached_rfq_detail.rfq_code -- always present when Access
+    #      succeeded (which it must have for tool_executor to run).
+    #   2. target.rfq_label -- pre-Access fallback; matches the input.
     if fields_for_packet:
+        confirmed_label = (
+            cached_rfq_detail.rfq_code
+            if cached_rfq_detail is not None and cached_rfq_detail.rfq_code
+            else target.rfq_label
+        )
         state.evidence_packets.append(
             EvidencePacket(
                 target_id=target.rfq_id,
-                target_label=target.rfq_label,
+                target_label=confirmed_label,
                 fields=fields_for_packet,
                 source_refs=source_refs,
             )

@@ -180,15 +180,47 @@ class FakeManagerConnector:
 
     def mark_not_found(self, identifier: str) -> None:
         """Make the given identifier (code OR UUID string) raise
-        RfqNotFound on lookup."""
+        RfqNotFound on lookup -- AND any aliased identifier the same
+        RFQ might be looked up by.
+
+        The real manager returns 404 on both the by-id and the by-code
+        endpoints for the same RFQ. The fake mirrors this: marking
+        ``IF-0001`` as not-found also marks the UUID it aliases (and
+        vice versa) so a UUID-path lookup of the same RFQ doesn't
+        silently succeed and hide regressions (Batch 9.1 PR review).
+        """
         self._not_found_codes.add(identifier)
         self._not_found_uuids.add(identifier)
+        self._mark_aliases(identifier, self._not_found_codes, self._not_found_uuids)
 
     def mark_access_denied(self, identifier: str) -> None:
         """Make the given identifier (code OR UUID string) raise
-        RfqAccessDenied (HTTP 403) on lookup."""
+        RfqAccessDenied (HTTP 403) on lookup -- AND any aliased
+        identifier. Same alias-symmetry as ``mark_not_found``."""
         self._access_denied_codes.add(identifier)
         self._access_denied_uuids.add(identifier)
+        self._mark_aliases(
+            identifier, self._access_denied_codes, self._access_denied_uuids,
+        )
+
+    def _mark_aliases(
+        self,
+        identifier: str,
+        codes_set: set[str],
+        uuids_set: set[str],
+    ) -> None:
+        """Cross-populate code <-> UUID for a given identifier so a
+        single mark_*() call covers both endpoint shapes the same RFQ
+        is reachable at. Reused by mark_not_found / mark_access_denied."""
+        # If identifier is a CODE we know about, also mark its UUID.
+        uuid_alias = self._uuid_by_code.get(identifier)
+        if uuid_alias is not None:
+            uuids_set.add(uuid_alias)
+        # If identifier is a UUID we know about, also mark every CODE
+        # that aliases it (typically one).
+        for code, uid in self._uuid_by_code.items():
+            if uid == identifier:
+                codes_set.add(code)
 
     # ── Seed helpers ────────────────────────────────────────────────────
 

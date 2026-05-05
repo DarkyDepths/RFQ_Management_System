@@ -134,6 +134,19 @@ def test_path_4_by_uuid_still_uses_by_id_endpoint(client_with_overrides):
     assert "get_rfq_detail" in methods_called
     assert "get_rfq_detail_by_code" not in methods_called
 
+    # The user-facing answer + the response's target_rfq_code MUST
+    # surface the manager-confirmed business code (IF-0001), NOT the
+    # UUID the caller passed in. This is the Batch 9.1 PR review fix
+    # for the page-context flow where the frontend sends the manager
+    # UUID via current_rfq_code: without the tool_executor target_label
+    # / response builder fix, the renderer would produce
+    # f"<uuid> deadline is 2026-07-01." -- visibly broken.
+    assert body["target_rfq_code"] == "IF-0001"
+    assert str(rfq_uuid) not in body["answer"], (
+        f"Regression: UUID leaked into the user-facing answer: {body['answer']!r}"
+    )
+    assert "IF-0001" in body["answer"]
+
 
 def test_path_4_by_code_blockers_routes_through_by_code_stages(
     client_with_overrides,

@@ -144,12 +144,29 @@ _PROPOSAL_JSON_SCHEMA = {
         "properties": {
             "path": {
                 "type": "string",
+                # Restricted to the EXACT set of paths the Planner is
+                # allowed to emit in Slice 1 (matches the system prompt
+                # above). Tightened in Batch 9.1 after a Copilot review
+                # flagged that a wider enum + null-only filters meant
+                # any accidental ``path_3`` emission would land at the
+                # Azure schema rejection layer instead of the proper
+                # PlannerValidator F1 (intent_not_in_registry) routing.
+                #
+                # NEVER add path_1 here -- FastIntake owns Path 1; the
+                # Planner is the second-line classifier. NEVER add
+                # path_8_4 / path_8_5 -- those are Escalation-Gate-only
+                # emissions per the freeze doc.
+                #
+                # When Path 2 / 3 / 5 / 6 / 7 ship, add them here AND
+                # update the system prompt above AND widen the
+                # ``filters`` / ``output_shape`` slots if needed.
                 "enum": [
-                    "path_1", "path_2", "path_3", "path_4",
-                    "path_5", "path_6", "path_7",
-                    "path_8_1", "path_8_2", "path_8_3",
+                    "path_4",
+                    "path_8_1",
+                    "path_8_2",
+                    "path_8_3",
                 ],
-                "description": "Which path applies. Slice 1 supports path_4, path_8_1, path_8_2, path_8_3.",
+                "description": "Which path applies. Slice 1 emittable set only.",
             },
             "intent_topic": {
                 "type": "string",
