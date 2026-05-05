@@ -3,6 +3,9 @@
 Batch 3 set: threads, turns, audit_log.
 Batch 6 adds: execution_records (v2 forensics — every /v2 turn writes
               one row; supports partial writes per §4 freeze schema).
+Batch 10 adds: v2_threads (lightweight per-thread metadata for the
+               /v2 lane; turn content stays in execution_records, no
+               duplicate v2_turns table).
 Future: session_state, episodic_summaries.
 """
 
@@ -130,4 +133,54 @@ class ExecutionRecordRow(Base):
     __table_args__ = (
         Index("ix_execution_records_thread_created", "thread_id", "created_at"),
         Index("ix_execution_records_path_status", "path", "status"),
+    )
+
+
+class V2ThreadRow(Base):
+    """/v2 lane per-thread metadata (Batch 10).
+
+    `execution_records` remains the source of truth for turn content.
+    This table holds only what `execution_records` doesn't (thread
+    ownership, mode, display labels, freshness anchor, title). Created
+    by `POST /v2/threads/new`; updated by every successful `/v2/turn`.
+
+    Owned by:
+      - reads/writes: ``src/datasources/v2_thread_datasource.py``
+      - controllers: ``src/controllers/v2_thread_controller.py`` and
+        ``src/controllers/v2_turn_controller.py``
+
+    Ownership: every read/write goes through the datasource which
+    requires ``actor_id`` and filters by ``owner_actor_id``. Owner
+    mismatch is treated as ``ThreadNotFoundError`` (404), NOT 403,
+    to prevent thread-id enumeration.
+
+    Status column intentionally absent in Batch 10. Freshness
+    (``is_stale``) is computed at read time from ``last_activity_at``
+    against per-mode thresholds (general 3 days, rfq_bound 7 days).
+    Add a ``status`` column when there's actual semantics for one
+    (close / archive / pin).
+    """
+
+    __tablename__ = "v2_threads"
+
+    id = Column(String, primary_key=True)
+    owner_actor_id = Column(String, nullable=False, index=True)
+    mode_kind = Column(String, nullable=False)  # 'general' | 'rfq_bound'
+    rfq_id = Column(String, nullable=True, index=True)
+    rfq_code = Column(String, nullable=True)
+    rfq_label = Column(String, nullable=True)
+    title = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    last_activity_at = Column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_v2_threads_owner_mode_rfq_activity",
+            "owner_actor_id",
+            "mode_kind",
+            "rfq_id",
+            "last_activity_at",
+        ),
     )

@@ -112,21 +112,31 @@ def smoke():
 
     def _override_controller():
         s = SessionFactory()
+        from src.datasources.v2_history_datasource import V2HistoryDatasource
+        from src.datasources.v2_thread_datasource import V2ThreadDatasource
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
-            llm_connector=fake_llm, session=s,
+            llm_connector=fake_llm,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
+            session=s,
         )
 
     app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
 
+    from tests.conftest import make_v2_thread
+    fixture_session = SessionFactory()
+    thread_id = make_v2_thread(fixture_session)
+
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager
+        yield client, fake_llm, fake_manager, thread_id
     finally:
         app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
         engine.dispose()
 
 
@@ -134,9 +144,9 @@ def smoke():
 
 
 def test_response_contract_fastintake(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "hello"},
     )
     assert r.status_code == 200
@@ -155,13 +165,13 @@ def test_response_contract_fastintake(smoke):
 
 
 def test_response_contract_path_4(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -177,13 +187,13 @@ def test_response_contract_path_4(smoke):
 
 
 def test_response_contract_path_8(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_llm.set_response(planner_proposal_json(
         path="path_8_2", intent_topic="out_of_scope",
         target_candidates=[],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "write me a recipe"},
     )
     assert r.status_code == 200
@@ -200,7 +210,7 @@ def test_response_contract_path_8(smoke):
 def test_no_unsafe_draft_text_in_judge_fail_response(smoke):
     """Judge rejects the draft. The user must NOT see the draft body
     OR any of its content — only the safe template."""
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail(
         "IF-0001", name="Refinery", client="ACME",
     )
@@ -221,7 +231,7 @@ def test_no_unsafe_draft_text_in_judge_fail_response(smoke):
         '"rationale":"x"}',
     ])
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "summary of IF-0001"},
     )
     body = r.json()
@@ -240,7 +250,7 @@ def test_no_unsafe_draft_text_in_judge_fail_response(smoke):
 def test_no_planner_rationale_in_response(smoke):
     """The planner's classification_rationale is forensic; never goes
     to the user."""
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -249,7 +259,7 @@ def test_no_planner_rationale_in_response(smoke):
         ),
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "deadline of IF-0001?"},
     )
     body = r.json()
@@ -263,13 +273,13 @@ def test_no_planner_rationale_in_response(smoke):
 def test_no_stack_trace_in_response(smoke):
     """Generic guardrail — even if something goes sideways, the user
     response body must be clean of debugging artefacts."""
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "deadline of IF-0001?"},
     )
     body = r.json()
@@ -283,7 +293,7 @@ def test_no_stack_trace_in_response(smoke):
 
 
 def test_current_rfq_code_enables_page_default_question(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0042", deadline=date(2026, 9, 1))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -292,7 +302,7 @@ def test_current_rfq_code_enables_page_default_question(smoke):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline?", "current_rfq_code": "IF-0042"},
     )
     body = r.json()
@@ -305,7 +315,7 @@ def test_current_rfq_code_enables_page_default_question(smoke):
 
 
 def test_page_default_without_context_routes_to_clarification(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[
@@ -313,7 +323,7 @@ def test_page_default_without_context_routes_to_clarification(smoke):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline?"},
     )
     body = r.json()
@@ -325,7 +335,7 @@ def test_page_default_without_context_routes_to_clarification(smoke):
 
 
 def test_unknown_rfq_routes_to_path_8_4(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.mark_not_found("IF-9999")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -334,7 +344,7 @@ def test_unknown_rfq_routes_to_path_8_4(smoke):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-9999?"},
     )
     body = r.json()
@@ -345,13 +355,13 @@ def test_unknown_rfq_routes_to_path_8_4(smoke):
 
 
 def test_manager_unavailable_routes_to_path_8_5(smoke):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_unreachable()
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     body = r.json()
@@ -380,7 +390,7 @@ def test_planner_unavailable_routes_non_fastintake_to_path_8_5():
     try:
         client = TestClient(app)
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            "/rfq-copilot/v2/threads/any-id-since-no-thread-gate/turn",
             json={"message": "What is the deadline for IF-0001?"},
         )
         body = r.json()
@@ -388,7 +398,7 @@ def test_planner_unavailable_routes_non_fastintake_to_path_8_5():
         assert body["reason_code"] == "llm_unavailable"
         # FastIntake-only deployment still answers FastIntake messages.
         r2 = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            "/rfq-copilot/v2/threads/any-id-since-no-thread-gate/turn",
             json={"message": "hello"},
         )
         assert r2.json()["path"] == "path_1"
@@ -424,7 +434,7 @@ def test_persistence_failure_returns_answer_with_null_record_id():
         # FastIntake — no LLM call, persistence skipped, answer must
         # still be the safe template.
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            "/rfq-copilot/v2/threads/any-id-since-no-thread-gate/turn",
             json={"message": "hello"},
         )
         body = r.json()
@@ -523,7 +533,7 @@ def test_readiness_endpoint_returns_passive_config_status():
 
 
 def test_per_turn_log_contains_only_safe_fields(smoke, caplog):
-    client, fake_llm, fake_manager = smoke
+    client, fake_llm, fake_manager, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -533,7 +543,7 @@ def test_per_turn_log_contains_only_safe_fields(smoke, caplog):
         logger="src.controllers.v2_turn_controller",
     ):
         client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "What is the deadline for IF-0001?"},
         )
 

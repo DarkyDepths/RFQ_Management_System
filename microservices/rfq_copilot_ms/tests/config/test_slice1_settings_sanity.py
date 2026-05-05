@@ -135,20 +135,35 @@ def test_get_llm_connector_optional_returns_none_without_azure(monkeypatch):
 # ── 5. FastIntake works without Azure (end-to-end) ──────────────────────
 
 
-def test_fastintake_works_without_azure(monkeypatch):
+def test_fastintake_works_without_azure(monkeypatch, db_session):
     """End-to-end: with Azure unset, FastIntake messages must still
-    answer with their templates (no Planner consulted)."""
+    answer with their templates (no Planner consulted).
+
+    Batch 10: /v2/turn now requires a registered thread. We wire the
+    db_session through the app and pre-create a v2_thread before
+    posting the turn.
+    """
     _force_azure_unconfigured(monkeypatch)
     from src.app import app
+    from src.app_context import get_session
+    from tests.conftest import make_v2_thread
 
-    client = TestClient(app)
-    r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
-        json={"message": "hello"},
-    )
-    # FastIntake hits before any Azure-dependent stage.
-    assert r.status_code == 200
-    assert r.json()["path"] == "path_1"
+    def _override_session():
+        yield db_session
+
+    app.dependency_overrides[get_session] = _override_session
+    try:
+        thread_id = make_v2_thread(db_session)
+        client = TestClient(app)
+        r = client.post(
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
+            json={"message": "hello"},
+        )
+        # FastIntake hits before any Azure-dependent stage.
+        assert r.status_code == 200, r.text
+        assert r.json()["path"] == "path_1"
+    finally:
+        app.dependency_overrides.pop(get_session, None)
 
 
 # ── 6. No hardcoded secrets in source we control ────────────────────────

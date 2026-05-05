@@ -40,9 +40,12 @@ from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
 from src.pipeline.planner_validator import PlannerValidator
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
 from tests.conftest import (
     FakeLlmConnector,
     FakeManagerConnector,
+    make_v2_thread,
     planner_proposal_json,
 )
 
@@ -78,18 +81,25 @@ def smoke():
         s = SessionFactory()
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
-            planner=planner, manager=fake_manager, session=s,
+            planner=planner, manager=fake_manager,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
+            session=s,
         )
 
     app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
 
+    fixture_session = SessionFactory()
+    thread_id = make_v2_thread(fixture_session)
+
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager, SessionFactory
+        yield client, fake_llm, fake_manager, SessionFactory, thread_id
     finally:
         app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
         engine.dispose()
 
 
@@ -102,13 +112,13 @@ def _ds(SessionFactory) -> ExecutionRecordDatasource:
 
 def test_v2_path_4_normal_deadline_passes_guardrails(smoke):
     """Existing Batch 5 happy path — verify guardrails don't break it."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -120,7 +130,7 @@ def test_v2_path_4_normal_deadline_passes_guardrails(smoke):
 
 
 def test_v2_path_4_normal_stages_passes_guardrails(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Discovery", "order": 1, "status": "Done"},
@@ -130,7 +140,7 @@ def test_v2_path_4_normal_stages_passes_guardrails(smoke):
         path="path_4", intent_topic="stages",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Show stages for IF-0001"},
     )
     assert r.status_code == 200
@@ -154,7 +164,7 @@ def _patched_renderer(leaky_text: str):
 def test_v2_forbidden_field_leak_routes_to_path_8_5(smoke):
     """Renderer leaks 'margin'. Forbidden_field guardrail catches.
     Gate routes to Path 8.5. User gets safe template. Persisted as escalated."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -162,7 +172,7 @@ def test_v2_forbidden_field_leak_routes_to_path_8_5(smoke):
 
     with _patched_renderer("IF-0001 margin is 12.5%"):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 
@@ -185,7 +195,7 @@ def test_v2_forbidden_field_leak_routes_to_path_8_5(smoke):
 
 
 def test_v2_internal_label_leak_routes_to_path_8_5(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -193,7 +203,7 @@ def test_v2_internal_label_leak_routes_to_path_8_5(smoke):
 
     with _patched_renderer("Routing to path_4 with reason_code=ok"):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 
@@ -206,7 +216,7 @@ def test_v2_internal_label_leak_routes_to_path_8_5(smoke):
 
 
 def test_v2_intelligence_claim_leak_routes_to_path_8_5(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -214,7 +224,7 @@ def test_v2_intelligence_claim_leak_routes_to_path_8_5(smoke):
 
     with _patched_renderer("IF-0001 has a high win probability and we should bid"):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 
@@ -226,7 +236,7 @@ def test_v2_intelligence_claim_leak_routes_to_path_8_5(smoke):
 
 
 def test_v2_raw_json_dump_routes_to_path_8_5(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -234,7 +244,7 @@ def test_v2_raw_json_dump_routes_to_path_8_5(smoke):
 
     with _patched_renderer('{"deadline": "2026-06-15", "raw": true}'):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 
@@ -245,7 +255,7 @@ def test_v2_raw_json_dump_routes_to_path_8_5(smoke):
 
 
 def test_v2_traceback_leak_routes_to_path_8_5(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -255,7 +265,7 @@ def test_v2_traceback_leak_routes_to_path_8_5(smoke):
         'Traceback (most recent call last):\n  File "x.py", line 1, in <module>\nKeyError: \'deadline\''
     ):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 
@@ -272,7 +282,7 @@ def test_v2_traceback_leak_routes_to_path_8_5(smoke):
 def test_safe_path_8_5_answer_does_not_leak_guardrail_internals(smoke):
     """The safe template the user sees must NOT mention which guardrail
     fired or what the original (rejected) answer was."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -280,7 +290,7 @@ def test_safe_path_8_5_answer_does_not_leak_guardrail_internals(smoke):
 
     with _patched_renderer("IF-0001 margin is 12.5%"):
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "what is the deadline?"},
         )
 

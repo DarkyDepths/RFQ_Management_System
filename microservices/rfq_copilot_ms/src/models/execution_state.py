@@ -73,6 +73,7 @@ from src.models.planner_proposal import (
     PlannerProposal,
     ValidatedPlannerProposal,
 )
+from src.models.working_memory import WorkingMemoryEntry
 
 
 # ── Runtime sub-objects (frozen per-record forensics) ─────────────────────
@@ -266,11 +267,17 @@ class ExecutionState(BaseModel):
     access_decisions: list[AccessDecision] = Field(default_factory=list)
 
     # ── Filled by Memory Load ──
-    # Working memory is the recent user/assistant pair window; episodic
-    # summaries are the longer-thread digests. Concrete element types
-    # land in a future batch (Memory module owner). Kept loose here so
-    # Batch 1 doesn't lock in a type that Slice 2+ may refine.
-    working_memory: list = Field(default_factory=list)
+    # working_memory: capped list of complete prior turn pairs from
+    # the same thread. Loaded by V2TurnController AFTER the plan is
+    # built (so MemoryPolicy.working_pairs from the registry caps the
+    # size). Batch 10 captures these entries; Batch 12 will USE them
+    # for semantic follow-up resolution and (separately) for prompt
+    # injection.
+    #
+    # episodic_summaries: longer-thread digests. Slot remains untyped
+    # (still ``list``) until the post-Slice-2 batch that ships
+    # episodic memory.
+    working_memory: list[WorkingMemoryEntry] = Field(default_factory=list)
     episodic_summaries: list = Field(default_factory=list)
 
     # ── Filled by Tool Executor / Context Builder ──

@@ -60,11 +60,13 @@ from src.pipeline import (
     tool_executor as tool_executor_stage,
 )
 from src.pipeline.errors import StageError
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
 from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
 from src.pipeline.planner_validator import PlannerValidator
-from src.utils.errors import LlmUnreachable
+from src.utils.errors import LlmUnreachable, ThreadNotFoundError
 
 
 logger = logging.getLogger(__name__)
@@ -97,6 +99,8 @@ class V2TurnController:
         planner: Planner | None = None,
         manager: ManagerConnector | None = None,
         llm_connector: LlmConnector | None = None,
+        v2_thread_datasource: V2ThreadDatasource | None = None,
+        v2_history_datasource: V2HistoryDatasource | None = None,
         session: Session | None = None,
         registry_version: str | None = None,
     ):
@@ -115,6 +119,14 @@ class V2TurnController:
         # already use it. Tests that don't care about Compose/Judge can
         # leave this None.
         self._llm_connector = llm_connector
+        # /v2 thread management (Batch 10): both required when running
+        # the full flow. Optional in legacy unit tests that bypass
+        # thread checks; production DI always provides them.
+        # When BOTH are None, the controller skips thread validation
+        # AND working_memory loading -- legacy single-turn unit tests
+        # that pre-date Batch 10 keep working.
+        self._v2_thread_ds = v2_thread_datasource
+        self._v2_history_ds = v2_history_datasource
         # Session is optional — when None (e.g. tests that don't care
         # about persistence), Persist is skipped. In production DI
         # always provides a Session.
@@ -145,7 +157,22 @@ class V2TurnController:
         breaks the user-facing answer (Persist runs with strict=False).
         ``execution_record_id`` is None in the response when
         persistence was unavailable or failed.
+
+        Batch 10: requires the thread to exist in ``v2_threads`` before
+        any pipeline work. Unknown ``thread_id`` raises
+        ``ThreadNotFoundError`` (-> 404 via global handler). Working
+        memory is loaded AFTER the plan is built (so the per-path
+        ``MemoryPolicy.working_pairs`` cap is known). Working memory
+        is captured into ``state.working_memory`` only -- NOT injected
+        into Planner / Compose / Judge prompts in this batch (Batch 12
+        will introduce injection).
         """
+        # Batch 10 — gate the turn at entry: thread must exist AND be
+        # owned by this actor. Same error class for both cases so
+        # thread-id enumeration via 403/404 differentiation is
+        # impossible.
+        self._require_owned_thread(thread_id, actor)
+
         started_at = time.monotonic()
         error_payload: dict | None = None
         state: ExecutionState
@@ -171,6 +198,12 @@ class V2TurnController:
             }
             state = self._recover_unexpected_failure(thread_id, request, actor)
 
+        # Batch 10 — load working memory AFTER the plan is built (the
+        # plan carries the registry MemoryPolicy with the working_pairs
+        # cap). state is already constructed at this point, with
+        # working_memory=[] by default.
+        self._load_working_memory(state, thread_id)
+
         duration_ms = int((time.monotonic() - started_at) * 1000)
         status = self._derive_status(state, had_error=error_payload is not None)
         record_id = self._persist(
@@ -180,6 +213,15 @@ class V2TurnController:
             status=status,
             duration_ms=duration_ms,
             error_payload=error_payload,
+        )
+
+        # Batch 10 — after a successful persist, touch activity + set
+        # title from first user message (best-effort, both no-op if
+        # the thread vanished or the title is already set).
+        self._post_turn_thread_metadata(
+            thread_id=thread_id,
+            actor=actor,
+            user_message=request.message,
         )
         response = self._build_response(
             thread_id, state, execution_record_id=record_id
@@ -611,3 +653,87 @@ class V2TurnController:
             strict=False,  # production: never break the user answer
         )
         return record.id if record is not None else None
+
+    # ── Batch 10: thread + working_memory + thread metadata helpers ──────
+
+    def _require_owned_thread(self, thread_id: str, actor: Actor) -> None:
+        """Verify the thread exists in v2_threads AND is owned by this
+        actor. Raises ``ThreadNotFoundError`` (-> 404) on miss/owner-
+        mismatch.
+
+        Skipped when ``v2_thread_datasource`` was not injected -- this
+        is the legacy unit-test path (pre-Batch-10 tests that bypass
+        thread management). Production DI always provides the
+        datasource so this gate always runs in real deploys.
+        """
+        if self._v2_thread_ds is None:
+            return
+        row = self._v2_thread_ds.get_by_id(thread_id, actor.user_id)
+        if row is None:
+            raise ThreadNotFoundError()
+
+    def _load_working_memory(
+        self, state: ExecutionState, thread_id: str,
+    ) -> None:
+        """Populate ``state.working_memory`` from the last
+        ``MemoryPolicy.working_pairs`` complete prior turns.
+
+        * No history datasource injected -> no-op (legacy test path).
+        * No memory_policy on the plan -> no-op (path didn't declare
+          memory; treat as cap=0).
+        * Cap from ``state.plan.memory_policy.working_pairs``.
+
+        Captures only -- does NOT inject into Planner / Compose / Judge
+        prompts. That's Batch 12's job. The anti-drift test
+        ``test_batch10_no_history_injection.py`` enforces this
+        boundary.
+        """
+        if self._v2_history_ds is None:
+            return
+        memory_policy = state.plan.memory_policy
+        if memory_policy is None:
+            return
+        cap = memory_policy.working_pairs
+        if cap <= 0:
+            return
+        state.working_memory = self._v2_history_ds.load_complete_pairs(
+            thread_id=thread_id, limit=cap,
+        )
+
+    def _post_turn_thread_metadata(
+        self,
+        *,
+        thread_id: str,
+        actor: Actor,
+        user_message: str,
+    ) -> None:
+        """After a successful turn, update thread metadata:
+
+        1. ``last_activity_at`` -> now (drives the freshness clock).
+        2. ``title`` -> first 60 chars of the user_message (only if
+           still NULL; safe to call on every turn).
+
+        Best-effort: a missing/not-owned thread or a DB blip here does
+        NOT propagate. The user already got an answer.
+        """
+        if self._v2_thread_ds is None or self._session is None:
+            return
+        try:
+            self._v2_thread_ds.touch_activity(thread_id, actor.user_id)
+            proposed = (user_message or "").strip()
+            if proposed:
+                title = (
+                    proposed[:60].rstrip() + "…"
+                    if len(proposed) > 60
+                    else proposed
+                )
+                self._v2_thread_ds.set_title_if_unset(
+                    thread_id, actor.user_id, title,
+                )
+            self._session.commit()
+        except Exception as exc:
+            logger.warning(
+                "post-turn thread metadata update failed for %s: %s",
+                thread_id,
+                exc.__class__.__name__,
+            )

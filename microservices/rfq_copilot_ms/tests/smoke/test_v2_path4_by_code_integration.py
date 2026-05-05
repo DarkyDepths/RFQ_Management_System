@@ -29,10 +29,23 @@ from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from src.app import app
-from src.app_context import get_v2_turn_controller
+from src.app_context import get_session, get_v2_turn_controller
 from src.controllers.v2_turn_controller import V2TurnController
+from src.database import Base
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
+from src.models.db import (  # noqa: F401 — register tables
+    AuditLogRow,
+    ExecutionRecordRow,
+    ThreadRow,
+    TurnRow,
+    V2ThreadRow,
+)
 from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
@@ -40,6 +53,7 @@ from src.pipeline.planner_validator import PlannerValidator
 from tests.conftest import (
     FakeLlmConnector,
     FakeManagerConnector,
+    make_v2_thread,
     planner_proposal_json,
 )
 
@@ -49,23 +63,50 @@ def client_with_overrides():
     fake_llm = FakeLlmConnector()
     fake_manager = FakeManagerConnector()
 
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    SessionFactory = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    fixture_session = SessionFactory()
+
     factory = ExecutionPlanFactory()
     validator = PlannerValidator()
     gate = EscalationGate(factory=factory)
     planner = Planner(llm_connector=fake_llm)
 
+    def _override_session():
+        s = SessionFactory()
+        try:
+            yield s
+        finally:
+            s.close()
+
     def _override_controller():
+        s = SessionFactory()
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
+            session=s,
         )
 
+    app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
+
+    thread_id = make_v2_thread(fixture_session)
+
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager
+        yield client, fake_llm, fake_manager, thread_id
     finally:
+        app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
+        engine.dispose()
 
 
 # ── Happy path — by-code resolution end-to-end ──────────────────────────
@@ -78,7 +119,7 @@ def test_path_4_by_code_deadline_routes_through_by_code_endpoint(
     grounded Path 4 answer. Asserts the connector method, not just
     the user-visible answer, so a regression to the by-id path
     breaks here."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
@@ -87,7 +128,7 @@ def test_path_4_by_code_deadline_routes_through_by_code_endpoint(
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -110,7 +151,7 @@ def test_path_4_by_uuid_still_uses_by_id_endpoint(client_with_overrides):
     UUID-passing flow still goes through the by-id route."""
     from uuid import uuid4
 
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     rfq_uuid = uuid4()
     fake_manager.set_rfq_detail(
         "IF-0001", rfq_id=rfq_uuid, deadline=date(2026, 7, 1),
@@ -122,7 +163,7 @@ def test_path_4_by_uuid_still_uses_by_id_endpoint(client_with_overrides):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": f"What is the deadline for {rfq_uuid}?"},
     )
     assert r.status_code == 200, r.text
@@ -153,7 +194,7 @@ def test_path_4_by_code_blockers_routes_through_by_code_stages(
 ):
     """Blockers intent uses get_rfq_stages (not detail). Verify the
     by-code stages endpoint is hit."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Cost estimation", "order": 1, "status": "Active",
@@ -171,7 +212,7 @@ def test_path_4_by_code_blockers_routes_through_by_code_stages(
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Is IF-0001 blocked?"},
     )
     body = r.json()
@@ -188,7 +229,7 @@ def test_resolved_blocker_does_not_show_as_active(client_with_overrides):
     ``stage.blocker_status``, which matched ``"Resolved"`` and
     surfaced past blockers as active. Lock the fix: only
     ``stage.blocker_status == "Blocked"`` counts as an active blocker."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0050")
     fake_manager.set_rfq_stages("IF-0050", [
         # Earlier stage HAD a blocker, now resolved.
@@ -205,7 +246,7 @@ def test_resolved_blocker_does_not_show_as_active(client_with_overrides):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Is IF-0050 blocked?"},
     )
     assert r.status_code == 200, r.text
@@ -227,7 +268,7 @@ def test_manager_403_routes_to_path_8_4(client_with_overrides):
     """Manager 403 means the actor authenticated but isn't permitted
     to read this RFQ. Must land on Path 8.4 (inaccessible), not
     Path 8.5 (source down)."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0700")
     fake_manager.mark_access_denied("IF-0700")
     fake_llm.set_response(planner_proposal_json(
@@ -237,7 +278,7 @@ def test_manager_403_routes_to_path_8_4(client_with_overrides):
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Deadline for IF-0700?"},
     )
     assert r.status_code == 200, r.text
@@ -252,7 +293,7 @@ def test_manager_401_routes_to_path_8_5_with_distinct_reason(
     """Manager 401 means the copilot's auth is misconfigured at the
     deployment level. Must use a distinct reason_code from
     "source_unavailable" so operators can spot the misconfig."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0800")
     fake_manager.set_auth_failed()
     fake_llm.set_response(planner_proposal_json(
@@ -262,7 +303,7 @@ def test_manager_401_routes_to_path_8_5_with_distinct_reason(
         ],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Deadline for IF-0800?"},
     )
     assert r.status_code == 200, r.text

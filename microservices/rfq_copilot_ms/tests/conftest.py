@@ -384,6 +384,39 @@ def actor() -> Actor:
     return Actor(user_id="u1", display_name="User One", role="estimator")
 
 
+# ── /v2 thread fixture (Batch 10) ────────────────────────────────────────
+
+
+def make_v2_thread(
+    session,
+    *,
+    actor_id: str = "v1-demo-user",
+    mode_kind: str = "general",
+    rfq_id: str | None = None,
+    rfq_code: str | None = None,
+    rfq_label: str | None = None,
+) -> str:
+    """Create a v2_threads row directly and return its id.
+
+    Used by smoke tests that need a registered thread before calling
+    ``POST /v2/threads/{id}/turn`` (Batch 10's option-(b) contract:
+    unknown thread ids return 404). Default ``actor_id`` matches the
+    AUTH_BYPASS default so smoke tests using the real
+    ``resolve_actor`` get a thread they own.
+    """
+    from src.datasources.v2_thread_datasource import V2ThreadDatasource
+    ds = V2ThreadDatasource(session)
+    row = ds.create(
+        actor_id=actor_id,
+        mode_kind=mode_kind,
+        rfq_id=rfq_id,
+        rfq_code=rfq_code,
+        rfq_label=rfq_label,
+    )
+    session.commit()
+    return row.id
+
+
 # ── In-memory SQLite fixture for persistence tests ───────────────────────
 
 
@@ -406,6 +439,7 @@ def db_session():
         ExecutionRecordRow,
         ThreadRow,
         TurnRow,
+        V2ThreadRow,
     )
 
     engine = create_engine(

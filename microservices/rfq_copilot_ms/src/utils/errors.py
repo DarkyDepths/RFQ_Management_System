@@ -32,6 +32,24 @@ class RfqNotFound(NotFoundError):
     message = "RFQ not found in the platform"
 
 
+class ThreadNotFoundError(NotFoundError):
+    """The requested /v2 thread doesn't exist OR doesn't belong to
+    the requesting actor (Batch 10).
+
+    Same error class for both cases by design — a 403 on
+    "not your thread" would let an attacker enumerate other actors'
+    thread IDs by looking for which IDs return 403 vs 404. Returning
+    404 in both cases collapses the signal.
+
+    Raised by ``V2ThreadController`` and ``V2TurnController`` when
+    ``V2ThreadDatasource.get_by_id(thread_id, actor_id)`` returns
+    None (row missing OR owner mismatch). Mapped to HTTP 404 by the
+    global ``AppError`` handler in ``src/app.py``.
+    """
+
+    message = "Thread not found or not accessible"
+
+
 class RfqAccessDenied(AppError):
     """Manager returned 403 — the actor authenticated but is not
     permitted to read this RFQ.

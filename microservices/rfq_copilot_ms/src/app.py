@@ -41,6 +41,7 @@ from src.database import Base, engine
 from src.routes.entry_routes import router as entry_router
 from src.routes.health_routes import router as health_router
 from src.routes.turn_routes import router as turn_router
+from src.routes.v2.thread_routes import router as v2_thread_router
 from src.routes.v2.turn_routes import router as v2_turn_router
 from src.utils.errors import AppError
 
@@ -50,6 +51,7 @@ from src.models.db import (  # noqa: F401
     ExecutionRecordRow,
     ThreadRow,
     TurnRow,
+    V2ThreadRow,
 )
 
 
@@ -135,6 +137,9 @@ def create_app() -> FastAPI:
     # See docs/11-Architecture_Frozen_v2.md (architecture) and
     # docs/SLICE_1_APP_TESTING.md (operational testing guide).
     v2 = APIRouter(prefix="/rfq-copilot/v2")
+    # Thread management (Batch 10) -- /threads/new, /open, /list, GET /{id}.
+    v2.include_router(v2_thread_router)
+    # Turn endpoint (Batch 5+) -- /threads/{id}/turn.
     v2.include_router(v2_turn_router)
     app.include_router(v2)
 

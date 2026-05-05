@@ -11,14 +11,28 @@ from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from src.app import app
 from src.app_context import (
     get_manager_connector,
     get_planner,
+    get_session,
     get_v2_turn_controller,
 )
 from src.controllers.v2_turn_controller import V2TurnController
+from src.database import Base
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
+from src.models.db import (  # noqa: F401 — register tables
+    AuditLogRow,
+    ExecutionRecordRow,
+    ThreadRow,
+    TurnRow,
+    V2ThreadRow,
+)
 from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
@@ -26,46 +40,73 @@ from src.pipeline.planner_validator import PlannerValidator
 from tests.conftest import (
     FakeLlmConnector,
     FakeManagerConnector,
+    make_v2_thread,
     planner_proposal_json,
 )
 
 
 @pytest.fixture
 def client_with_overrides():
-    """Yield a TestClient with controllable fakes. Use the returned
-    helper to set up the fake responses BEFORE making the request."""
+    """Yield a TestClient with controllable fakes + a pre-created v2
+    thread_id (Batch 10: /v2/turn requires a registered thread)."""
     fake_llm = FakeLlmConnector()
     fake_manager = FakeManagerConnector()
+
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    SessionFactory = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    fixture_session = SessionFactory()
 
     factory = ExecutionPlanFactory()
     validator = PlannerValidator()
     gate = EscalationGate(factory=factory)
     planner = Planner(llm_connector=fake_llm)
 
+    def _override_session():
+        s = SessionFactory()
+        try:
+            yield s
+        finally:
+            s.close()
+
     def _override_controller():
+        s = SessionFactory()
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
+            session=s,
         )
 
+    app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
+
+    thread_id = make_v2_thread(fixture_session)
 
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager
+        yield client, fake_llm, fake_manager, thread_id
     finally:
+        app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
+        engine.dispose()
 
 
 def test_v2_deadline_returns_grounded_answer(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[{"raw_reference": "IF-0001", "proposed_kind": "rfq_code"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -78,13 +119,13 @@ def test_v2_deadline_returns_grounded_answer(client_with_overrides):
 
 
 def test_v2_owner_returns_grounded_answer(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001", owner="Mohamed")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="owner",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Who owns IF-0001?"},
     )
     assert r.status_code == 200
@@ -92,13 +133,13 @@ def test_v2_owner_returns_grounded_answer(client_with_overrides):
 
 
 def test_v2_status_returns_grounded_answer(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001", status="In preparation")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="status",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the status of IF-0001?"},
     )
     assert r.status_code == 200
@@ -108,14 +149,14 @@ def test_v2_status_returns_grounded_answer(client_with_overrides):
 def test_v2_current_stage_with_page_context(client_with_overrides):
     """User on the IF-0042 page asks 'what is the current stage?' —
     Planner emits page_default; Resolver picks up current_rfq_code."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0042", current_stage_name="Cost estimation")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="current_stage",
         target_candidates=[{"raw_reference": "", "proposed_kind": "page_default"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the current stage?", "current_rfq_code": "IF-0042"},
     )
     assert r.status_code == 200, r.text
@@ -125,7 +166,7 @@ def test_v2_current_stage_with_page_context(client_with_overrides):
 
 
 def test_v2_blockers_with_page_context(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0042")
     # Manager normalizes blocker_status to {"Blocked", "Resolved"} (Title-case);
     # use the real contract here so the Tool Executor's "is this an active
@@ -139,7 +180,7 @@ def test_v2_blockers_with_page_context(client_with_overrides):
         target_candidates=[{"raw_reference": "", "proposed_kind": "page_default"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Is it blocked?", "current_rfq_code": "IF-0042"},
     )
     assert r.status_code == 200
@@ -149,7 +190,7 @@ def test_v2_blockers_with_page_context(client_with_overrides):
 
 
 def test_v2_stages_returns_grounded_ordered_answer(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Discovery", "order": 1, "status": "Done"},
@@ -160,7 +201,7 @@ def test_v2_stages_returns_grounded_ordered_answer(client_with_overrides):
         path="path_4", intent_topic="stages",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Show stages for IF-0001"},
     )
     assert r.status_code == 200
@@ -172,7 +213,7 @@ def test_v2_stages_returns_grounded_ordered_answer(client_with_overrides):
 
 
 def test_v2_summary_returns_grounded_answer(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_rfq_detail(
         "IF-0001", name="Refinery Upgrade", client="ACME Energy",
         priority="Critical", deadline=date(2026, 8, 1),
@@ -181,7 +222,7 @@ def test_v2_summary_returns_grounded_answer(client_with_overrides):
         path="path_4", intent_topic="summary",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Give summary for IF-0001"},
     )
     assert r.status_code == 200
@@ -192,13 +233,13 @@ def test_v2_summary_returns_grounded_answer(client_with_overrides):
 
 def test_v2_no_target_no_context_routes_to_8_3(client_with_overrides):
     """Planner emits page_default but no current_rfq_code provided."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[{"raw_reference": "", "proposed_kind": "page_default"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "what is the deadline?"},
     )
     assert r.status_code == 200, r.text
@@ -209,14 +250,14 @@ def test_v2_no_target_no_context_routes_to_8_3(client_with_overrides):
 
 
 def test_v2_manager_not_found_routes_to_8_4(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.mark_not_found("IF-9999")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[{"raw_reference": "IF-9999", "proposed_kind": "rfq_code"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-9999?"},
     )
     assert r.status_code == 200, r.text
@@ -226,13 +267,13 @@ def test_v2_manager_not_found_routes_to_8_4(client_with_overrides):
 
 
 def test_v2_manager_unavailable_routes_to_8_5(client_with_overrides):
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_manager.set_unreachable()
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200
@@ -243,13 +284,13 @@ def test_v2_manager_unavailable_routes_to_8_5(client_with_overrides):
 
 def test_v2_recipe_request_routes_to_8_2(client_with_overrides):
     """Planner direct-emits 8.2 for clearly out-of-scope asks."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     fake_llm.set_response(planner_proposal_json(
         path="path_8_2", intent_topic="out_of_scope",
         target_candidates=[],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "write me a recipe"},
     )
     assert r.status_code == 200, r.text
@@ -259,11 +300,11 @@ def test_v2_recipe_request_routes_to_8_2(client_with_overrides):
 
 def test_v2_fast_intake_messages_still_work(client_with_overrides):
     """FastIntake still wins before the planner runs."""
-    client, fake_llm, fake_manager = client_with_overrides
+    client, fake_llm, fake_manager, thread_id = client_with_overrides
     # Don't queue an LLM response — FastIntake must short-circuit BEFORE
     # the planner is consulted.
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "hello"},
     )
     assert r.status_code == 200

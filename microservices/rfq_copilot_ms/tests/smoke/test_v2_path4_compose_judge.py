@@ -46,9 +46,12 @@ from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
 from src.pipeline.planner_validator import PlannerValidator
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
 from tests.conftest import (
     FakeLlmConnector,
     FakeManagerConnector,
+    make_v2_thread,
     planner_proposal_json,
 )
 
@@ -92,18 +95,24 @@ def smoke():
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
             llm_connector=fake_llm,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
             session=s,
         )
 
     app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
 
+    fixture_session = SessionFactory()
+    thread_id = make_v2_thread(fixture_session)
+
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager, SessionFactory
+        yield client, fake_llm, fake_manager, SessionFactory, thread_id
     finally:
         app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
         engine.dispose()
 
 
@@ -141,7 +150,7 @@ def _judge_fail(trigger: str, excerpt: str = "bad phrase") -> str:
 
 
 def test_v2_summary_compose_judge_happy_path(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail(
         "IF-0001", name="Refinery Upgrade", client="ACME Energy",
         priority="Critical", deadline=date(2026, 8, 1),
@@ -152,7 +161,7 @@ def test_v2_summary_compose_judge_happy_path(smoke):
         _judge_pass(),
     ])
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Give a summary of IF-0001"},
     )
     assert r.status_code == 200, r.text
@@ -170,7 +179,7 @@ def test_v2_summary_compose_judge_happy_path(smoke):
 
 
 def test_v2_blockers_compose_judge_happy_path(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001")
     fake_manager.set_rfq_stages("IF-0001", [
         {"name": "Cost estimation", "order": 1, "status": "Active",
@@ -182,7 +191,7 @@ def test_v2_blockers_compose_judge_happy_path(smoke):
         _judge_pass(),
     ])
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Is IF-0001 blocked?"},
     )
     assert r.status_code == 200, r.text
@@ -204,7 +213,7 @@ def test_v2_blockers_compose_judge_happy_path(smoke):
 def test_v2_summary_judge_fail_routes_to_path_8_5_template(
     smoke, trigger: str, reason_code: str, answer_snippet: str,
 ):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", name="Refinery", client="ACME")
     # Draft is *benign-looking* (deterministic guardrails see nothing
     # wrong). Only the Judge's verdict drives the escalation here.
@@ -218,7 +227,7 @@ def test_v2_summary_judge_fail_routes_to_path_8_5_template(
         _judge_fail(trigger),
     ])
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Summary of IF-0001"},
     )
     assert r.status_code == 200, r.text
@@ -253,7 +262,7 @@ def test_v2_compose_draft_with_forbidden_field_caught_by_guardrail(smoke):
     """Compose drafts something that mentions 'margin'. The deterministic
     forbidden_field guardrail catches it BEFORE the Judge runs (the
     safety floor is the deterministic gate, not the LLM Judge)."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", name="X", client="Y")
     fake_llm.set_responses([
         _planner("summary"),
@@ -262,7 +271,7 @@ def test_v2_compose_draft_with_forbidden_field_caught_by_guardrail(smoke):
         _judge_pass(),
     ])
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Summary of IF-0001"},
     )
     body = r.json()
@@ -280,7 +289,7 @@ def test_v2_compose_draft_with_forbidden_field_caught_by_guardrail(smoke):
 def test_v2_compose_llm_unreachable_routes_to_path_8_5(smoke):
     """Planner succeeds, but Compose's LLM call hits LlmUnreachable.
     The orchestrator routes to Path 8.5 llm_unavailable."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", name="X", client="Y")
     # Queue planner only, then mark unreachable. The next .complete()
     # (Compose's call) will raise.
@@ -310,7 +319,7 @@ def test_v2_compose_llm_unreachable_routes_to_path_8_5(smoke):
     fake_llm.complete = wrapped  # type: ignore[method-assign]
 
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Summary of IF-0001"},
     )
     body = r.json()
@@ -327,11 +336,11 @@ def test_v2_deadline_still_uses_deterministic_renderer(smoke):
     """Single-field intent (deadline) is NOT in COMPOSE_ELIGIBLE.
     Compose+Judge are skipped; the deterministic path4_renderer runs.
     The fake LLM should only be called once (planner)."""
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(_planner("deadline"))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -343,11 +352,11 @@ def test_v2_deadline_still_uses_deterministic_renderer(smoke):
 
 
 def test_v2_owner_still_uses_deterministic_renderer(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", owner="Mohamed")
     fake_llm.set_response(_planner("owner"))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "Owner of IF-0001?"},
     )
     body = r.json()
@@ -371,23 +380,46 @@ def test_v2_summary_falls_back_to_deterministic_when_llm_connector_none():
     )
     fake_llm.set_response(_planner("summary"))
 
+    # Batch 10: need session + v2 datasources + a registered thread.
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    SessionFactory = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    fixture_session = SessionFactory()
+    thread_id = make_v2_thread(fixture_session)
+
     factory = ExecutionPlanFactory()
     validator = PlannerValidator()
     gate = EscalationGate(factory=factory)
     planner = Planner(llm_connector=fake_llm)
 
+    def _override_session():
+        s = SessionFactory()
+        try:
+            yield s
+        finally:
+            s.close()
+
     def _override_controller():
+        s = SessionFactory()
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
             llm_connector=None,  # Compose/Judge disabled
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
+            session=s,
         )
 
+    app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
     try:
         client = TestClient(app)
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn",
+            f"/rfq-copilot/v2/threads/{thread_id}/turn",
             json={"message": "Summary of IF-0001"},
         )
         assert r.status_code == 200, r.text
@@ -400,4 +432,7 @@ def test_v2_summary_falls_back_to_deterministic_when_llm_connector_none():
         # Only the planner call happened.
         assert len(fake_llm.calls) == 1
     finally:
+        app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
+        engine.dispose()

@@ -22,11 +22,14 @@ from src.database import Base
 from src.datasources.execution_record_datasource import (
     ExecutionRecordDatasource,
 )
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
 from src.models.db import (  # noqa: F401 — register tables
     AuditLogRow,
     ExecutionRecordRow,
     ThreadRow,
     TurnRow,
+    V2ThreadRow,
 )
 from src.models.execution_record import ExecutionRecordStatus
 from src.pipeline.escalation_gate import EscalationGate
@@ -36,6 +39,7 @@ from src.pipeline.planner_validator import PlannerValidator
 from tests.conftest import (
     FakeLlmConnector,
     FakeManagerConnector,
+    make_v2_thread,
     planner_proposal_json,
 )
 
@@ -77,18 +81,24 @@ def smoke():
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
+            v2_thread_datasource=V2ThreadDatasource(s),
+            v2_history_datasource=V2HistoryDatasource(s),
             session=s, registry_version="0.1.0-slice1-test",
         )
 
     app.dependency_overrides[get_session] = _override_session
     app.dependency_overrides[get_v2_turn_controller] = _override_controller
 
+    fixture_session = SessionFactory()
+    thread_id = make_v2_thread(fixture_session)
+
     try:
         client = TestClient(app)
-        yield client, fake_llm, fake_manager, SessionFactory
+        yield client, fake_llm, fake_manager, SessionFactory, thread_id
     finally:
         app.dependency_overrides.pop(get_session, None)
         app.dependency_overrides.pop(get_v2_turn_controller, None)
+        fixture_session.close()
         engine.dispose()
 
 
@@ -100,9 +110,9 @@ def _ds(SessionFactory) -> ExecutionRecordDatasource:
 
 
 def test_v2_greeting_persists_with_execution_record_id(smoke):
-    client, _fake_llm, _fake_manager, SessionFactory = smoke
+    client, _fake_llm, _fake_manager, SessionFactory, thread_id = smoke
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn", json={"message": "hello"}
+        f"/rfq-copilot/v2/threads/{thread_id}/turn", json={"message": "hello"}
     )
     assert r.status_code == 200, r.text
     body = r.json()
@@ -122,13 +132,13 @@ def test_v2_greeting_persists_with_execution_record_id(smoke):
 
 
 def test_v2_path_4_deadline_persists_full_forensics(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_rfq_detail("IF-0001", deadline=date(2026, 6, 15))
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200, r.text
@@ -161,13 +171,13 @@ def test_v2_path_4_deadline_persists_full_forensics(smoke):
 
 
 def test_v2_missing_target_persists_path_8_3(smoke):
-    client, fake_llm, _fake_manager, SessionFactory = smoke
+    client, fake_llm, _fake_manager, SessionFactory, thread_id = smoke
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[{"raw_reference": "", "proposed_kind": "page_default"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "what is the deadline?"},
     )
     assert r.status_code == 200
@@ -184,14 +194,14 @@ def test_v2_missing_target_persists_path_8_3(smoke):
 
 
 def test_v2_manager_not_found_persists_path_8_4(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.mark_not_found("IF-9999")
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
         target_candidates=[{"raw_reference": "IF-9999", "proposed_kind": "rfq_code"}],
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-9999?"},
     )
     assert r.status_code == 200
@@ -207,13 +217,13 @@ def test_v2_manager_not_found_persists_path_8_4(smoke):
 
 
 def test_v2_manager_unavailable_persists_path_8_5(smoke):
-    client, fake_llm, fake_manager, SessionFactory = smoke
+    client, fake_llm, fake_manager, SessionFactory, thread_id = smoke
     fake_manager.set_unreachable()
     fake_llm.set_response(planner_proposal_json(
         path="path_4", intent_topic="deadline",
     ))
     r = client.post(
-        "/rfq-copilot/v2/threads/t1/turn",
+        f"/rfq-copilot/v2/threads/{thread_id}/turn",
         json={"message": "What is the deadline for IF-0001?"},
     )
     assert r.status_code == 200
@@ -230,7 +240,15 @@ def test_v2_manager_unavailable_persists_path_8_5(smoke):
 
 def test_v2_persistence_failure_returns_answer_with_null_record_id():
     """If the session is broken, the controller still returns the safe
-    answer; execution_record_id is None."""
+    answer; execution_record_id is None.
+
+    Batch 10: this test simulates total session breakage (the broken
+    session would also fail v2_thread_datasource lookups). To isolate
+    the persistence-failure assertion from the new thread-gate, the
+    controller is constructed without a v2_thread_datasource. The
+    legacy escape hatch in V2TurnController._require_owned_thread
+    skips the thread check in that case.
+    """
     fake_llm = FakeLlmConnector()
     fake_manager = FakeManagerConnector()
     factory = ExecutionPlanFactory()
@@ -247,6 +265,9 @@ def test_v2_persistence_failure_returns_answer_with_null_record_id():
         return V2TurnController(
             factory=factory, validator=validator, gate=gate,
             planner=planner, manager=fake_manager,
+            # Deliberately NO v2_thread_datasource / v2_history_datasource:
+            # this test isolates the persistence failure path. The
+            # _require_owned_thread escape hatch handles the missing ds.
             session=_BrokenSession(),  # type: ignore[arg-type]
         )
 
@@ -255,7 +276,8 @@ def test_v2_persistence_failure_returns_answer_with_null_record_id():
         client = TestClient(app)
         # FastIntake hit — answer should still come through.
         r = client.post(
-            "/rfq-copilot/v2/threads/t1/turn", json={"message": "hello"}
+            "/rfq-copilot/v2/threads/any-id-since-no-thread-gate/turn",
+            json={"message": "hello"},
         )
         assert r.status_code == 200
         body = r.json()
@@ -306,21 +328,21 @@ def test_v1_functional_smoke_still_passes_with_persist_wired():
 def test_v2_records_are_distinct_per_turn(smoke):
     """Two turns on the same thread produce two distinct execution
     records, ordered newest first."""
-    client, fake_llm, _fake_manager, SessionFactory = smoke
+    client, fake_llm, _fake_manager, SessionFactory, thread_id = smoke
     # Turn 1: greeting
     r1 = client.post(
-        "/rfq-copilot/v2/threads/multi/turn", json={"message": "hello"}
+        f"/rfq-copilot/v2/threads/{thread_id}/turn", json={"message": "hello"}
     )
     # Turn 2: another greeting (uses no LLM)
     r2 = client.post(
-        "/rfq-copilot/v2/threads/multi/turn", json={"message": "thanks"}
+        f"/rfq-copilot/v2/threads/{thread_id}/turn", json={"message": "thanks"}
     )
     assert r1.status_code == 200 and r2.status_code == 200
     id1 = r1.json()["execution_record_id"]
     id2 = r2.json()["execution_record_id"]
     assert id1 and id2 and id1 != id2
 
-    rows = _ds(SessionFactory).list_by_thread_id("multi")
+    rows = _ds(SessionFactory).list_by_thread_id(thread_id)
     assert len(rows) == 2
     # Newest first.
     assert rows[0].id == id2

@@ -15,11 +15,14 @@ from src.connectors.llm_connector import LlmConnector
 from src.connectors.manager_ms_connector import ManagerConnector
 from src.controllers.thread_controller import ThreadController
 from src.controllers.turn_controller import TurnController
+from src.controllers.v2_thread_controller import V2ThreadController
 from src.controllers.v2_turn_controller import V2TurnController
 from src.database import get_session
 from src.datasources.audit_log_datasource import AuditLogDatasource
 from src.datasources.thread_datasource import ThreadDatasource
 from src.datasources.turn_datasource import TurnDatasource
+from src.datasources.v2_history_datasource import V2HistoryDatasource
+from src.datasources.v2_thread_datasource import V2ThreadDatasource
 from src.pipeline.escalation_gate import EscalationGate
 from src.pipeline.execution_plan_factory import ExecutionPlanFactory
 from src.pipeline.planner import Planner
@@ -181,6 +184,31 @@ def get_llm_connector_optional() -> LlmConnector | None:
         return None
 
 
+# ── /v2 thread management (Batch 10) ────────────────────────────────────
+
+
+def get_v2_thread_datasource(
+    db: Session = Depends(get_session),
+) -> V2ThreadDatasource:
+    return V2ThreadDatasource(db)
+
+
+def get_v2_history_datasource(
+    db: Session = Depends(get_session),
+) -> V2HistoryDatasource:
+    return V2HistoryDatasource(db)
+
+
+def get_v2_thread_controller(
+    thread_ds: V2ThreadDatasource = Depends(get_v2_thread_datasource),
+    history_ds: V2HistoryDatasource = Depends(get_v2_history_datasource),
+    db: Session = Depends(get_session),
+) -> V2ThreadController:
+    """Per-request /v2 thread controller. ``db`` is per-request so each
+    request gets its own SQLAlchemy session."""
+    return V2ThreadController(thread_ds, history_ds, db)
+
+
 def get_v2_turn_controller(
     factory: ExecutionPlanFactory = Depends(get_factory),
     validator: PlannerValidator = Depends(get_validator),
@@ -188,10 +216,12 @@ def get_v2_turn_controller(
     planner: Planner | None = Depends(get_planner),
     manager: ManagerConnector = Depends(get_manager_connector),
     llm_connector: LlmConnector | None = Depends(get_llm_connector_optional),
+    v2_thread_ds: V2ThreadDatasource = Depends(get_v2_thread_datasource),
+    v2_history_ds: V2HistoryDatasource = Depends(get_v2_history_datasource),
     db: Session = Depends(get_session),
 ) -> V2TurnController:
-    """Per-request /v2 controller. ``db`` is per-request so each turn
-    gets its own SQLAlchemy session for the Persist write."""
+    """Per-request /v2 turn controller. ``db`` is per-request so each
+    turn gets its own SQLAlchemy session for the Persist write."""
     from src.config.path_registry import REGISTRY_VERSION
     return V2TurnController(
         factory=factory,
@@ -200,6 +230,8 @@ def get_v2_turn_controller(
         planner=planner,
         manager=manager,
         llm_connector=llm_connector,
+        v2_thread_datasource=v2_thread_ds,
+        v2_history_datasource=v2_history_ds,
         session=db,
         registry_version=REGISTRY_VERSION,
     )

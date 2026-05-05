@@ -12,6 +12,34 @@ type, what to expect, and what to check.
 
 ---
 
+> ## ⚠️ Release coupling — Batch 10 breaks the current hybrid UI
+>
+> **Batch 10** (the first batch of Slice 2, Conversation-Aware Portfolio
+> Copilot) introduces strict thread registration on
+> `POST /v2/threads/{id}/turn`: the `thread_id` must exist in the new
+> `v2_threads` table or the call returns `404 ThreadNotFoundError`.
+>
+> The current frontend hybrid (PR-C, merged) calls
+> `POST /v1/threads/new` to obtain a thread id, then sends that **/v1**
+> id to `/v2/threads/{id}/turn`. Before Batch 10, /v2/turn accepted
+> arbitrary string ids. **After Batch 10, the /v1 id will 404.**
+>
+> The frontend cutover from `/v1/threads/*` to the new `/v2/threads/*`
+> management endpoints is tracked as **PR-D**. Until PR-D ships, the
+> drawer's first turn fails. Production deploy ordering must be:
+>
+> 1. Stage Batch 10 to dev / staging.
+> 2. Verify Batch 10 via backend `curl` (see commands in
+>    [`SLICE_2_BATCH_10.md`](SLICE_2_BATCH_10.md)) — **do not** test in
+>    the browser between Batch 10 and PR-D.
+> 3. Ship Batch 10 + PR-D to production together (or in a single
+>    release window).
+>
+> See [`SLICE_2_BATCH_10.md`](SLICE_2_BATCH_10.md) for the full Slice 2
+> Batch 10 architecture note + the deploy ordering rule.
+
+---
+
 ## What Slice 1 supports
 
 | Path | What it answers | Source |
