@@ -2,12 +2,17 @@
 RFQ Stage routes — FastAPI router for RFQ_Stage endpoints.
 
 Endpoints:
-- GET    /rfqs/{rfqId}/stages                          — #11 List stages for RFQ
-- GET    /rfqs/{rfqId}/stages/{stageId}                — #12 Get stage detail
-- PATCH  /rfqs/{rfqId}/stages/{stageId}                — #13 Update stage
-- POST   /rfqs/{rfqId}/stages/{stageId}/notes          — #14 Add note
-- POST   /rfqs/{rfqId}/stages/{stageId}/files          — #15 Upload file
-- POST   /rfqs/{rfqId}/stages/{stageId}/advance        — #16 Advance to next stage
+- GET    /rfqs/{rfqId}/stages                          — #11  List stages for RFQ by UUID
+- GET    /rfqs/by-code/{rfqCode}/stages                — #11b List stages for RFQ by code
+- GET    /rfqs/{rfqId}/stages/{stageId}                — #12  Get stage detail
+- PATCH  /rfqs/{rfqId}/stages/{stageId}                — #13  Update stage
+- POST   /rfqs/{rfqId}/stages/{stageId}/notes          — #14  Add note
+- POST   /rfqs/{rfqId}/stages/{stageId}/files          — #15  Upload file
+- POST   /rfqs/{rfqId}/stages/{stageId}/advance        — #16  Advance to next stage
+
+By-code routes are mounted on a sibling APIRouter
+(``stage_by_code_router``) because the existing router's prefix types
+``rfq_id`` as UUID; see app.py for the wiring.
 
 File endpoints (#28–#30) are in file_route.py.
 """

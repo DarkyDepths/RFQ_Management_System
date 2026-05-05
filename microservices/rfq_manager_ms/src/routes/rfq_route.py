@@ -2,14 +2,15 @@
 RFQ routes — FastAPI router for RFQ endpoints.
 
 Endpoints:
-- POST   /rfqs              — #1 Create RFQ
-- GET    /rfqs              — #2 List RFQs (paginated, with search/filter/sort)
-- GET    /rfqs/export       — #3 Export RFQs as CSV
-- GET    /rfqs/{rfqId}      — #4 Get RFQ detail
-- PATCH  /rfqs/{rfqId}      — #5 Update RFQ
-- POST   /rfqs/{rfqId}/cancel — #5b Safe cancel RFQ
-- GET    /rfqs/stats        — #6 Dashboard KPIs
-- GET    /rfqs/analytics    — #7 Business analytics
+- POST   /rfqs                       — #1  Create RFQ
+- GET    /rfqs                       — #2  List RFQs (paginated, with search/filter/sort)
+- GET    /rfqs/export                — #3  Export RFQs as CSV
+- GET    /rfqs/by-code/{rfqCode}     — #4b Get RFQ detail by human-readable code
+- GET    /rfqs/{rfqId}               — #4  Get RFQ detail by UUID
+- PATCH  /rfqs/{rfqId}               — #5  Update RFQ
+- POST   /rfqs/{rfqId}/cancel        — #5b Safe cancel RFQ
+- GET    /rfqs/stats                 — #6  Dashboard KPIs
+- GET    /rfqs/analytics             — #7  Business analytics
 """
 
 from uuid import UUID
