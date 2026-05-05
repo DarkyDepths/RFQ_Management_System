@@ -194,7 +194,10 @@ def create_app() -> FastAPI:
     # All API routes live under /rfq-manager/v1 (matches OpenAPI spec servers.url)
     from src.routes.rfq_route import router as rfq_router
     from src.routes.workflow_route import router as workflow_router
-    from src.routes.rfq_stage_route import router as rfq_stage_router
+    from src.routes.rfq_stage_route import (
+        router as rfq_stage_router,
+        stage_by_code_router as rfq_stage_by_code_router,
+    )
     from src.routes.subtask_route import router as subtask_router
     from src.routes.file_route import stage_files_router, file_router
     from src.routes.reminder_route import router as reminder_router
@@ -203,6 +206,7 @@ def create_app() -> FastAPI:
     v1.include_router(rfq_router)
     v1.include_router(workflow_router)
     v1.include_router(rfq_stage_router)
+    v1.include_router(rfq_stage_by_code_router)
     v1.include_router(subtask_router)
     v1.include_router(stage_files_router)
     v1.include_router(file_router)

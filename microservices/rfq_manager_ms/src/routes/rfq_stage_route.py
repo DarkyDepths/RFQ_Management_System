@@ -2,12 +2,17 @@
 RFQ Stage routes — FastAPI router for RFQ_Stage endpoints.
 
 Endpoints:
-- GET    /rfqs/{rfqId}/stages                          — #11 List stages for RFQ
-- GET    /rfqs/{rfqId}/stages/{stageId}                — #12 Get stage detail
-- PATCH  /rfqs/{rfqId}/stages/{stageId}                — #13 Update stage
-- POST   /rfqs/{rfqId}/stages/{stageId}/notes          — #14 Add note
-- POST   /rfqs/{rfqId}/stages/{stageId}/files          — #15 Upload file
-- POST   /rfqs/{rfqId}/stages/{stageId}/advance        — #16 Advance to next stage
+- GET    /rfqs/{rfqId}/stages                          — #11  List stages for RFQ by UUID
+- GET    /rfqs/by-code/{rfqCode}/stages                — #11b List stages for RFQ by code
+- GET    /rfqs/{rfqId}/stages/{stageId}                — #12  Get stage detail
+- PATCH  /rfqs/{rfqId}/stages/{stageId}                — #13  Update stage
+- POST   /rfqs/{rfqId}/stages/{stageId}/notes          — #14  Add note
+- POST   /rfqs/{rfqId}/stages/{stageId}/files          — #15  Upload file
+- POST   /rfqs/{rfqId}/stages/{stageId}/advance        — #16  Advance to next stage
+
+By-code routes are mounted on a sibling APIRouter
+(``stage_by_code_router``) because the existing router's prefix types
+``rfq_id`` as UUID; see app.py for the wiring.
 
 File endpoints (#28–#30) are in file_route.py.
 """
@@ -26,6 +31,14 @@ from src.utils.auth import AuthContext, Permissions, require_permission
 
 router = APIRouter(prefix="/rfqs/{rfq_id}/stages", tags=["RFQ_Stage"])
 
+# Companion router for by-code lookups. Keeps the by-code namespace
+# adjacent to its UUID-based sibling without overloading the
+# ``{rfq_id}`` path parameter (which is typed as UUID and would
+# otherwise reject a non-UUID like 'IF-0001'). Mounted in app.py.
+stage_by_code_router = APIRouter(
+    prefix="/rfqs/by-code/{rfq_code}/stages", tags=["RFQ_Stage"]
+)
+
 
 @router.get("", response_model=RfqStageListResponse)
 def list_stages(
@@ -35,6 +48,21 @@ def list_stages(
 ):
     """#11 — List stages for RFQ, ordered by stage order."""
     return ctrl.list(rfq_id)
+
+
+@stage_by_code_router.get("", response_model=RfqStageListResponse)
+def list_stages_by_code(
+    rfq_code: str,
+    _auth=Depends(require_permission(Permissions.RFQ_STAGE_READ)),
+    ctrl: RfqStageController = Depends(get_rfq_stage_controller),
+):
+    """#11b — List stages for RFQ by code (e.g. IF-0001).
+
+    Same response shape as ``GET /rfqs/{rfq_id}/stages``. Returns 404
+    when the code does not resolve. Added so callers that only know
+    the code don't need a separate UUID lookup.
+    """
+    return ctrl.list_by_code(rfq_code)
 
 
 @router.get("/{stage_id}", response_model=RfqStageDetailResponse)
