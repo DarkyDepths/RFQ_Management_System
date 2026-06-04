@@ -1,0 +1,176 @@
+\chapter{Implementation}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section*{INTRODUCTION}
+\addcontentsline{toc}{section}{INTRODUCTION}
+This chapter presents the implementation of the architecture developed in Chapter~4: the BACAB layered pattern realised in code across the backend services, the lifecycle mechanics of the manager service, the per-turn pipeline of the copilot service, the parsing foundation of the intelligence service, and the integration through the user interface. Implementation status is labelled throughout: capabilities implemented and tested are presented as such, capabilities architecturally specified but not yet wired are explicitly labelled, and capabilities deferred to future scope are not claimed as present achievements.
+
+\section{Development Environment and Toolchain}
+The three backend services use Python~3.11 with FastAPI~0.115; SQLAlchemy~2 provides the ORM and Pydantic~2 handles boundary validation, with the translator layer mediating between them. The user interface is TypeScript on Next.js~15 / React~18 with Tailwind CSS and shadcn/ui. The manager and intelligence services use PostgreSQL; the copilot uses SQLite for development-mode persistence of threads, turns, and execution records. The copilot's language-model invocations go through Azure OpenAI, with the specific model selected via environment variables. Source control is Git in a polyrepo-in-monorepo. Containerisation and CI coverage are uneven across the platform, as summarised in Table~\ref{tab:toolchain}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{3.4cm}|p{4.6cm}|p{6cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Layer} & \textbf{Technology} & \textbf{Role} \\ \hline
+Backend services & Python 3.11 / FastAPI 0.115 / SQLAlchemy 2 / Pydantic 2 & Implementation language, web framework, ORM, and boundary validation across the three backend services. \\ \hline
+Frontend & Next.js 15 / React 18 / TypeScript / Tailwind CSS / shadcn/ui & Single-page application framework, language, styling, and component library. \\ \hline
+Data stores & PostgreSQL + SQLite & PostgreSQL for the manager and intelligence services; SQLite for development-mode copilot persistence. \\ \hline
+External integrations & Azure OpenAI deployment & Language-model backend for the copilot, accessed via deployment environment variables. \\ \hline
+Containerisation & Docker (per backend service) & Per-service container images for the three backends; \texttt{rfq\_ui\_ms} not containerised; no unified root composition. \\ \hline
+Development tooling & Git (polyrepo-in-monorepo) & Source control across the service repositories. \\ \hline
+Continuous integration & Manager service only & Manager CI workflow available; CI coverage for copilot, intelligence, and frontend remains a hardening direction. \\ \hline
+\end{tabular}
+\caption{Principal technologies used in the implementation of the Itqan platform}
+\label{tab:toolchain}
+\end{table}
+
+Table~\ref{tab:impl_evidence} summarises the implementation evidence across the four delivered platform components.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{|p{3.2cm}|X|p{4.2cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Component} & \textbf{Implemented in the present work} & \textbf{Evidence} \\ \hline
+\texttt{rfq\_manager\_ms} & RFQ lifecycle, workflow-instantiated stages, three-gate advancement, subtasks, notes, files, reminders, analytics endpoints. & 259 collected tests (all passing); OpenAPI contract; Postman walkthrough. \\ \hline
+\texttt{rfq\_copilot\_ms} & v2 trust-bound pipeline; Paths~1, 4, and the Path~8 family active end-to-end; v2 thread management; bounded working-memory capture; guardrails and Judge. & 636 collected tests (all passing); anti-drift tests; frozen v2 architecture specification. \\ \hline
+\texttt{rfq\_intelligence\_ms} & Deterministic MR-package and workbook parsing foundation; anomaly flags; briefing support. & 118 collected tests; 64 passed, 48 fixture-dependent (golden artifacts gitignored), 6 skipped. \\ \hline
+\texttt{rfq\_ui\_ms} & Portfolio, RFQ detail, copilot drawer / page, dashboard, intelligence panel. & Twelve source-contract scripts (eleven passing); UI screenshot pending platform refinement. \\ \hline
+\end{tabularx}
+\caption{Implementation evidence summary across the four delivered platform components. Test counts reflect the snapshot identified in Appendix~A.4.2.}
+\label{tab:impl_evidence}
+\end{table}
+
+\subsection{BACAB Discipline Across the Backend Services}
+All three backend services implement the BACAB layered pattern of Chapter~4 (Section~4.2) as their common implementation discipline. The manager service is presented first below as the most mature realisation; the intelligence service follows the same discipline; the copilot service preserves the BACAB skeleton and adds a dedicated \texttt{pipeline} layer for the per-turn stages developed in Chapter~4.
+
+\section{Manager Service Implementation}
+The manager service is the operational backbone of the platform. The implementation covers RFQ registration, workflow-instantiated stages, stage progression, subtasks, notes, files, reminders, reminder rules, audit-history reservation, and analytical endpoints.
+
+\subsection{BACAB Layout in the Manager Service}
+The manager service realises BACAB through a consistent folder organisation that follows the active-and-support layer split of Section~5.1, with one service-specific deviation: Pydantic request and response schemas are co-located with the translator functions in the \texttt{translators} layer rather than living in a separate \texttt{schemas} folder. Each Python module corresponds to one layer; the three discipline rules of Section~5.1 hold throughout, and layer-boundary discipline is supported by linting and review rules in the manager workflow. Listing~\ref{lst:manager_tree} reproduces the BACAB layout.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, captionpos=b, label={lst:manager_tree}, caption={BACAB layout of \texttt{rfq\_manager\_ms} (depth 2)}]
+rfq_manager_ms/
++-- src/
+|   +-- controllers/   # business orchestration (6 modules)
+|   +-- routes/        # HTTP surface (6 modules)
+|   +-- datasources/   # ORM query layer (6 modules)
+|   +-- models/        # SQLAlchemy entities (12 tables)
+|   +-- translators/   # request/response schemas + mappers
+|   +-- connectors/    # external seams (event_bus, iam_service)
+|   +-- services/      # cross-cutting (notification)
+|   +-- config/, utils/
++-- migrations/        # Alembic
++-- tests/             # pytest suite (259 collected, all passing)
+\end{lstlisting}
+
+\subsection{Manager Schema and Stage Progression}
+The manager schema comprises twelve tables persisted in PostgreSQL. The seven entities of the Chapter~4 domain model (RFQ, Workflow, RFQ\_Stage, Subtask, Note, File, Reminder; see Figure~4.2) each map 1:1 to an ORM model. Five additional auxiliary tables complete the schema: \texttt{stage\_template} (the per-stage definitions consumed by \texttt{workflow}), \texttt{rfq\_stage\_field\_value} (per-field stage values), \texttt{reminder\_rule} (rule definitions consumed by reminder instances), \texttt{rfq\_code\_counter} (RFQ-code generation counter), and \texttt{rfq\_history} (the reserved audit-history shape discussed at the end of this section).
+
+Stage advancement composes the three gates of Section~4.3 (mandatory-field, blocker, transition-validity) in a single guarded operation: each gate refuses the advance with a structured error identifying the failure (missing fields, unresolved blockers, or invalid target); when all three pass, the advance commits atomically --- current stage marked complete with a timestamp, next stage activated, RFQ progress recomputed within a single database transaction --- so a partial advance never leaves the lifecycle in an inconsistent state. The related RFQ-code generation path is not fully concurrency-safe under load (LG-06; hardening item in Section~6.8). Lifecycle traceability rests on timestamps, persisted stage state, append-only notes, and non-destructive update semantics (FR-MGR-07). Listing~\ref{lst:advance_stage} reproduces the route-level shape that composes the three gates.
+
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\footnotesize, frame=single, captionpos=b, label={lst:advance_stage}, caption={Advance-stage endpoint composing the three gates in a single transaction. Simplified representative excerpt; the production route includes dependency injection, request/response schemas, and structured error handling not shown here.}]
+# routes/rfq_stage_route.py  (simplified representative excerpt)
+@router.post("/rfqs/{rfq_id}/stages/{stage_id}/advance")
+def advance_stage(rfq_id: UUID, stage_id: UUID, ...):
+    # Controller composes, in a single database transaction:
+    #   1) Mandatory-field gate    (workflow template fields complete?)
+    #   2) Blocker gate            (structured blockers all resolved?)
+    #   3) Transition-validity gate (target = computed next stage?)
+    # On all-pass: mark current complete (timestamp), activate next,
+    # and recompute RFQ progress. On any gate failure: structured error.
+    return controller.advance(rfq_id, stage_id, ...)
+\end{lstlisting}
+
+\subsection{Subtasks, Notes, Files, and Reminders}
+Four supporting resource families surround the lifecycle resources. \textbf{Subtasks} are finer-grained units attached to a stage, with soft-delete semantics: deleted subtasks are retained with a deleted-at timestamp, and the parent stage's progress denominator excludes them (FR-MGR-08). \textbf{Notes} are append-only: the endpoint exposes only \texttt{POST} and \texttt{GET}, with no \texttt{PUT} or \texttt{DELETE} --- an architectural defence preserving the communication trail. \textbf{Files} are persisted documents discriminated by type, including a designated workbook type prepared for downstream intelligence parsing through manual/direct trigger paths; the autonomous event-driven cascade is prepared but not wired in the present scope. \textbf{Reminders} are time-anchored notifications with manual and rule-based creation modes (the latter consuming the \texttt{reminder\_rule} table); dispatch is log-only in the present work, with outbound delivery deferred.
+
+\subsection{Statistics and Analytics Endpoints}
+The manager service exposes an analytical surface aggregating RFQ data across operationally meaningful dimensions through two HTTP endpoints: \texttt{/rfqs/stats} returns portfolio-level key indicators (total RFQs over the last twelve months, open RFQs, critical RFQs, and average cycle time in days), and \texttt{/rfqs/analytics} returns a combined payload covering win-rate (win, loss, and pending counts across terminal-status RFQs with optional grouping by client or workflow template) and a per-client portfolio breakdown. Two analytical capabilities from the four-pillar vision of Chapter~1 are not claimed as currently implemented: \textit{margin analysis} (bid price versus actual cost) and \textit{estimation accuracy} (initial estimate versus final billed value); both depend on outcome data the manager service does not currently capture and are deferred to future scope.
+
+\subsection{Containerisation, Observability, and the Audit-History Reservation}
+The manager service ships with a Dockerfile and a scenario-level docker-compose configuration that brings the service up alongside its PostgreSQL dependency; no unified root composition is provided in the current scope. The manager service emits structured logs including a per-request correlation identifier, allowing a single user-facing operation to be traced through routes, controllers, and datasources within the service; cross-service propagation of the identifier (in particular through the copilot's outbound manager connector) is a hardening direction. The manager exposes a liveness endpoint (\texttt{/health}) and a Prometheus metrics endpoint (\texttt{/metrics}) backed by the official Prometheus client library; a dedicated readiness probe is a hardening direction. Database migrations are managed through Alembic.
+
+The schema reserves an \texttt{rfq\_history} table whose shape supports a generic audit log across the six lifecycle entity types (RFQ, RFQ\_Stage, Subtask, Note, File, Reminder), capturing action and field-level diffs with actor attribution. No live write path is wired in the current scope: this is a deliberate decision recorded in Architectural Decision Record H5 (\textit{Dormant Models}), and a regression test asserts the table remains empty across create/update/advance operations to guarantee the decision holds. Lifecycle traceability in the current scope therefore rests on the four mechanisms described above (timestamps, persisted stage state, append-only notes, non-destructive updates); activating the reserved audit-history surface is a hardening direction tracked under FR-MGR-07.
+
+\section{Copilot Service Implementation}
+The copilot codebase ships through two lanes: a \textbf{v1 lane} establishing the basic conversational surface, and a \textbf{v2 lane} delivering the trust-boundary implementation of Chapter~4 (FastIntake, Planner, PlannerValidator, ExecutionPlanFactory, Path Registry, Escalation Gate, and the deterministic pipeline stages). The most recent vertical slice (Batch~10) delivered the full v2 thread-management surface together with bounded working-memory capture; the backend therefore ships complete v2 thread management while the frontend currently consumes v1 for thread lifecycle operations, with frontend cutover deferred as a near-term alignment task. References below describe the v2 implementation.
+
+Structurally, v2 preserves the BACAB skeleton of Section~5.1 and introduces a dedicated \texttt{pipeline} layer between controllers and the data layer, where each per-turn stage lives as its own module (fast intake, planner, planner validator, execution plan factory, resolver, access, tool executor, evidence check, context builder, compose, guardrails, judge, escalation gate, finalizer, persist, and the Path~4 deterministic renderer). The v2 turn controller orchestrates these stages within the BACAB request-path discipline.
+
+\subsection{Turn Processing Pipeline and First Vertical Slice}
+A user turn flows through a fixed sequence of stages, each owning one decision: \textbf{FastIntake $\rightarrow$ LLM Planner $\rightarrow$ PlannerValidator $\rightarrow$ ExecutionPlanFactory $\rightarrow$ Resolver $\rightarrow$ Access (manager-mediated) $\rightarrow$ Tool Executor $\rightarrow$ Evidence Check $\rightarrow$ Context Builder $\rightarrow$ Compose $\rightarrow$ Guardrails $\rightarrow$ Judge $\rightarrow$ Finalizer $\rightarrow$ Persist}. Working memory is loaded by the turn controller once per turn after the execution plan is built, not as an in-pipeline stage; this preserves the single-construction discipline of the ExecutionPlanFactory by keeping memory orchestration outside the stage chain. For most Path~4 intents, the deterministic Path~4 renderer produces the response directly and replaces the Compose/Guardrails/Judge language-model trio entirely; only the explicitly compose-eligible intents (summary and blocker synthesis) invoke Compose and the Judge. Figure~\ref{fig:copilot_pipeline} distinguishes deterministic from language-model stages by colour.
+
+\paragraph{Worked example --- a Path~4 summary turn.} A user asks \emph{``What is the status of IF-XXXX?''} The turn proceeds: FastIntake finds no pattern match; the Planner classifies the turn with \texttt{path=path\_4} and \texttt{intent=summary}, citing \texttt{IF-XXXX} as the target reference; the PlannerValidator confirms schema and enumeration validity; the ExecutionPlanFactory's \texttt{build\_from\_planner} entry constructs the \texttt{TurnExecutionPlan} against the Path Registry; working memory is loaded by the turn controller after plan construction; the Resolver maps the RFQ code to its canonical UUID; Access calls the manager-mediated authorisation endpoint; the Tool Executor calls \texttt{GET /rfqs/\{id\}} and \texttt{GET /rfqs/\{id\}/stages} via the manager connector; the Evidence Check confirms the response carries the required fields; the Context Builder synthesises a structured context; because \texttt{summary} is compose-eligible, the LLM Compose drafts a fluent multi-field response; the Guardrails validate evidence grounding and scope; the Judge classifies the draft against fabrication, scope drift, and forbidden inference; the Finalizer renders the response; the Persist stage writes the per-turn execution record. Had any stage failed, the Escalation Gate would have routed the turn to the corresponding Path~8 sub-case and produced a structured safe response instead. The illustrative code \texttt{IF-XXXX} is a neutral placeholder; an implementer should substitute a real seeded RFQ code when reproducing this trace against a live demo dataset.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_5_1_copilot_pipeline.png}{%
+            \includegraphics[width=\linewidth]{images/fig_5_1_copilot_pipeline.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 5.1 placeholder: turn processing pipeline of \texttt{rfq\_copilot\_ms} v2, showing the full stage sequence from intake to persistence with deterministic stages (code-owned) distinguished from language-model invocations (LLM-owned) by colour.]}
+            \end{minipage}%
+        }
+    }
+    \caption{Turn processing pipeline of \texttt{rfq\_copilot\_ms} (v2 implementation), with deterministic stages distinguished from language-model invocations by colour}
+    \label{fig:copilot_pipeline}
+\end{figure}
+
+The first vertical slice ships three paths end-to-end: \textbf{Path~1} (FastIntake-classified trivial messages, bypassing the Tool Executor and Judge since no factual claim is made), \textbf{Path~4} (the demonstration-defining operational path: evidence-grounded answers about a specific RFQ via the manager connector), and the implemented Path~8 safety infrastructure covering the five protected sub-cases 8.1 through 8.5. Paths~2, 3, 5, 6, and 7 are architecturally specified but routed through the Escalation Gate to Path~8.1 (``not supported yet'') until their own slices ship.
+
+\subsection{Path Registry, Planning Logic, and Single-Construction Discipline}
+The \textbf{Path Registry} (developed in Chapter~4, Section~4.4) is the runtime policy table read at plan-build time, restricted to the ExecutionPlanFactory and the Escalation Gate. The \textbf{Planner} is a structured Azure OpenAI invocation with a JSON-schema-enforced output that classifies the turn and emits a \texttt{PlannerProposal}. The \textbf{PlannerValidator} verifies schema conformance, enumeration validity, and absence of LLM-specific failure modes, producing a \texttt{ValidatedPlannerProposal} --- it does not enforce policy or read the registry.
+
+The \textbf{ExecutionPlanFactory} is the architectural chokepoint: the single component permitted to construct a \texttt{TurnExecutionPlan}. It exposes three public entry points corresponding to the three input classes --- \texttt{build\_from\_intake} for FastIntake decisions, \texttt{build\_from\_planner} for validated Planner proposals, and \texttt{build\_from\_escalation} for Escalation requests --- each applying source-aware policy enforcement against the Path Registry through a private policy-resolution helper. Three architectural invariants are protected by anti-drift tests in the copilot pytest suite: (1) \textit{single construction} --- no code outside the factory may instantiate \texttt{TurnExecutionPlan}; (2) \textit{registry-reader allowlist} --- only the factory and the Escalation Gate may import the Path Registry; (3) \textit{FastIntake anchored-regex invariant} --- FastIntake patterns must use anchored full-match semantics with no LLM or network access from within the intake stage. The complementary restriction that FastIntake may only emit Path~1, Path~8.2, or Path~8.3 is enforced by the hardcoded pattern table and verified by a path-registry contract test. A continuous-integration workflow gating every commit remains a hardening direction.
+
+\subsection{Memory, Guardrails, Judge, and the Escalation Gate}
+The memory layer is capture-only: each turn's working memory is persisted as part of the per-turn execution record but is not yet fed into Planner, Compose, or Judge prompts --- a deferral enforced by a dedicated anti-drift test. The guardrails layer applies deterministic checks to the draft (or to the Path~4 renderer's output): evidence grounding, scope adherence, shape conformance; a failure routes through the Escalation Gate to a Path~8 finalisation. The Judge is a second language-model invocation with JSON-schema-enforced output classifying the draft against fabrication, scope drift, and forbidden inference --- it inspects content, it does not produce it.
+
+The Escalation Gate is the single deterministic intercept for every failure trigger in the pipeline, mapping each trigger to a Path~8 sub-case (target unreachable, unsupported, out-of-scope, ambiguous reference, evidence/guardrail/Judge failure) and re-entering the ExecutionPlanFactory through its escalation entry point. Every failure mode is converted into a structured, finalised response rather than an exception or a degraded answer.
+
+\section{Intelligence Service Implementation}
+The intelligence service is implemented as a FastAPI service following the same backend BACAB discipline of Section~5.1, with PostgreSQL persistence for the parsed artifacts produced by its parsers. The data model is unified: a single \texttt{artifact} table stores parsed MR package profiles, workbook profiles, briefings, and review reports, each keyed by the RFQ identifier, alongside supporting tables for batch seed runs and processed-event tracking. The \textbf{MR package parser} identifies the canonical MR-package section layout (golden reference SA-AYPP-6-MR-022 from Chapter~1) and emits per-folder section matches, from which it extracts the bill of materials, restricted vendor list, applicable standards references, and technical specification metadata. The \textbf{workbook parser} consumes estimation workbooks structured according to the GHI workbook template (reference IF-25144, a workbook spanning thirty-two sheets in the validation fixture); the first parser pack matches a three-sheet anchor set (\textit{General}, \textit{Bid~S}, \textit{Top Sheet}) within the broader workbook and extracts identity metadata, line items, cost-breakdown values, and schedule profiles. When either parser encounters values that fail internal consistency checks, it produces a structured anomaly flag rather than silently accepting the value (FR-INT-04). Several aspects are explicitly partial in the present scope: briefing generation is implemented at a demonstration-support level with richer cross-artifact synthesis deferred; the intake pipeline relies on manual/direct trigger flows, with autonomous event-driven manager-to-intelligence flow deferred; the copilot's consumption of intelligence artifacts is architecturally supported but not wired in the present implementation; and the predictive intelligence capabilities of Pillar~4 are explicitly future scope.
+
+\section{UI Implementation}
+The user interface is a Next.js~15 / React~18 / TypeScript application styled with Tailwind CSS and shadcn/ui, with live API support and demo/mock fallback; browser end-to-end validation is pending. The principal screens are the RFQ list and portfolio view (filtering and sorting), the RFQ detail view (lifecycle, attached subtasks/notes/files/reminders, and an intelligence panel for parsed artifacts), and the dashboard (portfolio indicators drawn from the manager's analytical endpoints). The conversational layer is exposed through the copilot drawer on the RFQ detail view (RFQ-bound mode) and the copilot page from the application shell (portfolio mode). Figure~\ref{fig:ui_screen} shows a representative screen.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_5_2_ui_screen.png}{%
+            \includegraphics[width=\linewidth]{images/fig_5_2_ui_screen.png}%
+        }{%
+            \begin{minipage}[c][7cm][c]{14cm}
+                \centering
+                \textit{[Figure 5.2 placeholder: representative screen of the user interface, showing the RFQ detail view with the lifecycle timeline, the intelligence panel, and the copilot drawer in RFQ-bound mode.]}
+            \end{minipage}%
+        }
+    }
+    \caption{Representative screen of \texttt{rfq\_ui\_ms}: RFQ detail view with the copilot drawer open in RFQ-bound mode}
+    \label{fig:ui_screen}
+\end{figure}
+
+Several aspects of the user interface are explicitly partial in the present scope: there is no production login flow (actor context is selected client-side through a development-mode role selector); the user interface is not currently containerised; browser-level end-to-end tests are not present; and the frontend's thread management for the copilot consumes the v1 lane while v2 serves the actual conversational exchanges --- migration is a recognised alignment task and remains future scope.
+
+\section{Cross-Service Integration Status}
+The full integration map and per-path validation status are presented in Chapter~6 (Section~6.6, Table~\ref{tab:integration}). Two paths matter most for the validation activities of that chapter: the \textbf{manager-to-intelligence path} is implemented through manual/direct trigger flows (autonomous event-driven cascade deferred), and the \textbf{copilot-to-evidence path} is implemented against the manager service's authorised endpoints through the manager connector. The symmetric copilot-to-intelligence path is architecturally specified but not wired in the current implementation (Path~5 deferral, Chapter~4).
+
+\section*{CONCLUSION}
+\addcontentsline{toc}{section}{CONCLUSION}
+This chapter has presented the implementation of the architecture of Chapter~4: BACAB across the backend services, the manager service's twelve-table schema and three-gate lifecycle, the copilot v2 pipeline with its single-construction discipline, the intelligence parsing foundation, the user interface, and the cross-service integration paths. Chapter~6 presents the validation evidence that exercises these commitments.

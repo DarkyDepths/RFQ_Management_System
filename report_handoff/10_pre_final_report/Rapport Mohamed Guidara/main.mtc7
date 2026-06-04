@@ -1,0 +1,17 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode INTRODUCTION}{\reset@font\mtcSfont 19}{section*.13}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.1}Stakeholders, Actors, and Access Assumptions}{\reset@font\mtcSfont 19}{section.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1.1}Project Stakeholders}{\reset@font\mtcSSfont 19}{subsection.3.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1.2}System Actors}{\reset@font\mtcSSfont 19}{subsection.3.1.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1.3}Permission Model and IAM Integration}{\reset@font\mtcSSfont 21}{subsection.3.1.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.2}Functional Requirements}{\reset@font\mtcSfont 22}{section.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.1}Product Backlog}{\reset@font\mtcSSfont 23}{subsection.3.2.1}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.3}Non-Functional Requirements}{\reset@font\mtcSfont 23}{section.3.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.4}Use Cases and Activity Diagrams}{\reset@font\mtcSfont 25}{section.3.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.1}System-Level Use Cases}{\reset@font\mtcSSfont 25}{subsection.3.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.2}Activity Diagram: Advance RFQ Stage}{\reset@font\mtcSSfont 26}{subsection.3.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.3}Conversational Flow with the Copilot}{\reset@font\mtcSSfont 27}{subsection.3.4.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.5}Methodology}{\reset@font\mtcSfont 27}{section.3.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.5.1}Scrumban as the Iteration Framework}{\reset@font\mtcSSfont 28}{subsection.3.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.5.2}Architectural Decision Records}{\reset@font\mtcSSfont 29}{subsection.3.5.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.5.3}Project Control Center}{\reset@font\mtcSSfont 29}{subsection.3.5.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode CONCLUSION}{\reset@font\mtcSfont 30}{subsection.3.5.3}}

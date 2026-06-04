@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compte Rendu — Revue Architecture RFQMGMT</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-2: #f5f5f0;
+    --border: #e5e4df;
+    --border-strong: #d4d3ce;
+    --text: #1c1c1a;
+    --text-muted: #6b6a65;
+    --accent: #2563eb;
+    --accent-soft: rgba(37, 99, 235, 0.06);
+    --accent-border: rgba(37, 99, 235, 0.2);
+    --green: #16803c;
+    --green-soft: rgba(22, 128, 60, 0.06);
+    --green-border: rgba(22, 128, 60, 0.2);
+    --amber: #b45309;
+    --amber-soft: rgba(180, 83, 9, 0.06);
+    --amber-border: rgba(180, 83, 9, 0.2);
+    --red: #dc2626;
+    --red-soft: rgba(220, 38, 38, 0.05);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    padding: 2.5rem;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .company-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .company-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .doc-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--surface-2);
+    padding: 0.3rem 0.8rem;
+    border-radius: 3px;
+  }
+
+  h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .meta-item {
+    font-size: 0.78rem;
+  }
+
+  .meta-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.68rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .meta-value {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .section {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+    border: 1px solid var(--accent-border);
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .point {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .point p {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.75;
+  }
+
+  .point p + p {
+    margin-top: 0.5rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.18rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+  }
+
+  .badge-principe { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+  .badge-decision { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+  .badge-norme { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge-action { background: var(--surface-2); color: var(--text); border: 1px solid var(--border-strong); }
+  .badge-report { background: var(--red-soft); color: var(--red); border: 1px solid rgba(220,38,38,0.15); }
+
+  .point-label {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+
+  .code-ref {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.8rem 1.1rem;
+    margin-top: 0.7rem;
+    color: var(--text);
+    display: block;
+  }
+
+  .action-box {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    border-radius: 6px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .action-box p {
+    font-size: 0.88rem;
+    line-height: 1.75;
+  }
+
+  .parked-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .parked-box p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 2.5rem 0;
+  }
+
+  .workflow-steps {
+    display: flex;
+    gap: 0;
+    margin-top: 0.8rem;
+  }
+
+  .w-step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.8rem 0.6rem;
+    text-align: center;
+  }
+
+  .w-step:first-child { border-radius: 6px 0 0 6px; }
+  .w-step:last-child { border-radius: 0 6px 6px 0; }
+
+  .w-step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    margin-bottom: 0.2rem;
+  }
+
+  .w-step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-top: 2px solid var(--text);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="company-bar">
+    <span class="company-name">BACAB Consulting</span>
+    <span class="doc-type">Compte Rendu de Réunion</span>
+  </div>
+  <h1>Revue Architecture — RFQMGMT Platform</h1>
+  <p class="subtitle">Synthèse des échanges et décisions prises lors de la réunion de revue architecturale</p>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Date</div>
+      <div class="meta-value">Février 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Projet</div>
+      <div class="meta-value">RFQMGMT — GHI</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Périmètre</div>
+      <div class="meta-value">rfq_manager_ms — V1</div>
+    </div>
+  </div>
+</header>
+
+<!-- 1 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>Distinction API Resources vs. Entités du Modèle de Données</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-principe">Principe</span> Ressources exposées vs. entités internes</p>
+    <p>Les ressources API peuvent refléter le modèle de données mais ne le doivent pas nécessairement. Il existe des entités intermédiaires qui n'exposent pas de CRUD — elles sont construites à la demande en interne. Exemple : la création d'une RFQ via l'API déclenche en arrière-plan l'instanciation du stage initial et d'autres enregistrements. Le client n'interagit jamais directement avec ces entités intermédiaires.</p>
+    <p>Lorsqu'on parle de « ressources API », il s'agit exclusivement des ressources exposées au client de l'API. C'est avec ces ressources que l'on construit le contrat d'interface.</p>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>Approche Front-to-Back : Du Besoin Métier vers le Technique</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-principe">Principe</span> Migration du front vers le back</p>
+    <p>Dans la conception des microservices et des endpoints, l'approche adoptée est du besoin métier vers le technique, et non l'inverse. On part de l'interface front, on découpe en microservices, et pour chaque MS on définit les endpoints et les CRUD. C'est la première phase.</p>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-decision">Décision</span> Retrait de RFQ_Blocker en V1</p>
+    <p>Le concept de RFQ_Blocker est reconnu comme potentiellement valide mais il relève d'une démarche technique vers le métier. Pour la V1, on privilégie la simplicité : remplacement par un champ <code>notes</code> (objet JSON) dans l'entité <code>rfq_stage</code> pour les commentaires, et utilisation des <strong>reminders</strong> pour le suivi des dépassements.</p>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-principe">Principe</span> Méthodologie de travail</p>
+    <p>Besoin métier → Prototypage → Préparation des microservices front et back → Découpage du back → Swagger → Implémentation. Ce réflexe s'applique à tout projet.</p>
+    <div class="workflow-steps">
+      <div class="w-step"><div class="w-step-num">1</div><div class="w-step-label">Interface UI</div></div>
+      <div class="w-step"><div class="w-step-num">2</div><div class="w-step-label">Actions Utilisateur</div></div>
+      <div class="w-step"><div class="w-step-num">3</div><div class="w-step-label">Ressources API</div></div>
+      <div class="w-step"><div class="w-step-num">4</div><div class="w-step-label">Modèle de Données</div></div>
+      <div class="w-step"><div class="w-step-num">5</div><div class="w-step-label">Swagger / Contrat</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>Normes de Nommage des URI</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-norme">Norme</span> Convention de nommage</p>
+    <p>Le path (partie après l'adresse IP et le port) constitue l'URI. Le premier préfixe doit être le nom du microservice — et non simplement « api » — car chaque MS possède sa propre API. Le nom de la ressource dans l'URI doit correspondre au nom de la ressource de manière cohérente.</p>
+    <span class="code-ref">/{nom_microservice}/{version}/{nom_ressource}/{id_ou_action}</span>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>Architecture des Reminders</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-decision">Décision</span> Création vs. Exécution</p>
+    <p>La <strong>création</strong> des reminders se fait au niveau de <code>rfq_manager_ms</code> (c'est une ressource API avec CRUD). L'<strong>exécution</strong> des reminders est un processus batch.</p>
+    <p>Deux types identifiés : <strong>reminders internes</strong> (alertes équipe — remplace la fonctionnalité blocker) et <strong>reminders externes</strong> (alertes fournisseurs — suivi des réponses).</p>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-decision">Décision</span> Deux mains, un domaine</p>
+    <p>Étant donné la forte cohésion entre les reminders et les données RFQ, la solution retenue est un seul microservice avec deux points d'entrée : un « main » qui expose l'API REST (pour le front) et un « main » qui lance le batch des reminders. Les deux mutualisent la même couche domaine (logique métier et accès aux données), évitant ainsi les appels REST redondants et la duplication de code.</p>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-report">Retex</span> Leçon apprise — Base de données partagée</p>
+    <p>Retour d'expérience BACAB : sur un projet antérieur, deux microservices accédaient à la même table de base de données. Un changement de schéma impactait les deux services. Règle établie : <strong>un microservice = une base de données</strong>. Ne jamais partager de tables entre services.</p>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>Architecture Hexagonale</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-principe">Principe</span> Architecture de référence BACAB</p>
+    <p>L'architecture hexagonale (Ports & Adapters) est l'architecture de référence utilisée. La couche « controller » (dans la terminologie BACAB) contient les règles métier et l'implémentation métier. L'exposition change (REST, batch, etc.) mais le domaine reste identique. Cela permet de mutualiser le domaine et d'éviter la redondance.</p>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>Cadrage de la Version 1</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-decision">Décision</span> Périmètre V1</p>
+    <p>Préparer une première version pour le PFE. Pour la V1 : uniquement les éléments structurants et les attributs qui seront certainement présents. Le modèle de données va évoluer — on investit uniquement dans ce qui est certain.</p>
+    <p>Le contexte ne dispose pas d'un cahier des charges figé et rigide. Des itérations (allers-retours) sont prévues jusqu'à obtenir une version finale.</p>
+  </div>
+
+  <div class="parked-box">
+    <p><strong>Éléments reportés :</strong> Architecture event-driven (reconnue mais hors périmètre V1). Concept RFQ_Blocker (potentiellement valide, reporté à une itération future).</p>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>Principe de Cohésion — Ne Pas Sur-Découper</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-principe">Principe</span> Cohésion métier</p>
+    <p>Diviser excessivement et avoir plusieurs microservices peut être un inconvénient et non un avantage. L'objectif n'est pas d'avoir de nombreux microservices. Il faut toujours examiner la logique métier et la cohésion pour décider de regrouper ou de séparer. Ne pas tomber dans la redondance et la double/triple maintenance.</p>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>Points Positifs Relevés</h2>
+  </div>
+
+  <div class="point">
+    <p class="point-label"><span class="badge badge-decision">Apprécié</span> Modélisation des entités</p>
+    <p>Le travail de modélisation des entités et les relations entre elles (liens FK/PK entre différentes entités) ont été appréciés. L'accent est mis sur la maîtrise parfaite de ces liens et pointages.</p>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- NEXT STEPS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">→</span>
+    <h2>Prochaines Étapes Convenues</h2>
+  </div>
+
+  <div class="action-box">
+    <p><strong>1.</strong> Partir de l'interface UI (maquettes à fournir) — identifier toutes les fonctionnalités et actions utilisateur. Critiquer si nécessaire (fonctionnalités manquantes ou superflues).</p>
+    <p><strong>2.</strong> Ajuster le modèle de données en fonction des besoins de l'interface.</p>
+    <p><strong>3.</strong> Définir les ressources API et endpoints — obtenir la V1.</p>
+    <p><strong>4.</strong> Figer la V1.</p>
+    <p><strong>5.</strong> Passer à l'architecture logicielle du MS : créer un nouveau template et commencer l'implémentation (controllers, routes, connectors, etc.).</p>
+  </div>
+</div>
+
+<footer>
+  BACAB Consulting — Compte Rendu Réunion — Projet RFQMGMT / GHI — Février 2026
+</footer>
+
+</div>
+</body>
+</html>

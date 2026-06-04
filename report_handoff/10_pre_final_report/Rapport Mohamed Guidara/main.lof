@@ -1,0 +1,28 @@
+\babel@toc {english}{}\relax 
+\babel@toc {english}{}\relax 
+\thispagestyle {MyStyle}
+\thispagestyle {MyStyle}
+\addvspace {10\p@ }
+\contentsline {xchapter}{General Context and Business Problem}{2}{chapter.1}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Current RFQ Lifecycle Management Process at GHI}}{5}{figure.caption.9}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Itqan Platform Logic}}{10}{figure.caption.11}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{State of the Art}{11}{chapter.2}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Requirements, Methodology, and Project Management}{18}{chapter.3}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Activity diagram for \textit {Advance RFQ Stage}}}{27}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Scrumban six-state workflow board, utilizing \textit {Documented} as the terminal validation column}}{29}{figure.caption.18}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Conceptual and Technical Architecture}{31}{chapter.4}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Global architecture of the Itqan platform: mapping of the four layers, microservices, and the cross-cutting RFQ Copilot}}{33}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces The BACAB layered architecture: structural separation of concerns via active and supporting layers}}{36}{figure.caption.22}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Entity-relationship diagram detailing the domain model of the manager service}}{38}{figure.caption.23}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Activity flow of the deterministic three-gate stage-progression logic}}{39}{figure.caption.24}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Canonical processing pipeline of the RFQ Copilot, demonstrating the strict encapsulation of LLM invocations within deterministic safeguards}}{42}{figure.caption.26}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Implementation}{46}{chapter.5}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Sequential processing pipeline of the \texttt {rfq\_copilot\_ms} (v2 architecture), visually isolating deterministic code execution from probabilistic language-model invocations}}{54}{figure.caption.30}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Representative UI dashboard interface demonstrating the integration of the lifecycle orchestration panel and the copilot conversational drawer}}{56}{figure.caption.31}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Validation, Results, and Discussion}{58}{chapter.6}%
+\vspace {0.3cm}

@@ -1,0 +1,424 @@
+\chapter{Conceptual and Technical Architecture}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section{INTRODUCTION}
+This chapter presents the conceptual and technical architecture of Itqan. It moves from the platform level to the service level and back to the integration level, and it spends its longest section on the architecture of the conversational layer that is the principal innovation contribution of this work. The chapter does not describe code or implementation details; those are the subject of Chapter 4. It describes components, responsibilities, boundaries, the data and evidence each component owns, and the trade-offs accepted in arriving at the present design.
+
+The chapter opens with the platform-level view and the four-pillar vision, distinguishing what is implemented in this work from what is future scope. It then presents the microservices architecture and the layered pattern that disciplines each service internally. Two services are then developed in depth: the manager service, which is the operational backbone of the platform, and the copilot service, whose trust-boundary architecture is the central innovation of the project. The chapter continues with the evidence boundary that governs how the copilot reasons over platform data, the data model and API contracts that anchor inter-service communication, and the platform integration layer that composes the services into a coherent whole. It closes with a summary of the major architectural decisions made during the project and a transition to the implementation chapter.
+
+\section{Itqan Global Architecture and Four-Pillar Vision}
+Itqan is a platform built around four interdependent capabilities, organized internally as a layered architecture and externally as a set of cooperating microservices. This section presents the platform at the highest level of abstraction: the four pillars that define its long-term scope, the layered architecture that organizes its internal logic, and the explicit scope status of each pillar in the present work. The detailed service-level architecture is the subject of Sections 3.3 through 3.8.
+
+\subsection*{The Layered Architecture}
+At the platform level, Itqan organizes its components into four layers, each with a distinct responsibility and a distinct data ownership posture. The \textbf{presentation layer} consists of the user interface service and the conversational layer, which together expose the platform to its actors. The \textbf{orchestration layer} consists of the manager service, which owns the lifecycle representation of every RFQ and the operational truth that derives from it. The \textbf{intelligence layer} consists of the intelligence service, which produces deterministic analytical artifacts from the documents that surround an RFQ but does not own any lifecycle state. The \textbf{data layer} consists of the persistence stores managed by each service, kept private to that service to preserve the integrity of the service boundaries. Figure~\ref{fig:itqan_global} presents the layered architecture and the cross-cutting position of the conversational layer that traverses presentation, orchestration, and intelligence.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_1_itqan_global.png}{%
+            \includegraphics[width=14cm]{images/fig_3_1_itqan_global.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.1 placeholder: Itqan global architecture showing the four layers (presentation, orchestration, intelligence, data) and the cross-cutting position of the conversational layer]}
+            \end{minipage}%
+        }
+    }
+    \caption{Global architecture of the Itqan platform: four layers and the cross-cutting conversational layer}
+    \label{fig:itqan_global}
+\end{figure}
+
+The discipline of the layered architecture is not formal for its own sake. It exists to enforce a property that the audit findings of Chapter 1 made central: that the platform must produce a structured, observable, and traceable representation of the RFQ lifecycle, owned by a single component, on which all other components depend. The orchestration layer holds that representation. The presentation and intelligence layers consume it; they do not duplicate it or compete for ownership of it.
+
+\subsection*{The Four Pillars as an Architectural Map}
+The four pillars introduced in Chapter 1, Section 1.6, are revisited here as an architectural map rather than as a vision statement. Each pillar corresponds to a coherent set of capabilities, a primary owning service, and a set of pain points it addresses. The four pillars are not orthogonal: they share data, they reference each other, and the conversational layer cuts across all four.
+
+The \textbf{Workflow and Tracking} pillar is owned by the manager service. It is the operational backbone of the platform: it maintains the lifecycle representation of every RFQ, enforces stage progression rules, and provides the analytical aggregations on which downstream visibility depends. Every other pillar, directly or indirectly, depends on the lifecycle representation that this pillar owns.
+
+The \textbf{Communication Automation} pillar is co-owned by the manager service (for reminders tied to lifecycle artifacts) and a future communication service (for outbound channels and unified inbound monitoring). The decision to keep reminders inside the manager service rather than splitting them into a separate service from the outset is itself an architectural decision, discussed in Section 3.9.
+
+The \textbf{Executive Intelligence and BI} pillar is co-owned by the manager service (for analytical aggregations over lifecycle data) and the user interface service (for the dashboards that consume those aggregations). The boundary between data production and data presentation is preserved: aggregations live in the manager, dashboards live in the UI.
+
+The \textbf{Historical Learning and Prediction} pillar is owned by the intelligence service. It is the longest-horizon pillar: its short-term scope is the deterministic parsing of the artifacts that surround an RFQ, and its long-term scope is the predictive layer that would learn from accumulated history. The current work delivers the parsing foundation; the predictive layer is future scope.
+
+\subsection*{Scope Status of the Four Pillars}
+A precise statement of what is implemented, what is partial, and what is future is essential to the honest framing of this chapter. Table~\ref{tab:pillar_scope} presents the scope status of each pillar as it stands at the conclusion of the present work.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{3.6cm}|p{2cm}|p{8.4cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Pillar} & \textbf{Status} & \textbf{Notes on Coverage} \\ \hline
+Workflow and Tracking & Implemented & Operational backbone of the platform, delivered through the manager service across all primary lifecycle resources. \\ \hline
+Communication Automation & Partial & Reminder infrastructure delivered inside the manager service; unified inbound monitoring and assisted outbound drafting are future scope. \\ \hline
+Executive Intelligence and BI & Partial & Analytical endpoints delivered in the manager service; demonstration dashboards consumed by the UI; full BI surface, including profitability and competitive analysis, is future scope. \\ \hline
+Historical Learning and Prediction & Foundation only & Deterministic parsing of MR packages and estimation workbooks delivered in the intelligence service; pattern matching, supplier intelligence, and predictive components are future scope. \\ \hline
+\end{tabular}
+\caption{Scope status of the four pillars at the conclusion of the present work}
+\label{tab:pillar_scope}
+\end{table}
+
+The cross-cutting conversational layer, the RFQ Copilot, is implemented within the present scope and is the principal innovation contribution of the project. Its detailed architecture is the subject of Section 3.5. The copilot is not a fifth pillar: it does not own data of its own, but rather navigates and explains the data that the four pillars produce. This positioning is fundamental to the trust-boundary architecture and is the reason the copilot is treated as a cross-cutting layer rather than a pillar in its own right.
+
+\section{Microservices Architecture}
+At the service level, Itqan is composed of a set of cooperating microservices, each owning a clearly defined domain and exposing its capabilities through versioned API contracts. This section presents the service inventory, the rationale for the chosen boundaries, the layered pattern that disciplines each service internally, and the conventions that govern inter-service communication. The detailed architecture of the two services that carry the technical weight of this work, the manager and the copilot, is developed in the sections that follow.
+
+\subsection*{Service Inventory and Boundaries}
+The platform is designed around six services, distinguished by maturity rather than by binary implementation status. Four services belong to the present project surface at different maturity levels. The two services that carry the technical weight of this work are \texttt{rfq\_manager\_ms}, the lifecycle orchestration backbone, and \texttt{rfq\_copilot\_ms}, the trust-bound conversational layer; both are substantially implemented and exercised end-to-end through the operational paths described in Chapter 4 and the validation activities in Chapter 5. The other two services are \texttt{rfq\_intelligence\_ms}, the deterministic parsing and analytical foundation, which is implemented at the foundation level for the parsing scope established in Chapter 2 and remains read-heavy and analytical in posture, and \texttt{rfq\_ui\_ms}, the user interface that exposes the platform to its actors at the demonstration level required to support the defense narrative. The remaining two services, \texttt{rfq\_iam\_ms}, a dedicated identity and access management service, and \texttt{rfq\_communication\_ms}, a dedicated communication and outbound messaging service, are positioned as future scope. Their absence from the present scope was a deliberate decision, discussed in Section 3.9, and their functionality is currently provided either by minimal in-service shims (authentication inside the manager) or by deferred capability (full unified inbox monitoring).
+
+The boundary between services is drawn along the axis of data ownership rather than the axis of feature decomposition. The manager service owns lifecycle state. The intelligence service owns analytical artifacts derived from documents. The copilot service owns conversation state, and only conversation state: every fact about RFQs that the copilot returns is retrieved from the manager or the intelligence service at the moment of the response, never persisted by the copilot itself. The user interface service owns presentation logic but no domain data. This ownership discipline is what makes the trust-boundary architecture of the copilot possible: because the copilot owns no operational truth, it cannot drift from operational truth.
+
+Figure~\ref{fig:microservices_map} presents the service map and the principal inter-service communication paths.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_2_microservices_map.png}{%
+            \includegraphics[width=14cm]{images/fig_3_2_microservices_map.png}%
+        }{%
+            \begin{minipage}[c][7cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.2 placeholder: microservices map showing the four implemented services, the two future-scope services, and the principal inter-service communication paths]}
+            \end{minipage}%
+        }
+    }
+    \caption{Microservices architecture of the Itqan platform, showing service boundaries and inter-service communication}
+    \label{fig:microservices_map}
+\end{figure}
+
+\subsection*{The BACAB Layered Pattern}
+Inside each service, the code is organized according to a consistent layered pattern, derived from the architectural conventions used by \hostCompany\ across its engagements and adapted to the constraints of the present project. The pattern names five active layers and three support layers.
+
+The active layers form the request path. The \textbf{routes} layer is the entry point: it receives HTTP requests, parses them into validated input, and delegates to the controllers. The \textbf{controllers} layer holds the business logic: it orchestrates the steps required to satisfy a request, validates business rules, and decides what data must be read or written. The \textbf{datasources} layer is the persistence boundary: it executes database operations on behalf of the controllers and returns domain objects. The \textbf{translators} layer converts between internal domain representations and the shapes that cross service boundaries (API request and response schemas). The \textbf{connectors} layer encapsulates calls to external services, including the language model API consumed by the copilot.
+
+The support layers serve the active layers without being part of the request path. The \textbf{models} layer defines the domain entities and their relational structure. The \textbf{config} layer centralizes service configuration drawn from the environment. The \textbf{utils} layer provides helpers that do not belong to any specific layer.
+
+The discipline this pattern enforces is the same in every service: routes do not contain business logic, controllers do not access the database directly, and datasources do not make decisions. This separation makes each service easy to reason about in isolation, easy to test, and easy to extend without violating its own boundaries. The implementation of this pattern in each of the active services is the subject of Chapter 4.
+
+\subsection*{Inter-Service Communication}
+Inter-service communication in Itqan follows three conventions. The first convention is that inter-service communication is primarily synchronous over HTTP using REST. Asynchronous messaging through a message bus is deliberately not introduced as a general pattern at the present scale: the operational complexity it would add is not justified by the volume of inter-service traffic in a system whose dominant access pattern is conversational and request-driven. Event-driven communication is retained as an architectural evolution point for specific flows where it would be more appropriate, notably the workbook upload flow in which the manager service notifies the intelligence service that an estimation workbook is available for parsing; in the present implementation this flow is realized through a synchronous trigger but is structurally amenable to event-driven evolution as the platform matures.
+
+The second convention is that all inter-service calls cross documented API contracts. Each service publishes an OpenAPI specification of its public surface, and consuming services rely only on that specification rather than on internal data structures. This decoupling is what permits each service to evolve internally without breaking its consumers.
+
+The third convention concerns access control. The copilot service does not bypass the access controls of the manager service: every retrieval of lifecycle data initiated by the copilot is mediated through the manager's authorized endpoints, with the requesting user's actor context propagated explicitly. This convention, which Section 3.5 will revisit as the access boundary of the trust-bound architecture, is what keeps the copilot from becoming a privilege escalation vector.
+
+\section{RFQ Manager Service: Lifecycle Orchestration Backbone}
+The manager service is the operational backbone of the platform. It is the service on which every other service depends, and it is the service whose architecture is most directly answerable to the audit findings of Chapter 1. This section presents the manager service at the architectural level: its mission, its domain model, the workflow and stage progression mechanics that give it its discipline, and the decisions about what belongs inside it and what belongs outside.
+
+\subsection*{Service Mission}
+The mission of the manager service is to maintain a structured, observable representation of every RFQ across its full lifecycle, and to enforce the rules that govern that lifecycle. This mission is more constrained than the phrase "RFQ management" might suggest. The manager service is not the place where RFQs are estimated; the estimation workbook remains in the hands of senior estimators, as established in Chapter 1. The manager service is also not the place where intelligence is produced; that is the role of the intelligence service. The manager service is the orchestration layer in the strict sense: it owns the state of the lifecycle, the rules that govern its progression, and the artifacts attached to it.
+
+This narrowing of mission is itself an architectural choice. A more permissive scope, in which the manager service also held analytical, predictive, or conversational responsibilities, would have produced a service that was harder to reason about, harder to test, and harder to evolve. The deliberate constraint of mission to lifecycle orchestration is what makes the rest of the platform architecturally clean.
+
+\subsection*{Domain Model}
+The domain model of the manager service is organized around seven primary entities, each corresponding to a clear concept in the audit findings. The \textbf{RFQ} is the root entity: it carries the identifying metadata of the quotation request, its classification, its source channel, and its current lifecycle status. The \textbf{Workflow} is a versioned template that defines the sequence of stages an RFQ passes through; it is shared across many RFQs but instantiated separately for each. The \textbf{RFQ\_Stage} is an instance of a workflow stage tied to a specific RFQ, carrying the stage's progression state, its mandatory fields, its computed transition rules, and its operational metadata. The \textbf{Subtask} is a finer-grained unit of work attached to a stage, supporting soft-delete semantics and parent progress propagation. The \textbf{Note} is an append-only textual artifact attached to a stage, capturing decisions, observations, or context. The \textbf{File} is a persisted document attached to a stage, including (importantly) the estimation workbook itself once it is uploaded for tracking. The \textbf{Reminder} is a time-anchored notification associated with a stage or subtask, supporting both manual and rule-based creation modes. Figure~\ref{fig:manager_erd} presents the entity-relationship diagram of the manager service.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_3_manager_erd.png}{%
+            \includegraphics[width=14cm]{images/fig_3_3_manager_erd.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.3 placeholder: entity-relationship diagram of the manager service, showing the seven primary entities and their cardinalities]}
+            \end{minipage}%
+        }
+    }
+    \caption{Entity-relationship diagram of the manager service domain model}
+    \label{fig:manager_erd}
+\end{figure}
+
+\subsection*{Workflow and Stage Progression}
+The mechanism that gives the manager service its discipline is the stage progression logic, encoded in the controller layer and exercised through the API surface. The progression of an RFQ through its stages is not a free transition: it is a guarded one. Three deterministic gates must be passed before a stage can be advanced.
+
+The first gate is the \textit{mandatory-field gate}. Each stage carries a list of fields that must be populated before the stage can be marked complete. The mandatory-field list is part of the workflow template and can vary by stage. If a required field is missing, the gate refuses the advance with a structured error identifying the missing fields.
+
+The second gate is the \textit{blocker gate}. A stage may carry blocker state raised by department users, for example a feasibility blocker raised by Engineering. A stage cannot be advanced while its blocker state is unresolved. Blocker information is represented at the stage level through structured blocker fields, including a status indicator and a reason code where available. This representation allows the manager service to enforce the blocker gate without introducing a separate blocker resource in the current scope; promotion of blockers into a dedicated entity is recognized as an evolution direction if the platform's communication and notification needs grow beyond what the stage-level representation supports.
+
+The third gate is the \textit{transition-validity gate}. The next stage of an RFQ is computed from the workflow template, not chosen arbitrarily by the user. If the requested target stage is not the computed next stage, the gate refuses the advance. This prevents stages from being skipped or revisited out of order.
+
+When all three gates pass, the advance is committed: the current stage is marked complete with a timestamp, the next stage is activated, the RFQ's overall progress is recomputed, and a status history entry is written. This sequence is atomic from the caller's perspective. The progression logic is the mechanism through which the platform converts a sequence of expert acts into a coordinated process, addressing pain points PP-01, PP-05, and PP-08 from Chapter 1 directly. The implementation of the three gates in the controller layer of the manager service is presented in Chapter 4.
+
+\subsection*{The Reminder Architectural Decision}
+A specific architectural decision deserves explicit treatment: the decision to keep reminders inside the manager service rather than to extract them into a separate communication or notification service.
+
+The argument for extraction would be straightforward. Reminders are notifications. Notifications are communication. Communication is the responsibility of a communication service, which would also handle outbound messaging, channel monitoring, and assisted drafting in the long-term scope of Pillar 2. Extraction would align reminders with the eventual home of their feature family.
+
+The argument against extraction, which prevailed, is grounded in the data ownership principle established in Section 3.3. Reminders in their current form are tightly coupled to lifecycle artifacts: they are attached to specific stages or subtasks, they fire based on stage progression rules and due dates, and they participate in the stage-completion lifecycle. Extracting them into a separate service would either require the communication service to cache lifecycle state (violating ownership boundaries) or require every reminder operation to make a synchronous round trip to the manager service for context (creating a coupling that defeats the purpose of extraction).
+
+The decision to keep reminders inside the manager service for the present scope is therefore a defense of the data ownership boundary. It is acknowledged as a decision rather than as a default: when the communication pillar matures and outbound channels become first-class concerns, the boundary may be revisited and reminders may migrate. For the present work, they belong where the data they describe lives. This decision is recorded in the architectural decision register summarized in Section 3.9.
+
+\subsection*{API Contract Overview}
+The manager service exposes its capabilities through a versioned REST API organized around seven resource families: RFQ, Workflow, RFQ\_Stage, Subtask, File, Note, and Reminder. The initial V1 contract defined twenty-eight endpoints; the working implementation evolved to a broader operational surface of approximately thirty-one endpoints after hardening and after extensions to the reminder and statistics families that emerged from demonstration feedback. The contract follows REST conventions: resources are addressed by stable identifiers, state-changing operations use the appropriate HTTP verbs, and responses carry sufficient context for downstream consumers to reason about the state of the lifecycle without secondary calls.
+
+A subset of endpoints carries particular significance. The \textit{advance stage} endpoint exercises the three-gate progression logic described above. The \textit{add note} endpoint is append-only by contract: no update or delete is offered, preserving the integrity of the communication trail attached to a stage. The \textit{upload file} endpoint distinguishes file types in its contract, including a designated type for the estimation workbook that is intended to trigger downstream intelligence parsing in the integrated platform flow. The full API surface, including request and response schemas and error semantics, is the subject of the implementation chapter.
+
+\section{RFQ Copilot Service: Trust-Bound Conversational Architecture}
+The RFQ Copilot is the principal innovation contribution of this work. It is the conversational layer through which authorized users interact with the platform in natural language, with strict guarantees about the evidence on which its answers are grounded and the boundaries of what it is permitted to do. This section presents the design philosophy of the copilot, positions it against the alternative conversational architectures that exist in the field, and develops the trust-boundary architecture that organizes its internal logic. The implementation of this architecture in code is the subject of Chapter 4; this section operates at the conceptual and architectural level.
+
+\subsection*{Design Philosophy}
+The copilot was designed under a single guiding principle, which is also the design principle that determines every subsequent architectural choice in this section.
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\itshape\centering The copilot should feel like ChatGPT in fluidity, but must not behave like generic ChatGPT in authority. Its authority comes from platform evidence, not from the language model.}}
+\end{center}
+
+This principle separates two qualities that are typically conflated in conversational systems. \textit{Fluidity} is what makes a system pleasant to interact with: natural language understanding, contextually appropriate replies, the ability to follow a thread across turns. \textit{Authority} is what makes a system safe to act on: the assurance that its claims are grounded in real data, that its scope is bounded, and that its behavior is predictable. A generic conversational system optimizes for fluidity and produces authority as a fluent-sounding side effect, which is precisely what the audit findings of Chapter 1 warned against in an industrial estimation context.
+
+The copilot is therefore designed so that fluidity is provided by the language model while authority is owned by deterministic platform components. The language model can interpret a question, compose a response, and verify a draft against retrieved evidence. It cannot select tools, decide which data the user is allowed to see, choose what evidence is relevant, decide when to give up on a question, or commit to a response without verification. Each of these decisions is the responsibility of a specific code component or configuration artifact whose behavior is deterministic.
+
+\subsection*{Positioning Against Alternative Architectures}
+The trust-bound architecture is best understood by contrast with the three principal alternatives a conversational layer of this kind might adopt.
+
+The first alternative is the \textbf{naive retrieval-augmented generation (RAG) architecture}, in which user queries trigger a vector retrieval over a corpus of documents, and the retrieved passages are appended to the prompt for a language model to compose a response. Naive RAG is well suited to question-answering over static documents but struggles in a context where the answer depends on live operational state: lifecycle progression, access permissions, or recent state changes. It also offers no structural defense against the language model going beyond what was retrieved, because the model is the sole agent producing the answer.
+
+The second alternative is the \textbf{generic LLM agent architecture}, in which a language model is given a set of tools and the autonomy to decide which tools to invoke, in what order, and with what arguments. This pattern is increasingly popular and visibly effective in low-stakes contexts. In a context where every tool call may expose commercially sensitive data, every retrieved value may end up in a contractual quotation, and every refusal must be defensible after the fact, the autonomy of an LLM agent is a liability rather than a feature. The decisions that determine safety (which tool may run, which user may see what, when to refuse) are the decisions that should not be made by the language model.
+
+The third alternative is the \textbf{uncontrolled tool-calling chatbot}, a hybrid in which a language model classifies user intent and then triggers retrieval through a fixed set of endpoints, but without disciplined separation between classification, policy enforcement, and execution. This pattern is closer to safe but still permits the language model to influence policy decisions through its choice of classification, with no deterministic gate between intent and action.
+
+The trust-bound copilot adopts none of these patterns. It accepts that language models are excellent at the linguistic tasks (interpretation, composition, verification) and unreliable at the policy tasks (selection, authorization, escalation). It therefore allocates each decision to the component best suited to make it, separates classification from execution through a single deterministic chokepoint, and verifies the resulting answer through a sequence of deterministic guardrails followed by a final language-model judge.
+
+\subsection*{The Eight Trust Boundaries}
+The architecture rests on eight decisions, each of which is consciously assigned to a specific owner. The trust boundaries are not implementation details; they are the architectural commitments that distinguish the copilot from the alternatives sketched above. Table~\ref{tab:trust_boundaries} presents the eight boundaries and their owners.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{0.6cm}|p{6cm}|p{7cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{\#} & \textbf{Decision} & \textbf{Owner} \\ \hline
+1 & What path does this turn belong to? & FastIntake (deterministic) or LLM Planner (proposes), validated by PlannerValidator and decided by ExecutionPlanFactory. \\ \hline
+2 & Who may construct an executable plan for a turn? & ExecutionPlanFactory only. CI-enforced single-construction discipline. \\ \hline
+3 & Which tools are permitted, and which actually run? & Path Registry (mapping) and the deterministic Tool Executor (invocation). \\ \hline
+4 & May this user read this RFQ? & The manager service API: a \texttt{404} or \texttt{403} response is the answer, never overridden by the copilot. \\ \hline
+5 & Which fields are allowed to enter the language model prompt? & Per-path field whitelist defined in the Path Registry, enforced by the ExecutionPlanFactory. \\ \hline
+6 & Which target does each field of evidence belong to? & Per-target labelling at the moment of evidence packet construction. \\ \hline
+7 & Did the response hallucinate, drift in scope, or leak across targets? & Deterministic Guardrails (multiple, sequential), followed by an LLM Judge as the final line of defense. \\ \hline
+8 & What happens when any stage fails? & The Escalation Gate, a single deterministic intercept point that re-enters the ExecutionPlanFactory with a structured \texttt{reason\_code}. \\ \hline
+\end{tabular}
+\caption{The eight trust boundaries of the copilot architecture and their owners}
+\label{tab:trust_boundaries}
+\end{table}
+
+The mantra that summarizes these eight boundaries, used throughout the project as a quick test of architectural correctness, can be stated in one sentence: \textit{two classification sources, one plan factory, one escalation gate; the language model produces language, code produces truth, policy enforces boundaries, the Judge verifies, templates render the safe answer when nothing else worked.} If a proposed change to the system would violate any clause of this sentence, it is the change that is wrong, not the architecture. Figure~\ref{fig:trust_boundary} presents the trust-boundary architecture visually, with components colored by their trust class.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_4_trust_boundary.png}{%
+            \includegraphics[width=14cm]{images/fig_3_4_trust_boundary.png}%
+        }{%
+            \begin{minipage}[c][9cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.4 placeholder: trust-boundary architecture of the RFQ Copilot, showing components colored by trust class (code, language model, configuration, external service, persistence) and the flow of a turn through the eight boundaries]}
+            \end{minipage}%
+        }
+    }
+    \caption{Trust-boundary architecture of the RFQ Copilot, with components colored by trust class}
+    \label{fig:trust_boundary}
+\end{figure}
+
+\subsection*{Two Classification Sources, One Plan Factory}
+Every user turn enters the copilot through one of two classification sources, and both sources feed a single point of plan construction. The architecture explicitly forbids any third entry path.
+
+The first classification source is \textbf{FastIntake}, a deterministic component that recognizes a small set of trivial messages (greetings, thanks, farewells, pure nonsense) through anchored regular expressions. FastIntake produces an \texttt{IntakeDecision} immediately, without invoking the language model. Its purpose is twofold: it eliminates the cost and latency of a language-model call for messages that do not require interpretation, and it guarantees that the trivial cases never reach the language model where they could be over-interpreted into something they are not.
+
+The second classification source is the \textbf{LLM Planner}, a GPT-4o invocation with a JSON-schema-enforced output. The Planner classifies the turn into one of the supported paths and proposes the relevant intent topic, target candidates, and field references. The Planner emits a \texttt{PlannerProposal}, which is then passed to the \textbf{PlannerValidator} for structural validation only. The PlannerValidator catches language-model failure modes such as malformed output or schema violations; it does not enforce policy and does not read the Path Registry. Its sole responsibility is to convert a raw \texttt{PlannerProposal} into a \texttt{ValidatedPlannerProposal}, which is structurally sound but not yet authorized.
+
+Both sources feed the \textbf{ExecutionPlanFactory}, the single component in the entire system permitted to construct a \texttt{TurnExecutionPlan}. This single-construction discipline is enforced mechanically through a continuous integration check that prevents any code path other than the factory from constructing the executable plan type. The mechanism by which this check is implemented is presented in Chapter 4. The factory reads the Path Registry, applies source-aware policy enforcement (allowed and forbidden fields, intent topic existence, confidence thresholds, alias normalization), and either produces a valid \texttt{TurnExecutionPlan} or returns a structured rejection. Failures route through the Escalation Gate, which calls the same factory through a separate entry point to construct a Path 8 safe plan. There is no second path to a \texttt{TurnExecutionPlan} anywhere in the system.
+
+\subsection*{The Path Registry as Policy-as-Configuration}
+The Path Registry is a configuration artifact that holds the entire policy surface of the copilot in a structured, declarative form. It is read at runtime only by the ExecutionPlanFactory and the Escalation Gate; no other component reads it, again CI-enforced.
+
+For each combination of path and intent topic, the Path Registry defines: which intake sources are permitted to classify the turn, which evidence tools are authorized, which fields are allowed (and which are forbidden), the target resolver strategy, the access policy, the active guardrails, the judge policy and its triggers, the working and episodic memory policy, the persistence policy, the finalizer template keys keyed by reason code, and the model profile. Every operational decision the copilot makes flows from this configuration. Adding a new path is a configuration change; it does not require modification of the pipeline stages or the factory.
+
+The architectural significance of this design is that the policy surface of the system is inspectable, auditable, and modifiable as data rather than as code. A reviewer can read the Path Registry and know exactly what the copilot is permitted to do for any given turn. A change to the policy is a diff in a configuration file, not a change to a stage's logic.
+
+\subsection*{The Pipeline and the Five Evidence Sources}
+A user turn that produces an answer flows through a sequence of stages between intake and persistence: target resolution, access verification (mediated through the manager API), memory load, tool execution, evidence check, context construction, response composition, deterministic guardrails, language-model judging, finalization, and persistence. Each stage owns a single decision. The complete pipeline is presented at the implementation level in Chapter 4.
+
+The architecturally significant property of the pipeline is the limited and disciplined set of evidence sources from which the copilot is permitted to reason. Five sources are recognized.
+
+The first is the \textbf{conversation itself}. For trivial messages classified by FastIntake (greetings and the like), and for purely conversational paths, no external evidence is required. The composition is grounded in the conversation alone. The second is the \textbf{manager service state}, the source of operational truth: lifecycle status, stage progression, attached artifacts, reminders, analytical aggregations. This is the dominant and currently-wired evidence source for the first vertical slice of the project, accessed through the manager connector that the copilot uses for all retrieval of lifecycle data. The third is the \textbf{intelligence service artifacts}: parsed MR package profiles, workbook extractions, intelligence briefings. The architecture supports this source as a first-class evidence channel, but its connector is not wired in the present implementation; integration with the intelligence service is deferred to the slices that ship Path 5 and the related intelligence-driven paths. The fourth is the \textbf{controlled domain knowledge}, a future source intended to support questions about industry standards and norms through a bounded retrieval-augmented generation surface. The fifth is the explicit \textbf{absence of an answer}, a recognized state in which the copilot has no permitted evidence to draw on and must therefore refuse rather than approximate. The Path 8 family of templates renders the user-facing message in this case.
+
+The discipline that follows from this enumeration is that every claim made by the copilot must be traceable to one of the first four sources, or the answer must be a Path 8 refusal. There is no fifth informal route by which the copilot might produce a claim from neither evidence nor refusal; that route would be a hallucination, and the Judge layer is its final defense.
+
+\subsection*{Memory Architecture}
+The copilot captures bounded working memory within the active conversation thread. Working memory holds the most recent turns of the current conversation, bounded by the policy of the active path, and is persisted as part of the per-turn execution record so that the conversation history is observable and auditable across the lifetime of the thread.
+
+The architectural posture toward longer-term memory is deliberately conservative in the present scope. Two extensions are recognized as future work and explicitly excluded from the current validated scope. The first is the injection of working memory into the Planner, Compose, and Judge prompts: the present implementation captures the conversation history but does not yet feed it back into the language-model invocations as additional context. The second is long-term episodic summarization across sessions, in which prior conversations on the same target would be condensed and made available to future turns. Both extensions are accommodated by the architecture but neither is wired in the current implementation. The bounded form delivered in the present work is sufficient for the operational paths shipped in the first vertical slice and avoids the leakage and drift risks that an under-validated memory tier would introduce.
+
+\subsection*{Path Coverage in the Present Work}
+The architecture supports a system of seven answer paths and a Path 8 family of five protected sub-cases. Not every answer path is implemented in the present work, and the coverage is itself a deliberate consequence of the first-vertical-slice strategy explained in Chapter 4. The first vertical slice ships Path 1 (trivial conversational messages via FastIntake), Path 4 (the demo-defining operational path of evidence-grounded answers about a specific RFQ), and the full Path 8 safety infrastructure. Other answer paths short-circuit through the Escalation Gate to Path 8.1 ("not supported yet") until their own slices ship.
+
+This coverage strategy is consistent with the trust-boundary architecture itself: shipping Path 4 and Path 8 together exercises every component of the pipeline end-to-end on real operational paths, while Path 8 ensures that every turn, including those whose answer paths are not yet ready, terminates in a bounded, deterministic, defensible response. There is no half-implemented path that returns a partially-grounded answer; either the path ships fully, or the turn routes through Path 8.
+
+\subsection*{Why This Architecture Is the Innovation of the Project}
+The trust-bound copilot architecture is the central innovation of this work for three reasons that together distinguish it from a conventional conversational system.
+
+The first reason is structural. The architecture commits to a strict separation of concerns between the language model and the deterministic platform: the language model produces language, the platform produces truth. This separation is enforceable at the type level (through the three-type contract that distinguishes \texttt{IntakeDecision}, \texttt{ValidatedPlannerProposal}, and \texttt{TurnExecutionPlan}) and at the build level (through CI checks that prevent any code outside the factory from constructing an executable plan). The architecture is thus self-defending in a way that policy-by-convention is not.
+
+The second reason is operational. The architecture allocates every consequential decision to a component whose behavior is observable, auditable, and changeable independently of the language model. The Path Registry is auditable as configuration. The Tool Executor is auditable as deterministic code. The Guardrails are testable as functions of input and output. The Judge is observable through structured logs. There is no point in the pipeline at which a black-box language-model decision determines an outcome of operational consequence.
+
+The third reason is academic. The architecture is a defensible answer to a question the field has not yet settled: how should an LLM-driven system behave when the cost of being wrong is high? The three principal alternatives sketched at the start of this section each fail this question in a different way. The trust-bound architecture does not claim to be the only answer, but it offers a coherent answer that is implementable, testable, and inspectable, and that allocates risk to the components designed to handle it. The chapter that follows develops the implementation of this architecture, and the validation chapter proves that the eight trust boundaries are enforced not only in design but in code.
+
+\section{Evidence Boundary and Source-of-Truth Strategy}
+The trust-bound architecture presented in the previous section enumerates five evidence sources from which the copilot is permitted to reason. The architectural significance of this enumeration is not the count of sources but the discipline that governs which source applies to which turn. This section formalizes that discipline as the \textit{evidence boundary} of the copilot, and explains the source-of-truth strategy that makes the boundary enforceable rather than aspirational.
+
+\subsection*{The Evidence Boundary as an Architectural Commitment}
+Every claim made by the copilot is either grounded in retrievable evidence or it is not. A system that conflates these two cases produces the failure mode this work was explicitly designed to prevent: an answer that sounds confident, that is locally consistent, and that has no stable relationship to the platform's actual state. The evidence boundary is the architectural commitment that prevents this conflation. It states that the set of sources from which the copilot may draw evidence is finite, named, and decided before the language model is invoked, not after.
+
+The boundary operates at two levels. At the \textit{path level}, the boundary determines which evidence sources are even legal for a given turn: an operational question about a specific RFQ may draw from manager state and intelligence artifacts but not from controlled domain knowledge; a question about an industry standard may draw from controlled domain knowledge but not from operational state; a greeting requires no evidence at all. The Path Registry encodes this correspondence statically, and the ExecutionPlanFactory enforces it at plan construction time. At the \textit{turn level}, the boundary determines which specific instances of evidence are loaded into the language model's context: which fields, from which target, with which scoping. The per-path field whitelist and the per-target labelling discipline introduced in Section 3.5 operate at this level.
+
+\subsection*{The Five Evidence Sources Revisited}
+The five evidence sources introduced in Section 3.5 are revisited here as the architectural primitives of the boundary, with the source-of-truth posture each one implies.
+
+The \textbf{conversation-only source} applies when no external evidence is needed. Trivial messages classified by FastIntake (greetings, thanks, farewells) and out-of-scope refusals fall into this case. The composition draws on the user's message and the conversation context alone. There is no risk of factual hallucination because no factual claim is made.
+
+The \textbf{manager service state} is the operational source of truth for everything the platform knows about RFQ lifecycle. Stage progression, mandatory field values, blocker status, attached artifacts, reminder definitions, analytical aggregations: all of this lives in the manager service. The copilot retrieves manager state through the same authorized API surface that the user interface consumes, with the requesting user's actor context propagated explicitly. This is the dominant evidence source for the operational paths shipped in the first vertical slice of the present work.
+
+The \textbf{intelligence service artifacts} are the derived source of truth for the documents that surround an RFQ. The intelligence service produces deterministic profiles of the MR package and the estimation workbook, and an intelligence briefing that aggregates parsed content for downstream presentation. When a turn requires reasoning over document content (for example, a question about the BOM line items or the workbook cost breakdown), the architecture designates the intelligence artifacts as the authorized source. In the present implementation the connector that would let the copilot consume these artifacts at runtime is not wired; the intelligence service exposes its outputs to the user interface, and the copilot's consumption of intelligence artifacts is deferred to the slices that ship the corresponding paths.
+
+The \textbf{controlled domain knowledge} is a future evidence source intended to support questions about industry standards, regulatory norms, and codified rules of the domain (ASME, TEMA, SAES, SAMSS). It is structurally a bounded retrieval-augmented generation surface: a curated corpus, a vector retrieval, and a strict guardrail that forbids answers from drifting beyond what was retrieved. It is named as an architectural primitive in this chapter because the trust-boundary architecture must accommodate it cleanly when it ships, and because its absence in the present work is itself a deliberate scope statement.
+
+The fifth case is the \textbf{absence of permitted evidence}, which is a recognized state rather than a failure. When a turn falls into a path or intent for which no evidence is available (because the path is not yet supported, because access was denied, because the requested target does not exist, because the question is out of scope, or because the available evidence is insufficient to answer safely), the Escalation Gate routes the turn through the Path 8 family. Path 8 is not an error path: it is a structured response generator whose templates render a defensible message identifying what the copilot could not do and why. The architectural significance of Path 8 is that the absence of evidence is itself an evidence state that the system handles deliberately, rather than a degenerate case that the language model is asked to paper over. Figure~\ref{fig:evidence_boundary} presents the evidence boundary as the decision flow that determines which source applies to a turn.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_5_evidence_boundary.png}{%
+            \includegraphics[width=14cm]{images/fig_3_5_evidence_boundary.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.5 placeholder: evidence boundary diagram showing the decision flow from turn classification to evidence source selection, with the five sources and the Path 8 family as terminal states]}
+            \end{minipage}%
+        }
+    }
+    \caption{The evidence boundary of the RFQ Copilot: decision flow from turn classification to evidence source selection}
+    \label{fig:evidence_boundary}
+\end{figure}
+
+\subsection*{Why This Boundary Is Enforceable}
+The evidence boundary is enforceable, rather than merely declarative, because three architectural properties hold together.
+
+The first property is the \textit{policy-as-configuration} discipline established by the Path Registry. Every authorized evidence source for every (path, intent topic) combination is named in configuration that the ExecutionPlanFactory reads before plan construction. A turn for which no evidence source is authorized cannot be assembled into a valid plan and is routed to Path 8.
+
+The second property is the \textit{single-construction discipline} of the ExecutionPlanFactory. The factory is the only component permitted to assemble the executable plan, and the factory reads the Path Registry. There is no other code path through which an executable plan can be constructed without consulting the boundary. A continuous integration check enforces this discipline mechanically.
+
+The third property is the \textit{deterministic guardrail and Judge layer} described in Section 3.5. After the language model has composed a draft response, deterministic guardrails check that every claim made in the draft is supported by retrieved evidence, that the claim does not drift outside the scope of the path, and that the response shape conforms to the expected format. The language model Judge then performs a final verification with explicit triggers (such as fabrication, scope drift, and forbidden inference) that would not be reliably caught by deterministic rules alone. The Judge is the last line of defense, not the first.
+
+These three properties together make the evidence boundary something the system enforces rather than something the system documents. The defense rests on the structure of the architecture, not on the discipline of any individual component, and certainly not on the language model's compliance.
+
+\section{Data Model and API Contracts}
+This section presents the platform's data model and the API contract conventions that govern inter-service communication. The detailed entity-relationship diagram of the manager service was presented in Section 3.4. This section operates at the cross-service level: the data ownership posture, the contract conventions, and the resource families that constitute the principal API surfaces.
+
+\subsection*{Data Ownership and Service Boundaries}
+The platform observes a strict data ownership posture, restated here in cross-service form. The \textbf{manager service} owns lifecycle data: RFQs, workflows, stage instances, subtasks, notes, files, reminders, and the operational analytics derived from them. The \textbf{intelligence service} owns analytical artifacts derived from documents: parsed MR package profiles, parsed workbook profiles, intelligence briefings, and the cross-check reports produced from them. The \textbf{copilot service} owns conversation state: threads, turns, bounded working memory, and the execution records that capture per-turn decisions for forensic and validation purposes. The \textbf{user interface service} owns presentation state only.
+
+No service caches another service's data. When the copilot needs lifecycle state, it retrieves it from the manager at the moment of the response; it does not maintain a local replica. When the intelligence service needs to identify the RFQ associated with a parsed package, it does so through a cross-reference key, not by holding a copy of the manager's lifecycle representation. This discipline preserves the integrity of each service's source-of-truth posture and prevents the silent drift that arises when multiple services hold copies of the same data.
+
+\subsection*{API Contract Conventions}
+Inter-service communication uses HTTP and REST, with three conventions that hold consistently across services. Every endpoint is documented in an OpenAPI specification that is the single source of truth for its public contract. Consumers depend only on the published specification, not on implementation details. Versioning is explicit at the path level, allowing a service to evolve its internal representation without breaking its consumers.
+
+Errors follow a consistent shape across services. A response carrying an error includes the HTTP status code, a machine-readable error type, a human-readable message, and a correlation identifier that propagates across service boundaries. The correlation identifier is what permits a single user-facing turn to be traced through every service it touches. Authorization failures and authentication failures are distinguished consistently (\texttt{401} for unauthenticated requests, \texttt{403} for authenticated but unauthorized, \texttt{404} for resources the requesting user is not permitted to know exist).
+
+Idempotency is observed where it matters. State-changing operations carry stable identifiers in their request bodies where appropriate, allowing the caller to retry on transient failures without producing duplicate state. The append-only semantics of notes, presented in Section 3.4, are an architectural defense in the same family.
+
+A note on deployment posture closes this subsection. Each service is independently containerizable and ships with its own Docker configuration, sufficient to bring the service up in isolation or in a per-service compose scenario. A unified root compose orchestration that brings the entire platform up as a single coherent stack is recognized as a hardening direction rather than a current deliverable: the present work demonstrates the services individually and through targeted multi-service scenarios, with full-stack orchestration deferred to a later integration pass.
+
+\subsection*{Principal Resource Families}
+Three principal API surfaces define the inter-service contract space.
+
+The \textbf{manager service API} exposes seven resource families: RFQ, Workflow, RFQ\_Stage, Subtask, File, Note, and Reminder. Endpoints across these families cover registration, retrieval, lifecycle progression, attachment management, and analytical aggregation, with the contract evolution from the V1 baseline noted in Section 3.4. The detailed endpoint catalogue is the subject of the implementation chapter.
+
+The \textbf{intelligence service API} exposes parsing and briefing capabilities. Its principal resources are the MR package profile, the workbook profile, and the intelligence briefing. Endpoints support both synchronous request-response retrieval (for already-parsed artifacts) and parsing triggers initiated by the manager service when an estimation workbook is uploaded. The intelligence service is read-heavy by design: it consumes documents and produces structured artifacts, but it does not own lifecycle state.
+
+The \textbf{copilot service API} exposes conversational capabilities. Its principal resources are the thread, the turn, and the persisted execution record. The copilot does not expose its internal pipeline as separate endpoints; the pipeline is internal architecture, not contract surface. From the perspective of consuming services, the copilot's contract is a small surface centered on submitting a turn and retrieving the resulting response, with the per-turn execution record exposed for observability and validation purposes.
+
+The contract details, including request and response schemas, error semantics, and the full endpoint catalogues, are developed in Chapter 4 alongside the implementation that delivers them.
+
+\section{Platform Integration: UI and Intelligence Layers}
+The architecture chapters so far have presented the platform service by service. This section presents the platform as a whole, focusing on how the user interface service and the intelligence service compose with the manager and copilot services to form an integrated experience. The treatment here is deliberately shorter than the depth given to the manager and copilot services in Sections 3.4 and 3.5: the integration layer is essential to turning two engines into a platform, but its complexity lies in correctness and discipline rather than in original architectural commitments.
+
+\subsection*{The User Interface as the Front of the Platform}
+The user interface service, \texttt{rfq\_ui\_ms}, is implemented as a single-page application built on Next.js with TypeScript. Its responsibilities are scoped tightly: it consumes the manager service's analytical and lifecycle endpoints to render the portfolio and detail views, it presents the copilot's conversational layer as an entry point both at the portfolio level and from within an individual RFQ detail page, and it surfaces the intelligence service's outputs (parsed profiles, briefings, anomaly flags) within the RFQ detail experience.
+
+The UI does not duplicate the platform's domain logic. It does not compute analytics that the manager service does not already expose, it does not classify or interpret user queries before submitting them to the copilot, and it does not transform or summarize intelligence service outputs beyond presentation formatting. This restraint is intentional: the same data ownership discipline that keeps service boundaries clean at the back end keeps the front end free of duplicated and potentially divergent logic. When the user interface needs information, it asks the authoritative service for it.
+
+\subsection*{The Intelligence Service in the Integrated Flow}
+The intelligence service, \texttt{rfq\_intelligence\_ms}, participates in the target integrated flow at two distinct points. The first is at the moment of artifact arrival: when an MR package or an estimation workbook is uploaded against an RFQ through the manager service, the manager triggers a parsing call to the intelligence service, which produces a deterministic profile of the artifact and persists it under the corresponding RFQ key. The second is at retrieval: when the user interface or the copilot needs to display or reason over parsed content, the intelligence service serves the persisted profile through its read API. In the present work, the parsing capabilities required by this two-moment flow are implemented at the foundation level described in Chapter 2; the trigger and retrieval surfaces are exercised through the demonstration narrative without claiming production-grade integration.
+
+This two-moment role is what permits the intelligence service to remain read-heavy and analytical in posture, without owning lifecycle state of its own. It produces artifacts; the manager owns the lifecycle to which the artifacts are attached; the UI displays them; the copilot reasons over them under the trust-boundary discipline of Section 3.5. Each service does its single job.
+
+\subsection*{The End-to-End Request Flow}
+A representative request flow illustrates how the four services compose. A user opens an RFQ in the user interface. The UI calls the manager service to retrieve the RFQ's lifecycle state, its attached artifacts, and its computed progress, and it calls the intelligence service to retrieve the parsed profile of the estimation workbook if one has been uploaded. Both calls return within tolerances appropriate for an interactive experience and the UI renders the detail page. The user then opens the RFQ-bound copilot panel and asks a question. The copilot accepts the turn, classifies the path, retrieves access verification and lifecycle state from the manager service through its authorized endpoints, retrieves the relevant intelligence artifacts when the path requires them, composes a draft response, verifies it through the deterministic guardrails and the Judge, and returns the finalized answer to the UI for presentation. The UI displays the answer alongside its evidence references. Figure~\ref{fig:platform_integration} presents this flow at the architectural level.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_3_6_platform_integration.png}{%
+            \includegraphics[width=14cm]{images/fig_3_6_platform_integration.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 3.6 placeholder: platform integration view showing the end-to-end request flow across the user interface, manager, copilot, and intelligence services]}
+            \end{minipage}%
+        }
+    }
+    \caption{Platform integration view: the end-to-end request flow across the four implemented services}
+    \label{fig:platform_integration}
+\end{figure}
+
+The architectural property that this flow illustrates is composition without coupling. Each service knows its own boundary, and the integration emerges from the disciplined use of contracts rather than from cross-service knowledge of internals. A change to the copilot's pipeline does not propagate to the manager service. A change to the intelligence service's parsing implementation does not propagate to the user interface. A change to the user interface's presentation does not propagate to either backend service. The integration is what the contracts allow, and only that.
+
+\section{Architectural Decisions and Trade-offs}
+The architectural decisions presented in the preceding sections were not the only options considered. This section summarizes the major decisions made during the project as a compact reference, identifying for each one the alternatives considered, the option chosen, the rationale that drove the choice, and the principal consequence accepted with it. The full Architectural Decision Record entries, structured as described in Chapter 2, are maintained in the project's decision register and are not reproduced in full here.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{tabular}{|p{2.6cm}|p{2.5cm}|p{2.5cm}|p{3cm}|p{3cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Decision} & \textbf{Alternatives} & \textbf{Chosen} & \textbf{Rationale} & \textbf{Consequence} \\ \hline
+Service decomposition & Monolith, microservices & Microservices & Clear data ownership and independent evolution of layers. & Inter-service communication overhead and contract discipline required. \\ \hline
+Intra-service pattern & Free-form, MVC, BACAB layered & BACAB layered & Consistent structure across services, enforced separation of concerns, alignment with host firm conventions. & Higher up-front structure cost; small services may feel over-organized. \\ \hline
+Operational source of truth & Distributed across services, owned by manager & Owned by manager & Single source-of-truth posture; copilot cannot drift from operational reality. & Manager service becomes a critical dependency for every other service. \\ \hline
+Reminder ownership & Inside manager service, separate communication service & Inside manager service & Reminders are tightly coupled to lifecycle artifacts; extraction would require either caching lifecycle state elsewhere or per-call round trips. & Reminders may need to migrate when the communication pillar matures. \\ \hline
+Conversational design & Generic LLM agent, naive RAG, trust-bound copilot & Trust-bound copilot & Industrial estimation requires authority over operational truth that an LLM cannot be granted. & Higher architectural complexity; more components to maintain than a generic agent would require. \\ \hline
+Policy surface & In-code policy, policy-as-configuration via Path Registry & Policy-as-configuration & Auditable, modifiable as data rather than as code; supports scope expansion without pipeline changes. & Configuration discipline becomes critical; misconfigured registry has architectural impact. \\ \hline
+Plan construction & Multiple constructors per source, single ExecutionPlanFactory & Single ExecutionPlanFactory & Single chokepoint for policy enforcement, CI-enforceable, defense-in-depth foundation. & All entry sources must conform to the factory's input contract; second-source addition is non-trivial. \\ \hline
+Identity and access management & In-service authentication, dedicated IAM service & In-service backend authentication now, dedicated IAM service deferred & The IAM scope warrants a dedicated service but the present work prioritizes the operational and conversational layers; backend authentication mechanisms exist in the manager service, while production-grade login, SSO, and a dedicated identity service are deferred. & Future migration to a dedicated IAM service required; access policy currently scoped to actor-context headers and manager-mediated retrieval, with the user interface relying on a development-mode role selection rather than a production login flow. \\ \hline
+\end{tabular}
+\caption{Architectural decisions register summary}
+\label{tab:decisions}
+\end{table}
+
+These eight decisions, taken together, constitute the architectural commitments of the project. Each is reversible at a cost: the cost of reverting a decision is what the consequence column estimates. The most consequential of these decisions is the trust-bound copilot design, because it determines the entire shape of the conversational layer and the discipline that governs it. The least consequential, in the sense that its reversal cost is lowest, is the in-service IAM shim, which is structurally a placeholder for a dedicated service whose extraction is anticipated rather than resisted.
+
+\section{CONCLUSION}
+This chapter has presented the conceptual and technical architecture of Itqan. It opened with the platform-level view and the four-pillar vision, distinguishing what is implemented in the present work from what remains as future scope. It introduced the microservices architecture and the BACAB layered pattern that disciplines each service internally. It developed the operational backbone in depth, presenting the manager service as a lifecycle orchestration service whose mission, domain model, stage progression mechanics, and architectural decisions together produce the structured representation that the rest of the platform depends on. It then developed the central innovation contribution of the work, the trust-bound copilot architecture, presenting the design philosophy, the positioning against alternative conversational architectures, the eight trust boundaries, the two-classification-source and single-plan-factory model, the Path Registry as policy-as-configuration, and the disciplined memory posture. It formalized the evidence boundary that governs how the copilot reasons over platform data, named the five evidence sources from which the copilot is permitted to draw, and explained the three architectural properties that make the boundary enforceable rather than declarative. It presented the data model and API contract conventions that anchor inter-service communication, the platform integration layer that composes the services into a coherent experience, and a compact register of the major architectural decisions made during the project.
+
+The next chapter develops the implementation of this architecture. It walks through the structural realization of the BACAB pattern in code, the resources and lifecycle mechanics of the manager service, and the per-turn pipeline of the copilot service from intake to persistence. The validation chapter that follows then proves that the eight trust boundaries are enforced not only in design, as this chapter has presented them, but in the implementation that delivers on them.

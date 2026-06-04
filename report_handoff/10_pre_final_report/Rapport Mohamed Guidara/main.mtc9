@@ -1,0 +1,17 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode INTRODUCTION}{\reset@font\mtcSfont 47}{section*.27}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.1}Development Environment and Toolchain}{\reset@font\mtcSfont 47}{section.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.1.1}BACAB Discipline Across the Backend Services}{\reset@font\mtcSSfont 49}{subsection.5.1.1}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.2}Manager Service Implementation}{\reset@font\mtcSfont 49}{section.5.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2.1}BACAB Topology within the Manager Service}{\reset@font\mtcSSfont 50}{subsection.5.2.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2.2}Relational Schema and Stage Progression}{\reset@font\mtcSSfont 50}{subsection.5.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2.3}Subtasks, Notes, Files, and Reminders}{\reset@font\mtcSSfont 51}{subsection.5.2.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2.4}Analytics and Telemetry Endpoints}{\reset@font\mtcSSfont 52}{subsection.5.2.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2.5}Observability and Audit-History Implementation}{\reset@font\mtcSSfont 52}{subsection.5.2.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.3}Copilot Service Implementation}{\reset@font\mtcSfont 53}{section.5.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.3.1}Turn Processing Pipeline and Vertical Slicing}{\reset@font\mtcSSfont 53}{subsection.5.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.3.2}Path Registry and Single-Construction Invariance}{\reset@font\mtcSSfont 54}{subsection.5.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.3.3}Memory, Guardrails, and the Escalation Gate}{\reset@font\mtcSSfont 55}{subsection.5.3.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.4}Intelligence Service Implementation}{\reset@font\mtcSfont 55}{section.5.4}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.5}User Interface Integration}{\reset@font\mtcSfont 56}{section.5.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5.6}Cross-Service Integration Status}{\reset@font\mtcSfont 57}{section.5.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode CONCLUSION}{\reset@font\mtcSfont 57}{section.5.6}}

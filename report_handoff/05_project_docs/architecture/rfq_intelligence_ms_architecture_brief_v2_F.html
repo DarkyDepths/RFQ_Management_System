@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rfq_intelligence_ms — Architecture Brief v2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=Playfair+Display:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --surface-warm: #fefdfb;
+  --ink: #1a1a2e;
+  --ink-2: #2d2d2d;
+  --ink-3: #5a5a5a;
+  --ink-4: #8a8a8a;
+  --ink-5: #b0b0b0;
+  --border: #e5e5e0;
+  --border-s: #d0d0c8;
+  --blue: #2563eb;
+  --blue-s: rgba(37,99,235,0.07);
+  --blue-m: rgba(37,99,235,0.14);
+  --green: #059669;
+  --green-s: rgba(5,150,105,0.07);
+  --green-m: rgba(5,150,105,0.14);
+  --red: #dc2626;
+  --red-s: rgba(220,38,38,0.06);
+  --red-m: rgba(220,38,38,0.13);
+  --amber: #d97706;
+  --amber-s: rgba(217,119,6,0.07);
+  --amber-m: rgba(217,119,6,0.14);
+  --purple: #7c3aed;
+  --purple-s: rgba(124,58,237,0.07);
+  --purple-m: rgba(124,58,237,0.14);
+  --cyan: #0891b2;
+  --cyan-s: rgba(8,145,178,0.07);
+  --teal: #0d9488;
+  --teal-s: rgba(13,148,136,0.07);
+  --radius: 10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink-2);line-height:1.72;font-size:14.5px;-webkit-font-smoothing:antialiased;}
+.page{max-width:940px;margin:0 auto;padding:0 36px;}
+code{font-family:'IBM Plex Mono',monospace;font-size:0.85em;background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:3px;}
+
+/* ===== COVER ===== */
+.cover{background:var(--ink);color:#fff;padding:72px 0 56px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;top:-30%;right:-8%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(217,119,6,0.08) 0%,transparent 70%);}
+.cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--blue),var(--purple));}
+.cover-ey{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:20px;}
+.cover h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4.5vw,42px);font-weight:700;line-height:1.18;margin-bottom:12px;}
+.cover h1 em{font-style:italic;color:rgba(255,255,255,0.4);font-weight:400;}
+.cover-sub{font-size:15.5px;color:rgba(255,255,255,0.42);font-weight:300;margin-bottom:36px;max-width:640px;line-height:1.7;}
+.cover-meta{display:flex;gap:32px;font-size:12px;color:rgba(255,255,255,0.3);flex-wrap:wrap;}
+.cover-meta strong{color:rgba(255,255,255,0.6);font-weight:500;}
+
+/* ===== SECTIONS ===== */
+section{padding:48px 0;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+.sh{margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.sh-n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.sh h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--ink);line-height:1.3;}
+.sh p{color:var(--ink-3);font-size:13.5px;margin-top:4px;}
+h3{font-size:16px;font-weight:600;color:var(--ink);margin:28px 0 14px;}
+h4{font-size:14.5px;font-weight:600;color:var(--ink);margin:20px 0 8px;}
+p+p{margin-top:12px;}
+
+/* ===== CORE STATEMENT ===== */
+.core-stmt{background:var(--surface);border:2px solid var(--amber);border-radius:var(--radius);padding:32px;text-align:center;margin:8px 0 32px;}
+.core-stmt .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:12px;}
+.core-stmt .txt{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--ink);line-height:1.35;margin-bottom:14px;}
+.core-stmt .sub{font-size:14.5px;color:var(--ink-3);max-width:680px;margin:0 auto;line-height:1.7;}
+.core-stmt .sub strong{color:var(--ink);}
+
+/* ===== CARD SYSTEM ===== */
+.card-grid{display:grid;gap:16px;margin:16px 0;}
+.cols-2{grid-template-columns:1fr 1fr;}
+.cols-3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:760px){.cols-2,.cols-3{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.card-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:8px;}
+.card h4{margin:0 0 10px;}
+.card p{font-size:13.5px;color:var(--ink-3);line-height:1.65;}
+.lbl-amber{color:var(--amber);}
+.lbl-blue{color:var(--blue);}
+.lbl-green{color:var(--green);}
+.lbl-red{color:var(--red);}
+.lbl-purple{color:var(--purple);}
+.lbl-cyan{color:var(--cyan);}
+.lbl-teal{color:var(--teal);}
+
+/* ===== MODE CARDS ===== */
+.mode-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin:16px 0;position:relative;overflow:hidden;}
+.mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+.mode-proactive::before{background:var(--amber);}
+.mode-reactive::before{background:var(--blue);}
+.mode-aggregate::before{background:var(--purple);}
+.mode-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;padding:3px 10px;border-radius:4px;margin-bottom:12px;}
+.mode-proactive .mode-tag{background:var(--amber-s);color:var(--amber);}
+.mode-reactive .mode-tag{background:var(--blue-s);color:var(--blue);}
+.mode-aggregate .mode-tag{background:var(--purple-s);color:var(--purple);}
+.mode-card h4{font-size:17px;font-weight:600;margin:0 0 10px;}
+.mode-card p{font-size:13.5px;color:var(--ink-3);line-height:1.65;}
+
+/* ===== PIPELINE CARDS ===== */
+.pipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin:16px 0;position:relative;}
+.pipe-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.pipe-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--amber);line-height:1;}
+.pipe-name{font-size:17px;font-weight:600;color:var(--ink);}
+.pipe-brain{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-left:auto;flex-shrink:0;}
+.brain-det{background:#fef3c7;color:#92400e;}
+.brain-llm{background:#fce7f3;color:#be185d;}
+.brain-algo{background:var(--green-s);color:var(--green);}
+.brain-hybrid{background:var(--blue-s);color:var(--blue);}
+.pipe-card p{font-size:13.5px;color:var(--ink-3);line-height:1.65;}
+.pipe-io{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+@media(max-width:600px){.pipe-io{grid-template-columns:1fr;}}
+.pipe-io-box{font-size:12.5px;line-height:1.6;}
+.pipe-io-box .io-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;}
+
+/* ===== TIMELINE ===== */
+.tl{position:relative;margin:20px 0 20px 20px;padding-left:28px;border-left:2px solid var(--border);}
+.tl-node{position:relative;padding:16px 0;}
+.tl-node::before{content:'';position:absolute;left:-35px;top:20px;width:12px;height:12px;border-radius:50%;border:2px solid var(--amber);background:var(--bg);}
+.tl-node.active::before{background:var(--amber);border-color:var(--amber);}
+.tl-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:4px;}
+.tl-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.tl-body{font-size:13px;color:var(--ink-3);line-height:1.65;}
+.tl-outputs{margin-top:8px;font-size:12.5px;}
+.tl-outputs span{display:inline-block;background:var(--amber-s);color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:2px 8px;border-radius:3px;margin:2px 4px 2px 0;}
+
+/* ===== USER LEVEL CARDS ===== */
+.user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin:12px 0;}
+.user-card .role{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.user-card h4{margin:0 0 8px;}
+.user-card p{font-size:13px;color:var(--ink-3);line-height:1.65;}
+.user-card .pain-ref{font-size:11.5px;color:var(--red);font-weight:500;margin-top:8px;}
+
+/* ===== SCENARIO GRID ===== */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0;}
+@media(max-width:700px){.sc-grid{grid-template-columns:1fr;}}
+.sc-card{border-radius:var(--radius);padding:18px;font-size:12.5px;line-height:1.6;}
+.sc-card .sc-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.sc-best{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.sc-best .sc-lbl{color:var(--green);}
+.sc-expected{background:var(--blue-s);border:1px solid var(--blue-m);color:#1e40af;}
+.sc-expected .sc-lbl{color:var(--blue);}
+.sc-worst{background:var(--red-s);border:1px solid var(--red-m);color:#991b1b;}
+.sc-worst .sc-lbl{color:var(--red);}
+
+/* ===== DECISION BOXES ===== */
+.decision{background:var(--surface-warm);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:0 var(--radius) var(--radius) 0;padding:18px 22px;margin:14px 0;font-size:13.5px;line-height:1.65;}
+.decision strong{color:var(--ink);}
+.decision-neg{border-left-color:var(--red);}
+
+/* ===== WORKBOOK ANATOMY ===== */
+.wb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;}
+@media(max-width:640px){.wb-grid{grid-template-columns:1fr;}}
+.wb-sheet{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:12.5px;}
+.wb-sheet .wb-name{font-weight:600;color:var(--ink);margin-bottom:3px;}
+.wb-sheet .wb-val{color:var(--ink-3);line-height:1.5;}
+.wb-sheet .wb-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.5px;padding:1px 6px;border-radius:3px;margin-top:4px;}
+.tag-det{background:#fef3c7;color:#92400e;}
+.tag-llm{background:#fce7f3;color:#be185d;}
+.tag-skip{background:#f3f4f6;color:#6b7280;}
+
+/* ===== TABLES ===== */
+.t{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;}
+.t th{background:#f8f8f6;font-weight:600;text-align:left;padding:10px 14px;border-bottom:2px solid var(--border-s);font-size:12px;}
+.t td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+.t tr:last-child td{border-bottom:none;}
+.t .dim{color:var(--ink-4);font-size:12px;}
+
+/* ===== CALLOUTS ===== */
+.callout{border-radius:var(--radius);padding:20px 24px;margin:16px 0;font-size:13.5px;line-height:1.65;}
+.callout-amber{background:var(--amber-s);border:1px solid var(--amber-m);}
+.callout-blue{background:var(--blue-s);border:1px solid var(--blue-m);}
+.callout-green{background:var(--green-s);border:1px solid var(--green-m);}
+.callout-red{background:var(--red-s);border:1px solid var(--red-m);}
+.callout strong{color:var(--ink);}
+
+/* ===== NOT-OWN LIST ===== */
+.not-own{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+@media(max-width:640px){.not-own{grid-template-columns:1fr;}}
+.not-own-item{font-size:12.5px;color:var(--red);background:var(--red-s);border:1px solid var(--red-m);border-radius:6px;padding:8px 14px;}
+.not-own-item::before{content:'✕ ';font-weight:700;}
+
+/* ===== FOOTER ===== */
+.doc-footer{padding:32px 0;text-align:center;color:var(--ink-5);font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- COVER -->
+<!-- ============================================ -->
+<div class="cover">
+  <div class="page">
+    <div class="cover-ey">RFQMGMT Platform · Architecture Brief</div>
+    <h1>rfq_intelligence_ms<br/><em>The Shared Intelligence Engine</em></h1>
+    <div class="cover-sub">From chatbot-centric to intelligence-first. How the platform's analytical brain works — when it activates, what it produces, who it serves, and why it's the most valuable microservice in the system.</div>
+    <div class="cover-meta">
+      <span><strong>Version</strong> 2.0 — Refined</span>
+      <span><strong>Status</strong> High-Level Architecture</span>
+      <span><strong>Scope</strong> Intelligence + Chatbot services</span>
+      <span><strong>Context</strong> GHI / Albassam Group</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 01 — THE CORE SHIFT -->
+<!-- ============================================ -->
+<div class="page">
+  <section id="s1">
+    <div class="sh">
+      <div class="sh-n">Section 01</div>
+      <h2>The Core Shift</h2>
+      <p>From chatbot-centric to intelligence-first architecture.</p>
+    </div>
+
+    <div class="core-stmt">
+      <div class="lbl">Architectural Principle</div>
+      <div class="txt">The chatbot is the interface to intelligence,<br/>not the owner of intelligence.</div>
+      <div class="sub">In the old model, intelligence lived inside chatbot tools — the LLM decided what to call and how to reason. In the new model, intelligence is a <strong>shared platform capability</strong> that serves multiple consumers — the UI, the chatbot, dashboards, workflow-driven alerts, and intelligence's own learning loop. The chatbot becomes a thin conversational layer that navigates, explains, and extends intelligence it does not own.</div>
+    </div>
+
+    <div class="card-grid cols-3">
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">Operational Engine</div>
+        <h4><code>rfq_manager_ms</code></h4>
+        <p>Owns the RFQ lifecycle — workflows, stages, business transactions, operational state. Owns "today." Already built and working (Phases 1–4).</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Intelligence Engine</div>
+        <h4><code>rfq_intelligence_ms</code></h4>
+        <p>Owns parsing, historical matching, cost analysis, supplier intelligence, KPI analytics, and the structured historical database. Owns "memory and insight." The primary value driver for GHI.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--cyan);">
+        <div class="card-lbl lbl-cyan">Conversational Layer</div>
+        <h4><code>rfq_chatbot_ms</code></h4>
+        <p>Owns conversation sessions, intent detection, context resolution, response wording, and UX. Consumes intelligence — never produces it. Intentionally thin.</p>
+      </div>
+    </div>
+
+    <h3>Why This Separation Is Not Optional</h3>
+    <p>Intelligence in the GHI platform has <strong>multiple distinct consumers</strong>, not just the chatbot. In the old BACAB pattern, the chatbot was the only entry point — so embedding intelligence inside chatbot tools was acceptable. In GHI, that is no longer true. Locking intelligence inside chatbot tools would force every other consumer to route through a fake conversation — a structurally wrong pattern.</p>
+
+    <h4>Consumer Layers — Ordered by V1 Concreteness</h4>
+    <div class="card-grid cols-2">
+      <div class="card" style="border-left:3px solid var(--green);">
+        <div class="card-lbl lbl-green">V1 Concrete — Built and Integrated</div>
+        <p><strong>UI / RFQ overview screens:</strong> display the intelligence briefing panel, anomaly flags, and reference data directly in the interface.<br/>
+        <strong>Chatbot (<code>rfq_chatbot_ms</code>):</strong> navigates, explains, and extends intelligence conversationally.<br/>
+        <strong>BI / Dashboard views:</strong> consume aggregate analytics — KPIs, pipeline funnel, win rates, margin trends.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">V1 Present but Lighter</div>
+        <p><strong>Event-driven workflow consumers:</strong> intelligence produces signals (anomaly alerts, compliance flags, risk scores) that workflow logic inside <code>rfq_manager_ms</code> can consume for warnings and alerts. This is not the stage-advancement logic — it is intelligence enriching the context around the lifecycle.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--ink-4);">
+        <div class="card-lbl" style="color:var(--ink-4);">Future / Embedded for Now</div>
+        <p><strong>Communication capabilities:</strong> currently owned by <code>rfq_manager_ms</code> (reminders, follow-ups). May consume intelligence context — client history, supplier signals — for smarter drafting and escalation. Remains internal to manager for now; may become a dedicated service later.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--purple);">
+        <div class="card-lbl lbl-purple">Self-Enrichment — Always Active</div>
+        <p><strong>Intelligence's own historical store:</strong> every parsed RFQ, every workbook extraction, every recorded outcome enriches the analytical database. Intelligence is simultaneously a producer and a consumer of its own outputs. This creates a <strong>continuous learning loop without retraining</strong> — the platform gets smarter by existing.</p>
+      </div>
+    </div>
+
+    <p>Additionally, much of the intelligence workload is <strong>system-triggered, not user-triggered</strong>. Parsing new RFQ documents, enriching historical memory, comparing live estimates against historical patterns, generating benchmarking signals — none of these are chatbot conversations. They are background processes that produce persistent intelligence artifacts consumed later by humans and systems alike.</p>
+    <p style="font-size:12.5px;color:var(--ink-4);">These are the main initial consumers, not necessarily the final exhaustive list. The architecture is designed so that new consumers can be added without modifying the intelligence engine — they simply call its APIs or subscribe to its events.</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 02 — THREE OPERATING MODES -->
+  <!-- ============================================ -->
+  <section id="s2">
+    <div class="sh">
+      <div class="sh-n">Section 02</div>
+      <h2>Three Operating Modes</h2>
+      <p>Intelligence is not a single behavior. It operates in three fundamentally different modes with different triggers, outputs, and consumers.</p>
+    </div>
+
+    <div class="mode-card mode-proactive">
+      <div class="mode-tag">Mode 1 — Proactive</div>
+      <h4>Activates automatically on system events, without anyone asking.</h4>
+      <p><strong>Triggers:</strong> New RFQ registered with documents attached. Estimation workbook uploaded or updated. RFQ outcome recorded (won/lost/declined). Stage transitions in the lifecycle.</p>
+      <p><strong>Outputs:</strong> Intelligence Briefing dossier. Workbook validation and anomaly reports. Historical database enrichment. Feedback loop records for learning.</p>
+      <p><strong>Consumers:</strong> UI (briefing panel on RFQ overview), workflow engine (alert triggers), historical database (self-enrichment).</p>
+      <p style="margin-top:10px;font-size:12.5px;color:var(--amber);font-weight:500;">This is the flagship mode. The "wow" moment for GHI: open a new RFQ and the system has already done homework for you.</p>
+      <p style="font-size:12.5px;color:var(--ink-3);margin-top:6px;">Mode 1 outputs are <strong>persistent artifacts</strong> — briefings, validation reports, enrichment records — not temporary background calculations. Each artifact has a status, a timestamp, and a version. It can be queried by any consumer, re-generated when new data arrives, and tracked over time. That is what separates this from "the system ran a background task."</p>
+    </div>
+
+    <div class="mode-card mode-reactive">
+      <div class="mode-tag">Mode 2 — Reactive</div>
+      <h4>Responds to explicit queries from consumers.</h4>
+      <p><strong>Triggers:</strong> Chatbot passes a user question. Dashboard requests KPI computation. Other services call intelligence APIs for specific analysis.</p>
+      <p><strong>Outputs:</strong> Structured JSON responses — similar projects, cost ranges, supplier profiles, analytics results. Always structured data, never raw conversation text.</p>
+      <p><strong>Consumers:</strong> <code>rfq_chatbot_ms</code> (primary), BI dashboards, and any service that needs structured intelligence data on demand.</p>
+    </div>
+
+    <div class="mode-card mode-aggregate">
+      <div class="mode-tag">Mode 3 — Aggregate</div>
+      <h4>Serves portfolio-level analytics across many RFQs over time.</h4>
+      <p><strong>Triggers:</strong> Dashboard loads. Scheduled KPI refresh. Leadership requests performance review.</p>
+      <p><strong>Outputs:</strong> Win rate trends by client/type/period. Margin drift analysis. Department bottleneck patterns. Pipeline risk distribution. Estimation accuracy tracking. Client profitability segmentation. Capacity utilization.</p>
+      <p><strong>Consumers:</strong> Executive BI dashboards, C-suite reports, department performance views.</p>
+      <p style="margin-top:10px;font-size:12.5px;color:var(--purple);font-weight:500;">This mode is fundamentally different from per-RFQ analysis — it works across the entire portfolio. The data access patterns, query shapes, and consumers are distinct. Housed in the same service, but a separate capability block internally.</p>
+      <p style="font-size:12.5px;color:var(--ink-3);margin-top:6px;">Mode 3 directly addresses <strong>Pillar 3 — Executive Intelligence & BI</strong> from the GHI audit, and pain point PP-03 (zero executive visibility). Today, Albassam leadership has no real-time view of their RFQ pipeline, win rates, or margin performance. Mode 3 is how the platform closes that gap — the same intelligence engine that helps estimators also powers the dashboards that give C-suite full visibility.</p>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 03 — INTELLIGENCE LIFECYCLE TIMELINE -->
+  <!-- ============================================ -->
+  <section id="s3">
+    <div class="sh">
+      <div class="sh-n">Section 03</div>
+      <h2>Intelligence Lifecycle Timeline</h2>
+      <p>Intelligence activates at multiple points throughout the RFQ lifecycle — not as a single event, but as a continuous companion from arrival to outcome.</p>
+    </div>
+
+    <div class="tl">
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 1 — RFQ Arrival</div>
+        <div class="tl-title">MR Package Received + RFQ Registered</div>
+        <div class="tl-body">Client sends email with ZIP. <code>rfq_manager_ms</code> registers the RFQ and publishes <code>rfq.created</code> event. Documents are stored in Azure Blob Storage. Intelligence activates automatically.</div>
+        <div class="tl-outputs"><span>Intelligence Briefing</span><span>Similar Past Projects</span><span>Client Win/Loss History</span><span>Preliminary Cost Envelope</span><span>Compliance Flags</span><span>Supplier Signals</span></div>
+      </div>
+
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 2 — Feasibility Decision</div>
+        <div class="tl-title">Manager Makes Go/No-Go with Data Context</div>
+        <div class="tl-body">Instead of a 10–20 min gut check with no record, the manager has the briefing in front of them. Their feasibility decision is captured structurally — reasoning, risk factors, go/no-go — feeding future analytical patterns and, as the dataset grows, later predictive capabilities.</div>
+        <div class="tl-outputs"><span>Feasibility Capture → Historical DB</span><span>Pattern Learning (PP-07)</span></div>
+      </div>
+
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 3 — During Estimation</div>
+        <div class="tl-title">Contextual Benchmarking — Not Live Guidance</div>
+        <div class="tl-body">While the estimator works on the 36-sheet workbook, the system does not attempt to guide, coach, or prescribe values. The workbook is expertise-driven — the platform respects that. Instead, intelligence makes <strong>historical reference context available on demand</strong>: benchmarks from similar past projects, known cost drivers for comparable profiles, and typical ranges for key cost lines. This is mostly <strong>pull-based</strong> — the estimator consults the briefing, checks reference data on the RFQ overview, or asks the chatbot something specific when they want to. The system informs; it does not interrupt.</div>
+        <div class="tl-outputs"><span>Historical Reference Ranges</span><span>Comparable Project Context</span><span>Chatbot Q&A on Demand</span></div>
+      </div>
+
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 4 — Workbook Uploaded</div>
+        <div class="tl-title">Post-Upload Validation — "This Deserves Review"</div>
+        <div class="tl-body">When the workbook is uploaded or saved, intelligence parses it deterministically and compares values against historical patterns. It does not judge the estimator's work or claim errors. Its posture is always: <strong>"this deserves review."</strong> Three safe anomaly families: (1) structural/completeness checks — missing cost lines, broken totals, unexpected gaps; (2) benchmark/outlier checks — cost-per-ton or cost-line percentages far outside the range for similar projects; (3) briefing-vs-actual comparison — the preliminary envelope predicted X, the workbook produced Y, the gap is worth examining. Each flag is explainable and traceable to a historical reference set.</div>
+        <div class="tl-outputs"><span>Structural Validation</span><span>Benchmark Outlier Flags</span><span>Briefing vs. Actual Gap</span><span>Review Recommendations</span></div>
+      </div>
+
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 5 — Bid Decision</div>
+        <div class="tl-title">Margin Analysis Against Win Probability</div>
+        <div class="tl-body">Before finalizing the bid, intelligence provides margin analysis: "at 8% margin, similar projects had a 65% win rate with this client; at 12%, win rate drops to 40%." Data-driven bid strategy, not intuition.</div>
+        <div class="tl-outputs"><span>Win Probability vs. Margin</span><span>Client Pattern Analysis</span><span>Bid Strategy Signal (PP-11)</span></div>
+      </div>
+
+      <div class="tl-node active">
+        <div class="tl-label">Trigger 6 — Outcome Recorded</div>
+        <div class="tl-title">Won / Lost / Declined → Feedback Loop</div>
+        <div class="tl-body">The RFQ outcome feeds back into the historical database. The system now knows: for this type of project, with this client, at this margin, the result was X. Every closed RFQ makes future intelligence more accurate. This is the learning loop.</div>
+        <div class="tl-outputs"><span>Historical DB Enrichment</span><span>Model Refinement</span><span>Aggregate KPI Update</span></div>
+      </div>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Key insight:</strong> Intelligence is not a feature you "use" — it is a companion that wakes up at each critical moment of the lifecycle, does work proactively, and gets smarter with every RFQ that passes through the system. Each trigger adds data. Each outcome closes a feedback loop. The platform learns by existing.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 04 — THE PROACTIVE INTELLIGENCE BRIEFING -->
+  <!-- ============================================ -->
+  <section id="s4">
+    <div class="sh">
+      <div class="sh-n">Section 04</div>
+      <h2>The Intelligence Briefing</h2>
+      <p>The flagship proactive output — a structured dossier generated automatically the moment an RFQ enters the system.</p>
+    </div>
+
+    <p>When a new RFQ is registered and documents are attached, <code>rfq_intelligence_ms</code> automatically produces a <strong>briefing</strong> — a structured analytical dossier that is ready before the first human opens the RFQ. This is the platform's primary "AI moment" for GHI. No one asks for it. It's just there.</p>
+
+    <h3>Briefing Contents</h3>
+    <div class="card-grid cols-2">
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Section A — Document Understanding</div>
+        <p>Extracted from the MR package: vessel types, quantities, dimensions, material grades, applicable standards (ASME, TEMA, FATI, SAMSS, SAES, SAEP), mandated vendors (from RVL folder), scope of supply, QA/QC requirements.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">Section B — Similar Past Projects</div>
+        <p>Top N historical RFQs matching the extracted characteristics. Ranked by similarity score. Each match shows: scope, tonnage, material, cost-per-ton, margin, outcome (won/lost), delivery timeline.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Section C — Preliminary Cost Envelope</div>
+        <p>3-scenario analysis (best/expected/worst) based on similar projects. Not a BOQ — a ballpark range. Shows cost-per-ton benchmarks, dominant cost drivers, and confidence level based on reference count.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--purple);">
+        <div class="card-lbl lbl-purple">Section D — Client Intelligence</div>
+        <p>History with this client: past win rate, average margins, typical turnaround, negotiation patterns, payment behavior. If new client, the system says so explicitly.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--red);">
+        <div class="card-lbl lbl-red">Section E — Compliance & Risk Flags</div>
+        <p>Auto-detected from folder structure and document content: required standards, mandated supplier constraints, PWHT requirements, U-Stamp / NB registration needs, and their historical cost implications.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--teal);">
+        <div class="card-lbl lbl-teal">Section F — Supplier Signals</div>
+        <p>For key materials identified: known supplier options, recent price trends, lead time history, reliability scores. Mandated vendors (from RVL) highlighted with availability context.</p>
+      </div>
+    </div>
+
+    <h3>What Makes Two RFQs Similar — The Core Challenge</h3>
+    <p>Similarity is the foundation of the intelligence engine. If the similarity logic is weak, then historical matching becomes weak, cost estimation becomes weak, and anomaly detection loses its reference baseline. This section defines what similarity means in concrete, domain-grounded terms — not as a vague AI concept, but as a <strong>weighted, explainable, layered comparison model</strong>.</p>
+    <p>Similarity is not one magical score. It is built from three distinct layers, and different consumers weight these layers differently depending on what they need.</p>
+
+    <div class="card-grid cols-3">
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Layer 1 — Technical / Product</div>
+        <p>Equipment or vessel type (horizontal, vertical, heat exchanger…). Material grade or family (SA 516 Gr. 70N, stainless, duplex…). Weight/tonnage range. Dimension range (ID × length). RT type (full/spot). PWHT (yes/no). U-Stamp / NB requirements. Number of items. Complexity signals from standards or QA/QC requirements.</p>
+        <p style="font-size:12px;color:var(--ink-4);margin-top:6px;">This layer matters most for <strong>cost estimation</strong> — what you're building physically drives what it costs.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">Layer 2 — Commercial / Execution</div>
+        <p>Client name and client segment. Delivery duration band. Payment and financial structure. Supplier constraints and RVL mandates. Project scale and scope boundaries.</p>
+        <p style="font-size:12px;color:var(--ink-4);margin-top:6px;">This layer matters most for <strong>bid strategy</strong> — who you're bidding for and under what commercial conditions shapes win probability.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Layer 3 — Cost Behavior</div>
+        <p>Cost-per-ton band. Major cost-line proportions (material %, labour %, NDT %, overheads %). Margin band. Schedule intensity. Financial charge structure.</p>
+        <p style="font-size:12px;color:var(--ink-4);margin-top:6px;">This layer matters most for <strong>anomaly detection</strong> — it defines what "normal" looks like for comparable projects.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Explainability requirement:</strong> When the system says "these 5 projects are similar," it must also say <em>why</em> — "matched on: horizontal vessel, SA 516 material, 8–15 ton range, full RT, same client." A bare "85% similar" score with no breakdown is not trustworthy and will not be used by GHI estimators. Every similarity result must be traceable to specific matching features.
+    </div>
+
+    <div class="decision">
+      <strong>Data sources for similarity features:</strong> Layer 1 and partial Layer 2 features can be extracted from the MR package at intake (vessel type, materials, standards, RVL, client). Full Layer 2 and all Layer 3 features require the estimation workbook. This means the briefing at arrival uses a <strong>partial similarity model</strong> (Layers 1 + partial 2), while post-workbook intelligence can use the <strong>full similarity model</strong> (all three layers). The system should be transparent about which layers were used in each comparison.
+    </div>
+
+    <h3>Discovering Similarity Weights — From Data, Not From Gut Feeling</h3>
+    <p>A critical insight from the GHI context: <strong>the estimators themselves do not consciously compare projects.</strong> They treat each RFQ as a new exercise, rarely referencing past work. That means asking them "what makes two projects similar?" will not produce reliable weights — this knowledge does not exist in anyone's head. It has never been extracted because GHI has never analyzed their historical workbooks as a dataset.</p>
+    <p>This is not a limitation. <strong>This is the platform's unique value proposition.</strong> The intelligence engine does not encode existing expertise about similarity — it <em>creates new knowledge</em> that GHI has never had. The organization is sitting on 100+ completed workbooks, each one a rich structured data point, and nobody has ever looked across them for patterns.</p>
+
+    <div class="callout callout-amber">
+      <strong>What this means in practice:</strong> Similarity weights are not hand-tuned by interviewing estimators. They are <strong>discovered from historical data</strong> through statistical analysis and, as the dataset grows, through machine learning. The matching engine at query time stays deterministic and explainable. But the calibration behind it is data-driven — and that calibration is itself one of the platform's most valuable intelligence outputs.
+    </div>
+
+    <h4>Phase-by-Phase: How Similarity Weights Are Built</h4>
+    <div class="card-grid cols-3">
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Phase 1 — Expert-Seeded Defaults</div>
+        <h4>Before enough data exists</h4>
+        <p>Start with reasonable initial weights based on domain common sense: vessel type and material grade are likely the strongest drivers, weight/tonnage range is important, compliance flags (PWHT, RT, U-Stamp) add meaningful cost, client has some influence.</p>
+        <p>These are <strong>starting assumptions, not validated truths</strong>. They are enough to produce useful (if imperfect) similarity results from the first day the system has historical data. They will be replaced as soon as statistical analysis becomes possible.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--ink-4);"><strong>What to tell the bosses:</strong> "We start with sensible defaults so the system works immediately. But we don't trust them — we use data to find the real weights."</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Phase 2 — Statistical Feature Importance</div>
+        <h4>Once 50+ workbooks are parsed</h4>
+        <p>With 50+ structured historical records, each row is a past RFQ and each column is a feature: vessel type, material, tonnage, item count, RT, PWHT, standards count, client. The target variables are cost-per-ton, margin, total cost, outcome.</p>
+        <p><strong>Concrete techniques:</strong></p>
+        <p>• <strong>Correlation analysis</strong> — which features correlate most with cost-per-ton? This answers: "does material grade matter more than vessel type?"</p>
+        <p>• <strong>Regression-based feature importance</strong> — fit a basic regression model predicting cost-per-ton from features. The coefficients show relative importance. With 50–100 data points and 15–20 features, this is statistically sound.</p>
+        <p>• <strong>Variance analysis</strong> — how much of the cost variance is explained by each feature group? "Vessel type + material explains 60% of cost variance; PWHT adds 12%."</p>
+        <p>Those percentages <strong>become the similarity weights</strong> — grounded in data, not gut feeling. The matching engine is updated to use data-derived weights instead of the Phase 1 defaults.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--ink-4);"><strong>What to tell the bosses:</strong> "We analyzed your past 50+ projects and discovered that material grade and vessel type explain most of the cost variation. Now the system knows what to compare — and GHI knows something about their own business that they never knew before."</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple);">
+        <div class="card-lbl lbl-purple">Phase 3 — Learned Similarity & Clustering</div>
+        <h4>Once 100+ data points + outcomes exist</h4>
+        <p>With a larger dataset, more sophisticated approaches become viable:</p>
+        <p>• <strong>Unsupervised clustering</strong> (k-means, hierarchical, DBSCAN) — discover natural project archetypes. Maybe 4–5 project families emerge that GHI doesn't explicitly name but that behave consistently in cost structure. This is genuinely new business intelligence.</p>
+        <p>• <strong>Learned distance metric</strong> — take pairs of historical projects, compute actual cost similarity, and train a lightweight model to predict which features best explain cost closeness. This is metric learning — the model learns "what makes two projects cost-similar" directly from outcomes.</p>
+        <p>• <strong>Feature interaction discovery</strong> — maybe material grade alone doesn't drive cost, but material × vessel type × PWHT together create distinct cost bands. Statistical interaction terms or decision tree models can surface these patterns.</p>
+        <p>The matching engine still stays <strong>explainable at query time</strong> — every result says which features matched and why. But the model behind the weights is now learned, not assumed.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--ink-4);"><strong>What to tell the bosses:</strong> "The system now discovers hidden project families and cost patterns from your data. It knows that Aramco horizontal vessels in SA 516 with full RT cluster tightly and have consistent cost behavior — something no estimator explicitly tracks."</p>
+      </div>
+    </div>
+
+    <div class="decision">
+      <strong>Resolved: OQ-04 is no longer an open question.</strong> The approach is clear: start with expert-seeded defaults (Phase 1), replace them with statistically derived weights as data grows (Phase 2), and evolve toward learned similarity models when the dataset is large enough (Phase 3). Each phase produces more accurate matching — and the transition is transparent and auditable. Initial expert defaults can optionally be sense-checked with GHI staff, but they are starting points to be overridden by data, not permanent truths.
+    </div>
+
+    <h3>Briefing as a First-Class Data Object</h3>
+    <p>The briefing is not scattered results — it is a <strong>well-defined entity</strong> in the intelligence database, tied to an RFQ ID. It has a status (<code>pending</code>, <code>partial</code>, <code>complete</code>, <code>failed</code>), generation timestamps, confidence levels per section, and a version number (briefings can be re-generated as more data arrives).</p>
+    <p>This makes it queryable by any consumer: the UI can display it as a panel, the chatbot can navigate it conversationally, dashboards can aggregate briefing quality metrics, and workflows can trigger actions based on specific briefing flags.</p>
+
+    <div class="decision">
+      <strong>Design decision:</strong> The briefing is generated asynchronously after the <code>rfq.created</code> event. It may take seconds to minutes depending on document complexity and LLM processing. The UI shows a "briefing in progress" indicator and renders sections progressively as they complete — document understanding first (fastest), then historical matching, then cost analysis (which depends on the first two).
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 05 — FOUR CAPABILITY PIPELINES -->
+  <!-- ============================================ -->
+  <section id="s5">
+    <div class="sh">
+      <div class="sh-n">Section 05</div>
+      <h2>Four Capability Pipelines</h2>
+      <p>Inside <code>rfq_intelligence_ms</code> — not autonomous agents, but four specialized processing pipelines with explicit brain types. Technically simple in phase 1. Extensible later.</p>
+    </div>
+
+    <div class="callout callout-blue">
+      <strong>Naming shift:</strong> Business-wise, "agents" is still a clear explanation for stakeholders. Technically, phase 1 treats them as <strong>four deterministic capability pipelines</strong> inside one service — not four autonomous mini-agents talking to each other. This avoids over-engineered internal orchestration while keeping the external narrative strong.
+    </div>
+
+    <!-- PIPELINE 1 -->
+    <div class="pipe-card">
+      <div class="pipe-header">
+        <div class="pipe-num">P1</div>
+        <div class="pipe-name">RFQ Parsing & Document Understanding</div>
+      </div>
+      <p>Normalizes varied RFQ inputs into a common structured metadata schema. But this is not a single monolithic LLM call — it is a <strong>two-layer parsing pipeline</strong> that uses the right tool for each part of the job.</p>
+
+      <h4>Layer 1 — Deterministic Structured Extraction</h4>
+      <p>For inputs with predictable structure — and there are more of these than the previous brief assumed:</p>
+      <div class="wb-grid">
+        <div class="wb-sheet">
+          <div class="wb-name">Estimation Workbook (.xls)</div>
+          <div class="wb-val">Same 36-sheet template for every RFQ. Cell positions are fixed. General sheet row 13+ = item table. Bid Summary = full cost breakdown. Top Sheet = revenue &amp; cash flow. Parse with deterministic Python — no LLM needed.</div>
+          <div class="wb-tag tag-det">Deterministic</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">MR Folder Tree Structure</div>
+          <div class="wb-val">Aramco MR packages follow numbered folder convention (00-Approval through 15-Notes to Vendor). Folder names = classification metadata. Folder 03 = RVL. Folder 06 = Standards. Read tree, classify documents by position.</div>
+          <div class="wb-tag tag-det">Deterministic</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">BOM / Subcomponents Excel</div>
+          <div class="wb-val">Found in MR folder 02. Structured spreadsheet with bill of materials. Parse columns for quantities, specs, material grades.</div>
+          <div class="wb-tag tag-det">Deterministic</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">Standards Filenames</div>
+          <div class="wb-val">Folder 06 contains PDFs named after their standard codes (SAMSS-010, SAES-A-004, SAEP-302). Extract standard identifiers directly from filenames — no need to open the PDFs for initial flagging.</div>
+          <div class="wb-tag tag-det">Deterministic</div>
+        </div>
+      </div>
+
+      <h4>Layer 2 — LLM-Powered Unstructured Extraction</h4>
+      <p>For genuinely unstructured content that varies across clients and projects:</p>
+      <div class="wb-grid">
+        <div class="wb-sheet">
+          <div class="wb-name">Specs & Datasheets (Folder 04)</div>
+          <div class="wb-val">PDF datasheets with vessel specifications — dimensions, pressures, temperatures, material callouts. Varies by client and project. Requires LLM to interpret.</div>
+          <div class="wb-tag tag-llm">LLM Required</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">Scope of Supply (Folder 02)</div>
+          <div class="wb-val">Free-text description of project scope. Natural language with domain-specific terms. LLM extracts scope boundaries, exclusions, special conditions.</div>
+          <div class="wb-tag tag-llm">LLM Required</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">QA/QC Requirements (Folder 10)</div>
+          <div class="wb-val">Quality and compliance requirements in prose. LLM identifies specific testing, inspection, and certification needs.</div>
+          <div class="wb-tag tag-llm">LLM Required</div>
+        </div>
+        <div class="wb-sheet">
+          <div class="wb-name">Project Drawings (Folder 05)</div>
+          <div class="wb-val">Engineering drawings in PDF. Future capability: extract dimensions, nozzle configurations, material callouts from drawing annotations. Highest LLM complexity.</div>
+          <div class="wb-tag tag-llm">LLM · Future Phase</div>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <strong>Why this matters for the thesis:</strong> The two-layer design shows engineering judgment — knowing when AI adds value and when deterministic code is better. This is more impressive academically than "throw everything at the LLM." It also keeps Azure OpenAI costs controlled and results reliable for the structured portions.
+      </div>
+
+      <div class="pipe-io">
+        <div class="pipe-io-box">
+          <div class="io-lbl">Inputs</div>
+          MR package (ZIP folder tree), estimation workbook (.xls), BOM spreadsheets, PDF specs and datasheets, scope documents.
+        </div>
+        <div class="pipe-io-box">
+          <div class="io-lbl">Output</div>
+          Structured JSON metadata per RFQ: vessel types, materials, dimensions, weight, standards, mandated vendors, scope summary, compliance requirements. Same schema regardless of source client.
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE 2 -->
+    <div class="pipe-card">
+      <div class="pipe-header">
+        <div class="pipe-num">P2</div>
+        <div class="pipe-name">Historical Matching</div>
+        <div class="pipe-brain brain-algo">Algorithmic</div>
+      </div>
+      <p>Takes structured metadata from P1 and searches the historical database for similar past projects. Uses <strong>weighted field matching</strong> — not vector embeddings of raw documents. This is a deliberate design choice: with ~100 historical projects and clearly structured metadata fields, weighted scoring is faster, cheaper, deterministic, and more explainable than embedding-based similarity.</p>
+      <p>Partial similarity is expected and valuable. In custom manufacturing, no two projects are identical. The system ranks by degree of match across multiple dimensions: vessel type, material grade, tonnage range, standards required, client, RT type, PWHT requirement.</p>
+
+      <div class="decision">
+        <strong>Similarity model:</strong> The three-layer similarity framework (technical/product, commercial/execution, cost behavior) is defined in detail in Section 04. P2 applies this model using weighted field matching — every result includes an explanation of which features matched and why. Weights start as expert-seeded defaults (Phase 1), are replaced by statistically derived values as historical data grows (Phase 2), and evolve toward learned similarity models in Phase 3. See Section 04 for the full discovery approach.
+      </div>
+
+      <div class="pipe-io">
+        <div class="pipe-io-box">
+          <div class="io-lbl">Input</div>
+          Structured JSON metadata from P1 (current RFQ characteristics).
+        </div>
+        <div class="pipe-io-box">
+          <div class="io-lbl">Output</div>
+          Top N similar historical RFQs with similarity scores, full details: scope, tonnage, cost-per-ton, margin, outcome, delivery timeline, key differences.
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE 3 -->
+    <div class="pipe-card">
+      <div class="pipe-header">
+        <div class="pipe-num">P3</div>
+        <div class="pipe-name">Cost Range & Scenario Analysis</div>
+        <div class="pipe-brain brain-hybrid">Hybrid</div>
+      </div>
+      <p>Takes similar projects from P2 and produces a <strong>three-scenario preliminary cost analysis</strong>. The arithmetic is always algorithmic — LLMs hallucinate numbers. An optional LLM layer adds contextual caveats by reasoning over differences between the current RFQ and historical matches.</p>
+
+      <div class="sc-grid">
+        <div class="sc-card sc-best">
+          <div class="sc-lbl">Best Case (Optimistic)</div>
+          Lower quartile (25th percentile) of similar projects. Favorable assumptions: materials at current low prices, full internal fabrication, no design revisions.
+        </div>
+        <div class="sc-card sc-expected">
+          <div class="sc-lbl">Expected Case (Most Likely)</div>
+          Median of similar projects, adjusted for known current conditions. Standard compliance costs, typical lead times. Most statistically reliable.
+        </div>
+        <div class="sc-card sc-worst">
+          <div class="sc-lbl">Worst Case (Pessimistic)</div>
+          Upper quartile (75th percentile) + risk multipliers: subcontractor involvement, mandated premium suppliers, additional standards, market volatility.
+        </div>
+      </div>
+
+      <p>The <strong>spread</strong> between best and worst is itself an insight. Narrow spread = high confidence, well-understood project type. Wide spread = high risk, proceed with caution. The system always shows reference count for transparency.</p>
+
+      <div class="callout callout-amber">
+        <strong>Confidence indicator:</strong> When <code>ref_count</code> &lt; 5, the output displays a prominent "Low Confidence — limited historical data" warning. This manages expectations and prevents overreliance on thin data. As the database grows, confidence naturally increases.
+      </div>
+
+      <div class="pipe-io">
+        <div class="pipe-io-box">
+          <div class="io-lbl">Inputs</div>
+          Similar projects from P2. Current market conditions (if available). RFQ-specific factors (PWHT, U-Stamp, mandated vendors).
+        </div>
+        <div class="pipe-io-box">
+          <div class="io-lbl">Output</div>
+          3-scenario cost range (best/expected/worst) with cost-per-ton benchmarks, dominant cost drivers, confidence level, reference count, contextual caveats.
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE 4 -->
+    <div class="pipe-card">
+      <div class="pipe-header">
+        <div class="pipe-num">P4</div>
+        <div class="pipe-name">Supplier Intelligence</div>
+        <div class="pipe-brain brain-hybrid">Hybrid</div>
+      </div>
+      <p>Maintains and queries supplier data. Simple queries (average price, lead time history, reliability score) are pure database aggregation — no LLM needed. Complex reasoning ("given this RFQ's material requirements, which suppliers should we consider and what risks exist?") uses LLM over structured supplier data.</p>
+      <p>For the proactive briefing: if the MR package includes an RVL (folder 03), the pipeline immediately identifies mandated vendors and surfaces their historical performance. If key materials are identified by P1, the pipeline checks known supplier pricing and availability.</p>
+
+      <div class="pipe-io">
+        <div class="pipe-io-box">
+          <div class="io-lbl">Inputs</div>
+          Material requirements from P1. Mandated vendor lists (RVL). Supplier history database. Market signals.
+        </div>
+        <div class="pipe-io-box">
+          <div class="io-lbl">Output</div>
+          Supplier profiles, price trends, lead time history, reliability scores, risk flags, availability signals, recommendations.
+        </div>
+      </div>
+    </div>
+
+    <h3>Pipeline Brain Type Summary</h3>
+    <table class="t">
+      <thead>
+        <tr><th>Pipeline</th><th>Brain Type</th><th>Why This Choice</th><th>LLM Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>P1 — RFQ Parsing</td>
+          <td><span class="pipe-brain brain-det" style="display:inline-block;">Deterministic</span> + <span class="pipe-brain brain-llm" style="display:inline-block;">LLM</span></td>
+          <td>Workbook &amp; folder structure are fixed → deterministic. Specs, scope, drawings are unstructured → LLM.</td>
+          <td>Medium (LLM only for unstructured docs)</td>
+        </tr>
+        <tr>
+          <td>P2 — Historical Matching</td>
+          <td><span class="pipe-brain brain-algo" style="display:inline-block;">Algorithmic</span></td>
+          <td>Input is structured JSON. Weighted scoring is faster, cheaper, deterministic, and more explainable.</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>P3 — Cost Range</td>
+          <td><span class="pipe-brain brain-hybrid" style="display:inline-block;">Hybrid</span></td>
+          <td>Math must be algorithmic (LLMs hallucinate numbers). Optional LLM for contextual caveats only.</td>
+          <td>Low (optional)</td>
+        </tr>
+        <tr>
+          <td>P4 — Supplier Intel</td>
+          <td><span class="pipe-brain brain-hybrid" style="display:inline-block;">Hybrid</span></td>
+          <td>Simple queries = DB aggregation. Complex reasoning = LLM over structured data.</td>
+          <td>Low (only complex queries)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12.5px;color:var(--ink-4);margin-top:8px;">Only the unstructured portion of P1 is heavily LLM-dependent. This keeps Azure OpenAI costs controlled, results reliable, and system performance fast.</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 06 — WORKBOOK INTELLIGENCE -->
+  <!-- ============================================ -->
+  <section id="s6">
+    <div class="sh">
+      <div class="sh-n">Section 06</div>
+      <h2>Workbook Intelligence</h2>
+      <p>The 36-sheet estimation workbook is the single richest data source in the platform. Because the template is identical for every RFQ, parsing is a deterministic engineering problem — not an AI problem.</p>
+    </div>
+
+    <h3>What Intelligence Extracts from the Workbook</h3>
+    <div class="wb-grid">
+      <div class="wb-sheet">
+        <div class="wb-name">General Sheet</div>
+        <div class="wb-val">RFQ identity: client, inquiry ref, subject, project name, revision. Item table: tag numbers, descriptions, quantities, dimensions (ID×L), weight, material grade, vessel type (H/V), RT (Full/Spot), PWHT (Yes/No).</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Bid Summary (Bid S)</div>
+        <div class="wb-val">Complete cost structure: material, labour, design, consumables, NDT, PWHT, paint, U-Stamp, NB, transport, financial charges, overheads, contingency. Each line in SAR, USD, percentage, and cost-per-ton.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Top Sheet</div>
+        <div class="wb-val">Revenue breakdown (normal/escalation/negotiation), total revenue, monthly cash flow projections (9 months), gross margin percentage, delivery timeline.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Material Cost Summary</div>
+        <div class="wb-val">Per-item material cost: unit weight, total weight, material cost, cost per kg (SAR and USD). Feeds into both cost analysis and supplier intelligence.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Weight Sheet</div>
+        <div class="wb-val">Reference lookup tables: flange weights by type/rating/size, pipe weights, standard component weights. Used by estimation but also valuable as a structured data source for intelligence validation.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Schedule (Sch)</div>
+        <div class="wb-val">Gantt-style phase durations: mechanical design, material procurement, detail engineering, drawing approval, fabrication/testing/painting/delivery. Timeline in weeks.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Financial Charges</div>
+        <div class="wb-val">Bank guarantee structures, LC costs, performance bonds, advance payment terms, negative cash flow calculations. Reveals payment structure and financial risk.</div>
+      </div>
+      <div class="wb-sheet">
+        <div class="wb-name">Bid Approval (Bid Appr)</div>
+        <div class="wb-val">Cost breakdown per SAP-style cost codes (1810-Material, 1820-Labour, 1843-Rental, 1840-Subcontractor, etc.). Maps costs to accounting structure.</div>
+      </div>
+    </div>
+
+    <h3>Anomaly Detection — The Second Intelligence Moment</h3>
+    <p>The briefing is the first intelligence moment (at arrival). Workbook validation is the second (during/after estimation). When a workbook is uploaded, intelligence parses it deterministically and compares values against historical patterns — but with a critical posture: <strong>the system never says "the workbook is wrong." It says "this deserves review."</strong> Every deviation may be a justified engineering choice. Intelligence surfaces it; the estimator decides.</p>
+    <p>Three safe anomaly families, ordered by reliability:</p>
+
+    <div class="card-grid cols-3">
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Family 1 — Structural / Completeness</div>
+        <p>Missing important cost lines that are present in comparable projects. Missing required workbook sections. Impossible or inconsistent totals. Broken percentage distributions. Mismatch between expected sheet content and actual uploaded content. These are the <strong>safest checks</strong> — they rely on workbook structure, not estimator judgment.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Family 2 — Benchmark / Outlier</div>
+        <p>Cost-per-ton far outside historical range for similar projects. Cost-line percentage share far outside comparable benchmarks (e.g., NDT at 8% when historically 1–2%). Margin much lower or higher than comparable client/project patterns. Schedule duration far outside similar project bands. These require <strong>sufficient historical data</strong> to define meaningful ranges.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">Family 3 — Briefing vs. Actual</div>
+        <p>The preliminary cost envelope predicted 80K–100K SAR/ton; the actual workbook produced 120K. Intake identified PWHT or U-Stamp requirements; the workbook seems to miss their cost impact. These checks <strong>bridge the two intelligence moments</strong> — they only work when both the ZIP extraction and the workbook extraction are available.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-red">
+      <strong>What is NOT safe yet:</strong> Trying to infer every hidden estimator logic. Validating every formula decision. Assuming the workbook always follows stable patterns. Treating every deviation as an error rather than a justified engineering choice. The workbook is expertise-driven — intelligence adds a review layer around it, not a judgment layer over it.
+    </div>
+
+    <div class="decision">
+      <strong>Transparency requirement:</strong> Every anomaly flag must expose three things: (1) the <strong>comparable reference set</strong> used — which historical projects and how many; (2) the <strong>confidence level</strong> — how tight or wide the benchmark range is; (3) the <strong>reason for the flag</strong> — a plain-language explanation of what was compared and why it stood out. Without all three, the flag is not trustworthy and should not be surfaced to the user.
+    </div>
+
+    <p style="font-size:12.5px;color:var(--ink-4);">Anomaly detection <strong>improves with data volume</strong>. With 20 historical projects, benchmark ranges are wide and flags will be conservative. With 100+, they become tighter and more meaningful. This is expected and honest — the system should communicate its confidence level alongside every flag.</p>
+
+    <div class="decision">
+      <strong>This directly solves PP-06:</strong> "The entire financial model for multi-million SAR projects lives in a single Excel file with 36 interconnected sheets. No version control, no audit trail, no concurrent editing. A broken formula in one sheet silently cascades across the entire estimation." Intelligence doesn't fix the Excel — it adds a validation layer that catches anomalies the Excel alone cannot surface.
+    </div>
+
+    <h3>The Two Extraction Templates Are Designed to Meet</h3>
+    <p>The ZIP/MR package extraction (at arrival) and the workbook extraction (during estimation) are not independent data streams. They are <strong>designed with overlapping fields</strong> so that the system can compare what the RFQ asked for against how GHI priced it.</p>
+    <p>Shared comparable fields include: vessel/project type, material grade, weight/tonnage, applicable standards and process flags (RT, PWHT, U-Stamp), and cost-per-ton benchmarks. The ZIP extraction produces the briefing's preliminary cost envelope. The workbook extraction produces the actual estimate. The gap between them — "the briefing predicted X, the actual workbook produced Y" — is itself one of the most powerful intelligence outputs, because neither extraction template could produce it alone.</p>
+    <div class="callout callout-amber">
+      <strong>Simple rule:</strong> The ZIP tells us what the RFQ is asking for. The workbook tells us how GHI is planning to price and deliver it. Intelligence compares the two.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 07 — INTELLIGENCE PER USER LEVEL -->
+  <!-- ============================================ -->
+  <section id="s7">
+    <div class="sh">
+      <div class="sh-n">Section 07</div>
+      <h2>Intelligence per User Level</h2>
+      <p>Different roles need different intelligence at different moments. The same engine, different outputs.</p>
+    </div>
+
+    <div class="user-card" style="border-left:3px solid var(--amber);">
+      <div class="role" style="color:var(--amber);">Department Manager — Feasibility & Triage</div>
+      <h4>Opens new RFQ → Intelligence Briefing is already there.</h4>
+      <p>Similar past projects with outcomes. Preliminary cost envelope. Client win/loss history. Compliance flags with cost implications. Instead of a 10–20 min undocumented gut check, they have data context. Their go/no-go decision gets captured structurally, feeding future predictions.</p>
+      <div class="pain-ref">Solves: PP-07 (undocumented feasibility expertise), PP-05 (late discovery of infeasibility)</div>
+    </div>
+
+    <div class="user-card" style="border-left:3px solid var(--blue);">
+      <div class="role" style="color:var(--blue);">Estimator — Working the Workbook</div>
+      <h4>During estimation → historical benchmarks on demand. After upload → review-oriented validation.</h4>
+      <p>The system does not guide or coach the estimator through the 36 sheets. Instead, it makes historical context available when the estimator wants it: reference ranges from similar projects, known cost drivers for comparable profiles, and comparable project details — accessible through the briefing, the RFQ overview, or the chatbot. After upload, the system flags items that deserve review — structural gaps, benchmark outliers, and deviations from the briefing prediction. The estimator remains in control; intelligence adds a second pair of eyes.</p>
+      <div class="pain-ref">Solves: PP-06 (Excel single point of failure), PP-04 (no learning from historical RFQs)</div>
+    </div>
+
+    <div class="user-card" style="border-left:3px solid var(--green);">
+      <div class="role" style="color:var(--green);">Lead / Senior Manager — Bid Strategy</div>
+      <h4>Before bid submission → margin vs. win probability analysis.</h4>
+      <p>Three-scenario cost range with confidence levels. Margin analysis against historical win rates per client and project type. Portfolio view of active bids with risk distribution. Data-driven decision on where to invest effort and what margin to propose.</p>
+      <div class="pain-ref">Solves: PP-11 (no data-driven bid strategy)</div>
+    </div>
+
+    <div class="user-card" style="border-left:3px solid var(--purple);">
+      <div class="role" style="color:var(--purple);">C-Suite / Albassam Leadership — Strategic Oversight</div>
+      <h4>On-demand → executive dashboards powered by aggregate intelligence.</h4>
+      <p>Pipeline funnel analytics (received → estimated → submitted → won). Win rate and margin KPIs over time. Client profitability segmentation. Department performance and bottleneck analysis. Estimation accuracy tracking. Capacity utilization. Full visibility into the business through data, not reports assembled manually.</p>
+      <div class="pain-ref">Solves: PP-03 (zero executive visibility)</div>
+    </div>
+
+    <div class="user-card" style="border-left:3px solid var(--cyan);">
+      <div class="role" style="color:var(--cyan);">Procurement / Supplier-Facing Roles</div>
+      <h4>Per RFQ → supplier signals. Ongoing → price trends and risk scoring.</h4>
+      <p>For each RFQ: mandated vendors identified, historical performance data, price trends for key materials. Over time: supplier reliability scoring, lead time tracking, market volatility signals. No more calling and waiting with no context.</p>
+      <div class="pain-ref">Solves: PP-09 (unmanaged subvendor & supplier risk)</div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 08 — CHATBOT SCOPE -->
+  <!-- ============================================ -->
+  <section id="s8">
+    <div class="sh">
+      <div class="sh-n">Section 08</div>
+      <h2>rfq_chatbot_ms — The Thin Conversational Layer</h2>
+      <p>Intentionally limited in scope. It navigates, explains, and extends intelligence — it never produces it.</p>
+    </div>
+
+    <div class="card-grid cols-2">
+      <div class="card" style="border-left:3px solid var(--green);">
+        <div class="card-lbl lbl-green">What chatbot owns</div>
+        <p>Conversation session management and history. User intent detection and classification. RFQ context resolution ("which RFQ are we talking about?"). Deciding which backend service or pipeline to call. Response wording, formatting, and conversational UX. Citations, provenance, and explanation style. Guardrails and fallback behavior.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--red);">
+        <div class="card-lbl lbl-red">What chatbot does NOT own</div>
+        <p>RFQ parsing logic. Historical similarity logic. Cost computation or estimation logic. Supplier analytics logic. KPI calculation logic. Event subscriptions for proactive intelligence. The historical or analytical database. Any intelligence capability that another consumer also needs.</p>
+      </div>
+    </div>
+
+    <h3>Chatbot's Real Value</h3>
+    <p>The chatbot is not starting from zero. When someone asks "what do you know about this RFQ?" the chatbot surfaces the pre-computed briefing in conversational form. When someone asks "why is this flagged as high risk?" the chatbot explains the reasoning from the supplier and historical matching pipelines. When someone asks "what if we used 316L stainless instead of carbon steel?" the chatbot triggers a new targeted query to the cost pipeline — this is reactive, on-demand intelligence.</p>
+    <p>The chatbot's value is in <strong>navigation, explanation, and extension</strong> — making intelligence accessible to people who don't want to read structured reports, letting them drill down, ask follow-ups, and explore scenarios conversationally.</p>
+
+    <div class="decision">
+      <strong>BACAB reuse angle:</strong> The conversation shell (session management, intent routing, response formatting, history, guardrails) can be reused from BACAB's existing chatbot codebase. What is NOT reused is the intelligence ownership model — intelligence moves out of chatbot tools into <code>rfq_intelligence_ms</code>. This is exactly where BACAB reuse becomes safe: reuse the conversation UX, not the intelligence logic.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 09 — COLD START & BOOTSTRAPPING -->
+  <!-- ============================================ -->
+  <section id="s9">
+    <div class="sh">
+      <div class="sh-n">Section 09</div>
+      <h2>Cold Start & Historical Bootstrapping</h2>
+      <p>The intelligence engine starts empty. It grows in two complementary ways.</p>
+    </div>
+
+    <div class="card-grid cols-2">
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Batch Seeding — Kickstart</div>
+        <h4>Feed historical RFQs through P1</h4>
+        <p>GHI provides past RFQ packages: MR folders + completed estimation workbooks + outcomes (won/lost, final price, actual costs). Even 20–50 historical projects create a meaningful foundation. The workbook is the richest source — each one gives you vessel specs, complete cost breakdown, margins, timelines, and payment structures. The MR folder gives compliance context and supplier constraints.</p>
+        <p style="margin-top:8px;font-size:12.5px;color:var(--ink-4);">The estimation workbook format is identical across all historical RFQs, so the deterministic parser works on historical data exactly as it works on new data. No special migration logic needed.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">Organic Growth — Continuous</div>
+        <h4>Every new RFQ enriches the database</h4>
+        <p>Each RFQ that passes through the system adds: parsed metadata, estimation data (when workbook is uploaded), outcome data (when result is recorded). The platform gets smarter with every project. Similarity matches become more precise, cost ranges become tighter, confidence levels increase, supplier data becomes richer.</p>
+        <p style="margin-top:8px;font-size:12.5px;color:var(--ink-4);">This is the learning loop. No retraining, no data science overhead. The historical database grows naturally through normal platform usage.</p>
+      </div>
+    </div>
+
+    <h3>What Historical Workbooks Give You</h3>
+    <p>Each historical workbook is a complete data point with remarkably rich information for intelligence:</p>
+    <table class="t">
+      <thead>
+        <tr><th>Data</th><th>Source Sheet</th><th>Intelligence Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Vessel identity (type, material, dimensions, weight)</td><td>General</td><td>Similarity matching features</td></tr>
+        <tr><td>Full cost breakdown with percentages</td><td>Bid Summary</td><td>Cost range estimation, anomaly baselines</td></tr>
+        <tr><td>Cost-per-ton (SAR and USD)</td><td>Bid Summary</td><td>Primary cost comparison metric</td></tr>
+        <tr><td>Gross margin percentage</td><td>Bid Summary / Top Sheet</td><td>Win probability modeling</td></tr>
+        <tr><td>Material cost per item per kg</td><td>Material Cost Summary</td><td>Material pricing baselines</td></tr>
+        <tr><td>PWHT, RT type, U-Stamp, NB requirements</td><td>General + specific cost sheets</td><td>Compliance cost impact patterns</td></tr>
+        <tr><td>Project schedule and delivery timeline</td><td>Schedule</td><td>Duration estimation, capacity planning</td></tr>
+        <tr><td>Payment structure and bank charges</td><td>Financial Charges</td><td>Financial risk patterns</td></tr>
+        <tr><td>Direct/indirect manhour breakdown</td><td>Dir_Lab, Indir_Mhr</td><td>Labour estimation baselines</td></tr>
+        <tr><td>Client name, project reference</td><td>General / Top Sheet</td><td>Client intelligence, win/loss history</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12.5px;color:var(--ink-4);margin-top:6px;">With 50 historical workbooks + outcomes, the intelligence engine has enough data to produce meaningful similarity matches, cost ranges with reasonable confidence, and initial client intelligence profiles.</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 10 — BOUNDARIES -->
+  <!-- ============================================ -->
+  <section id="s10">
+    <div class="sh">
+      <div class="sh-n">Section 10</div>
+      <h2>What Intelligence Does Not Own</h2>
+      <p>Clear negative boundaries prevent <code>rfq_intelligence_ms</code> from becoming a dumping ground.</p>
+    </div>
+
+    <p><code>rfq_intelligence_ms</code> should answer only questions of the form: What can we extract from RFQ documents? What past projects are similar? What preliminary cost range can we infer? What supplier patterns or risks exist? What historical benchmarks or anomaly thresholds do we know? What aggregate performance metrics can we compute?</p>
+
+    <div class="not-own">
+      <div class="not-own-item">RFQ lifecycle management (workflows, stages, transitions)</div>
+      <div class="not-own-item">Communication drafting, reminders, or email templates</div>
+      <div class="not-own-item">Conversation sessions, chat history, or user intent detection</div>
+      <div class="not-own-item">User authentication, roles, or access control</div>
+      <div class="not-own-item">Sending notifications or triggering external actions</div>
+      <div class="not-own-item">File storage (documents live in Azure Blob — intelligence reads them)</div>
+      <div class="not-own-item">Workflow execution or stage advancement decisions</div>
+      <div class="not-own-item">UI rendering or response formatting for specific consumers</div>
+    </div>
+
+    <p>If a consumer (chatbot, dashboard, workflow) wants to <strong>act on</strong> intelligence — send a notification, block a stage, alert a manager — that action happens in the consumer's domain. Intelligence produces insight. Consumers decide what to do with it.</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 11 — DATABASE OWNERSHIP -->
+  <!-- ============================================ -->
+  <section id="s11">
+    <div class="sh">
+      <div class="sh-n">Section 11</div>
+      <h2>Database Ownership</h2>
+      <p>The strongest architectural argument for the split.</p>
+    </div>
+
+    <div class="card-grid cols-2">
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-lbl lbl-blue">rfq_manager_ms — Operational DB</div>
+        <p>Owns live RFQ state: current status, stage progress, active blockers, pending subtasks, attached files, notes, deadlines. Optimized for transactional writes and lifecycle queries. PostgreSQL. Schema changes driven by workflow needs.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">rfq_intelligence_ms — Historical & Analytical DB</div>
+        <p>Owns structured historical records: parsed RFQ metadata, cost breakdowns, outcome data, similarity features, supplier history, aggregate KPIs. Optimized for analytical reads, similarity search, and statistical computation. Schema evolves independently based on intelligence needs.</p>
+      </div>
+    </div>
+
+    <div class="decision">
+      <strong>Data flow:</strong> Intelligence receives data via events (<code>rfq.created</code>, <code>workbook.uploaded</code>, <code>outcome.recorded</code>) and optional REST reads from <code>rfq_manager_ms</code>. It never writes to the operational database. This separation ensures the intelligence schema can evolve — adding new parsed fields, new similarity dimensions, new KPI structures — without impacting the core RFQ lifecycle.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 12 — PHASED PRIORITIES -->
+  <!-- ============================================ -->
+  <section id="s12">
+    <div class="sh">
+      <div class="sh-n">Section 12</div>
+      <h2>Phased Priorities & Feasibility</h2>
+      <p>Not everything is equally ready on day one. This section defines what to build first, what depends on historical data, and what requires maturity before it becomes reliable.</p>
+    </div>
+
+    <p>The intelligence engine starts empty and grows with data. Capabilities should be released in phases that match the available data and the confidence the system can offer. Workbook-related intelligence is <strong>medium-to-high complexity</strong> and should be positioned as supportive, not authoritative — that wording protects the project from overpromising.</p>
+
+    <div class="card-grid cols-3">
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-lbl lbl-green">Phase 1 — Cold-Start Friendly</div>
+        <h4>Safest, highest-value, no historical data dependency</h4>
+        <p><strong>Intelligence:</strong> MR package intake parsing (deterministic folder tree + LLM for unstructured docs). Standards and compliance auto-detection from folder 06 filenames. Intelligence briefing generation (document understanding sections). Historical database setup and schema. Workbook deterministic parser (the fastest way to populate the historical DB from GHI's past workbooks — this is cold-start infrastructure). Expert-seeded initial similarity weights (sensible defaults, to be replaced by data later).</p>
+        <p style="margin-top:8px;"><strong>Chatbot:</strong> Conversational explainer of the briefing. Basic RFQ context resolution. Retrieval of parsed metadata.</p>
+        <p style="margin-top:8px;"><strong>Dashboard:</strong> Structural foundations. Basic RFQ counts and status distributions from <code>rfq_manager_ms</code> data.</p>
+        <div class="callout callout-green" style="margin-top:12px;padding:12px 16px;font-size:12.5px;">
+          <strong>Demo-friendly early wins:</strong> MR folder tree parsing, standards auto-detection from filenames, intelligence briefing generation, workbook deterministic parsing. These are tangible, visual, and can be demonstrated to BACAB and GHI stakeholders without any historical data dependency. They show the platform "reading" real RFQ documents and producing structured outputs immediately.
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-lbl lbl-amber">Phase 2 — Requires Historical Base</div>
+        <h4>Needs 50+ parsed historical workbooks + some outcomes</h4>
+        <p><strong>Intelligence:</strong> Structured similarity matching (Layer 1 technical features, using expert-seeded weights initially). Preliminary cost envelopes (3-scenario with confidence warnings). Client history and win/loss context. Supplier signals and mandated vendor intelligence. Basic post-upload structural/completeness checks on workbooks (Family 1 anomalies — safest).</p>
+        <p style="margin-top:8px;"><strong>Similarity weight calibration:</strong> With 50+ parsed workbooks, run <strong>correlation analysis and regression-based feature importance</strong> on the historical dataset. Discover which features (vessel type, material, tonnage, RT, PWHT…) actually drive cost-per-ton. Replace expert-seeded defaults with data-derived weights. This is new knowledge GHI has never had.</p>
+        <p style="margin-top:8px;"><strong>Chatbot:</strong> "Find similar projects" queries. "What do we know about this client?" queries. Cost range exploration.</p>
+        <p style="margin-top:8px;"><strong>Dashboard:</strong> Client-level win rate views. Pipeline funnel analytics. Basic margin tracking.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple);">
+        <div class="card-lbl lbl-purple">Phase 3 — Requires Maturity</div>
+        <h4>Needs 100+ historical data points + outcome feedback loops</h4>
+        <p><strong>Intelligence:</strong> Benchmark/outlier anomaly detection (Family 2 — requires confident ranges). Briefing-vs-actual deviation analysis (Family 3 — requires both extractions). Bid strategy patterns and win probability modeling. Estimation accuracy tracking over time. Full three-layer similarity (including cost behavior layer). Portfolio-level aggregate analytics.</p>
+        <p style="margin-top:8px;"><strong>Advanced similarity:</strong> <strong>Unsupervised clustering</strong> to discover natural project archetypes. <strong>Learned distance metrics</strong> to find which feature combinations best predict cost similarity. <strong>Feature interaction discovery</strong> to surface hidden patterns (e.g., material × vessel type × PWHT creates distinct cost bands). The matching engine stays explainable — but the model behind it is now learned from data.</p>
+        <p style="margin-top:8px;"><strong>Chatbot:</strong> "What-if" scenario exploration. Margin impact analysis. Cross-RFQ pattern questions.</p>
+        <p style="margin-top:8px;"><strong>Dashboard:</strong> Executive-grade KPI dashboards. Department bottleneck analysis. Client profitability segmentation. Capacity utilization trends.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Why workbook parsing is Phase 1 even though workbook anomaly detection is Phase 2/3:</strong> Parsing the workbook is deterministic — the template is fixed, cell positions are known, and the parser can be written once and run reliably on every historical workbook GHI provides. This is the single fastest way to populate the historical database during cold start. Using that data for anomaly detection and benchmarking requires enough historical points to define meaningful ranges — that comes later.
+    </div>
+
+    <h3>Complexity & Sensitivity Guide</h3>
+    <table class="t">
+      <thead>
+        <tr><th>Capability</th><th>Complexity</th><th>Sensitivity</th><th>Phase</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>MR folder tree parsing</td><td>Low</td><td>Low</td><td>1</td></tr>
+        <tr><td>Standards auto-detection from filenames</td><td>Low</td><td>Low</td><td>1</td></tr>
+        <tr><td>Workbook deterministic parsing</td><td>Medium</td><td>Low</td><td>1</td></tr>
+        <tr><td>Expert-seeded similarity defaults</td><td>Low</td><td>Low</td><td>1</td></tr>
+        <tr><td>Unstructured document LLM extraction</td><td>Medium-High</td><td>Medium</td><td>1–2</td></tr>
+        <tr><td>Historical similarity matching (Layer 1)</td><td>Medium</td><td>Medium</td><td>2</td></tr>
+        <tr><td>Statistical feature importance / weight calibration</td><td>Medium</td><td>Low</td><td>2</td></tr>
+        <tr><td>Preliminary cost envelope (3-scenario)</td><td>Medium</td><td>Medium-High</td><td>2</td></tr>
+        <tr><td>Structural workbook anomaly checks</td><td>Medium</td><td>Medium</td><td>2</td></tr>
+        <tr><td>Client win/loss intelligence</td><td>Low-Medium</td><td>Low</td><td>2</td></tr>
+        <tr><td>Supplier intelligence & RVL</td><td>Medium</td><td>Medium</td><td>2</td></tr>
+        <tr><td>Benchmark/outlier anomaly detection</td><td>High</td><td>High</td><td>3</td></tr>
+        <tr><td>Briefing-vs-actual deviation</td><td>High</td><td>High</td><td>3</td></tr>
+        <tr><td>Unsupervised clustering / project archetypes</td><td>High</td><td>Medium</td><td>3</td></tr>
+        <tr><td>Learned distance metric / metric learning</td><td>High</td><td>Medium</td><td>3</td></tr>
+        <tr><td>Win probability / bid strategy</td><td>High</td><td>High</td><td>3</td></tr>
+        <tr><td>Portfolio-level aggregate analytics</td><td>Medium-High</td><td>Medium</td><td>3</td></tr>
+        <tr><td>Chatbot what-if exploration</td><td>High</td><td>High</td><td>3</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12.5px;color:var(--ink-4);margin-top:8px;">Sensitivity reflects how much a capability touches estimator expertise and judgment. High-sensitivity capabilities must be positioned as supportive, never authoritative. The posture is always "this deserves review" — never "this is wrong."</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 13 — ACADEMIC FRAMING -->
+  <!-- ============================================ -->
+  <section id="s13">
+    <div class="sh">
+      <div class="sh-n">Section 13</div>
+      <h2>Academic & PFE Framing</h2>
+      <p>How this design translates into thesis-defensible architectural vocabulary.</p>
+    </div>
+
+    <div class="card-grid cols-2">
+      <div class="card">
+        <div class="card-lbl lbl-blue">Event-Driven Architecture</div>
+        <p><code>rfq_manager_ms</code> publishes domain events. <code>rfq_intelligence_ms</code> subscribes and reacts. Loose coupling, independent deployment, asynchronous processing. Standard EDA pattern.</p>
+      </div>
+      <div class="card">
+        <div class="card-lbl lbl-amber">CQRS-Adjacent Pattern</div>
+        <p>Manager handles commands (create, update, advance). Intelligence builds a read-optimized analytical projection of the same data, enriched with derived insights. Different schemas for different query patterns.</p>
+      </div>
+      <div class="card">
+        <div class="card-lbl lbl-green">Bounded Contexts (DDD)</div>
+        <p>Operational lifecycle and historical intelligence are different bounded contexts with different schemas, query patterns, ownership, and evolution trajectories. Classic Domain-Driven Design separation.</p>
+      </div>
+      <div class="card">
+        <div class="card-lbl lbl-purple">Proactive vs. Reactive Intelligence</div>
+        <p>The system demonstrates both paradigms: proactive (event-driven briefing generation) and reactive (on-demand query answering). Combined with aggregate analytics, this shows a mature intelligence architecture.</p>
+      </div>
+      <div class="card">
+        <div class="card-lbl lbl-red">Human-AI Collaboration</div>
+        <p>Intelligence assists, never replaces. The estimator keeps full control. The system adds a validation layer, historical context, and anomaly detection — augmenting human expertise rather than attempting to automate it. Directly aligned with the audit conclusion that BOQ automation is infeasible.</p>
+      </div>
+      <div class="card">
+        <div class="card-lbl lbl-teal">Continuous Learning Loop</div>
+        <p>Every RFQ outcome enriches future intelligence. No retraining required — the historical database grows organically. The platform gets smarter by existing. This is a defensible alternative to classical ML in low-data domains.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="doc-footer">
+    <p>rfq_intelligence_ms Architecture Brief v2 · RFQMGMT Platform · BACAB Consulting × GHI / Albassam Group</p>
+  </div>
+</div>
+
+</body>
+</html>

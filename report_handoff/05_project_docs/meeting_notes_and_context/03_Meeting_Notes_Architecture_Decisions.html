@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting Notes — RFQMGMT Architecture Review</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b23;
+    --surface-2: #1e222d;
+    --border: #2a2f3d;
+    --text: #e2e4ea;
+    --text-muted: #8b90a0;
+    --accent: #6c9bff;
+    --accent-soft: rgba(108, 155, 255, 0.1);
+    --accent-border: rgba(108, 155, 255, 0.25);
+    --green: #5ae4a7;
+    --green-soft: rgba(90, 228, 167, 0.1);
+    --amber: #f5b942;
+    --amber-soft: rgba(245, 185, 66, 0.1);
+    --red: #ff6b7a;
+    --red-soft: rgba(255, 107, 122, 0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .section-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: #fff;
+  }
+
+  .card p, .card li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .card ul {
+    padding-left: 1.2rem;
+    margin-top: 0.4rem;
+  }
+
+  .card li {
+    margin-bottom: 0.3rem;
+  }
+
+  .explain {
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.3rem;
+    border-radius: 0 6px 6px 0;
+    margin-top: 0.8rem;
+  }
+
+  .explain::before {
+    content: '💡 In simple terms';
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+  }
+
+  .explain p {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.3rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    margin-top: 0.8rem;
+    overflow-x: auto;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+  }
+
+  .badge-key { background: var(--red-soft); color: var(--red); }
+  .badge-decision { background: var(--green-soft); color: var(--green); }
+  .badge-learn { background: var(--amber-soft); color: var(--amber); }
+  .badge-action { background: var(--accent-soft); color: var(--accent); }
+
+  .callout {
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .callout-red {
+    border-color: rgba(255,107,122,0.3);
+    background: var(--red-soft);
+  }
+
+  .callout-green {
+    border-color: rgba(90,228,167,0.3);
+    background: var(--green-soft);
+  }
+
+  .callout h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .callout p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  .callout-red h4 { color: var(--red); }
+  .callout-green h4 { color: var(--green); }
+
+  .workflow {
+    display: flex;
+    gap: 0;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .workflow-step {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .workflow-step:first-child { border-radius: 8px 0 0 8px; }
+  .workflow-step:last-child { border-radius: 0 8px 8px 0; }
+
+  .workflow-step .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+
+  .workflow-step .step-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .workflow-step .step-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 3rem 0;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <span class="tag">Personal Reference — English</span>
+  <h1>Meeting Debrief — RFQMGMT Architecture Review</h1>
+  <p class="subtitle">Everything discussed with BACAB leadership, organized and explained</p>
+  <div class="meta">
+    <span>📅 February 2026</span>
+    <span>📍 BACAB Consulting</span>
+    <span>🏷️ rfq_manager_ms</span>
+  </div>
+</header>
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-number">01 — Core Concept</div>
+  <h2>API Resources ≠ Database Entities</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-key">Key</span> What They Said</h3>
+    <p>API resources can reflect a data model — but they don't have to. There are entities in the data model that will never be exposed as endpoints. When you create an exposed resource like RFQ, behind the scenes it triggers creation of multiple database records (e.g., instantiation of an initial RFQ stage). These intermediate entities are "built on demand" — the client never interacts with them directly.</p>
+    <p style="margin-top: 0.6rem;">When we talk about "API resources," we mean the resources you expose to the client of your API.</p>
+  </div>
+
+  <div class="explain">
+    <p>Think of a restaurant: the <strong>menu</strong> is your API (what the customer sees and orders). The <strong>kitchen</strong> is your database (where multiple things happen to prepare one dish). The customer orders "Pasta Carbonara" (one API call). Behind the scenes, the kitchen boils water, cooks bacon, whisks eggs, prepares sauce — multiple operations from one order. The customer never says "please boil water" — that's an internal operation. Same idea: RFQ is on the menu, but rfq_stage creation is a kitchen operation.</p>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-number">02 — Core Philosophy</div>
+  <h2>Front-to-Back: Business Need → Technical Solution</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-key">Key</span> What They Said</h3>
+    <p>In microservice design and endpoint design, we migrate from the front to the back — from the business need to the technical. Our approach is NOT technical → business, it's the complete opposite. You take the front-end, you break it into microservices, and for each MS you list the endpoints and CRUDs. That's phase 1.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="badge badge-decision">Decision</span> RFQ_Blocker Feedback</h3>
+    <p>Your idea is good, but we want to be simpler in V1. RFQ_Blocker is potentially an extraordinary solution, but for a business problem that we define first — not the other way around. We don't try to add problems to existing problems even if the solution is valid. It may have its time later. For now, replace it with a <code>notes</code> field (JSON object) in the <code>rfq_stage</code> entity for comments, and use <strong>reminders</strong> to handle deadline overruns.</p>
+  </div>
+
+  <div class="explain">
+    <p>You proposed RFQ_Blocker thinking "this would be a useful feature, let me model it." They want you to flip that: start from "what does the user need to do on the screen?" and then figure out the minimal technical solution. The blocker concept was a solution looking for a problem. A simple notes field + reminders covers the actual V1 need.</p>
+  </div>
+
+  <div class="workflow">
+    <div class="workflow-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-label">UI Mockups</div>
+      <div class="step-desc">Look at the interface</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-label">User Actions</div>
+      <div class="step-desc">List what users can do</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-label">API Resources</div>
+      <div class="step-desc">Define endpoints + CRUD</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-label">Data Model</div>
+      <div class="step-desc">Adjust entities to support</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">Step 5</div>
+      <div class="step-label">Swagger</div>
+      <div class="step-desc">Build the interface contract</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-number">03 — Standards</div>
+  <h2>URI Naming Conventions</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-learn">Learn</span> What They Said</h3>
+    <p>The path (after the IP address and port) is the URI. The first prefix must be the microservice name — not just "api" — because every MS has its own API. The resource name in the URI must match the actual resource name consistently.</p>
+    <div class="code-block">
+      /{microservice_name}/{version}/{resource_name}/{id_or_custom_action}<br><br>
+      Example:<br>
+      /rfq-manager/v1/rfqs              → List all RFQs<br>
+      /rfq-manager/v1/rfqs/{id}         → Get specific RFQ<br>
+      /rfq-manager/v1/rfqs/{id}/submit  → Custom action on RFQ<br>
+      /rfq-manager/v1/reminders         → List reminders<br>
+      /rfq-manager/v1/reminders/{id}    → Get specific reminder
+    </div>
+  </div>
+
+  <div class="explain">
+    <p>If you use just <code>/api/v1/rfqs</code>, and you have 6 microservices, they'd all start with <code>/api/</code> — confusing. By prefixing with the MS name, every service has its own clear namespace. The gateway or front-end knows exactly which service they're calling.</p>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-number">04 — Architecture Decision</div>
+  <h2>Reminders: Creation vs. Execution</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-decision">Decision</span> What They Said</h3>
+    <p>Reminder <strong>creation</strong> = inside <code>rfq_manager_ms</code> (it's an API resource — you CRUD reminders). Reminder <strong>execution</strong> = a batch process. The reminder has a strong cohesion with RFQ data (it needs to list RFQs, check deadlines, etc.).</p>
+    <p style="margin-top: 0.6rem;">Two types: <strong>internal reminders</strong> (replaces blocker — team alerts about stuck RFQs) and <strong>external reminders</strong> (replaces supplier follow-up — alerts about suppliers not responding).</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="badge badge-key">Key</span> The Shared Database Lesson</h3>
+    <p>BACAB made this mistake before in another project: two microservices accessing the same database table. When one changed the schema, it broke the other. Rule: <strong>one microservice = one database</strong>. Never share tables between services.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="badge badge-decision">Decision</span> Two Mains, One Domain</h3>
+    <p>Since reminders need RFQ data and share entities with rfq_manager, the solution is: <strong>one microservice with two entry points</strong>. Main 1 exposes the REST API (for the front-end). Main 2 runs the batch (for reminders). Both share the same domain layer (business logic + data access). This avoids redundant REST calls and code duplication.</p>
+  </div>
+
+  <div class="explain">
+    <p>Imagine a building with two doors — a front door (REST API for the UI) and a back door (batch process for reminders). Both doors lead to the same rooms inside (the domain layer — your business logic). You don't need to build a second building and then shout across the street to ask for information. The two "mains" pattern means one codebase, one database, two ways to enter.</p>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-number">05 — Learn This</div>
+  <h2>Hexagonal Architecture (Ports & Adapters)</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-learn">Learn</span> What They Said</h3>
+    <p>Research hexagonal architecture. At BACAB, the "controller" layer contains business rules and implementation. The exposure changes but the domain stays the same. This is how you mutualize the domain and avoid redundancy. This is the architecture they use.</p>
+  </div>
+
+  <div class="explain">
+    <p>Hexagonal architecture says: put your business logic in the center (the "domain"). Around it, create "ports" (interfaces) and "adapters" (implementations). A REST adapter handles HTTP requests. A batch adapter handles scheduled jobs. A database adapter handles persistence. They all connect to the same core domain. If you swap the REST adapter for a GraphQL adapter tomorrow, the domain doesn't change. In your case: the REST adapter serves the front-end, the batch adapter runs reminders — both use the same domain logic for accessing RFQs, checking deadlines, etc.</p>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-number">06 — Guiding Principle</div>
+  <h2>V1 = Strictly Necessary, Iterations Expected</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-key">Key</span> What They Said</h3>
+    <p>We must prepare a first version for the PFE, then we can add. But right now, we define what to deliver. For V1, we put the structuring elements and attributes that will definitely be present. The model will change — so for V1, only what's certain.</p>
+    <p style="margin-top: 0.6rem;">When the spec is not fixed and rigid, and the client doesn't know exactly what they want (which is our context), we don't have a single phase — we do back-and-forth iterations until reaching a final version.</p>
+  </div>
+
+  <div class="callout callout-red">
+    <h4>⚠️ What Was Parked for Later</h4>
+    <p>Event-driven architecture — they acknowledged you designed it but it's not in the V1 scope. Don't invest time here now.</p>
+  </div>
+
+  <div class="callout callout-green">
+    <h4>✓ What They Appreciated</h4>
+    <p>Your entity modeling and the relationships between entities (FK/PK pointers between different entities). They said you need to perfectly master these links and references.</p>
+  </div>
+</div>
+
+<!-- SECTION 7 -->
+<div class="section">
+  <div class="section-number">07 — Don't Over-Split</div>
+  <h2>More Microservices ≠ Better</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-key">Key</span> What They Said</h3>
+    <p>Splitting too much and having too many microservices can be a disadvantage, not an advantage. The objective is not to have many microservices. Always look at business logic and cohesion to decide what goes in the same MS or gets separated. Don't fall into redundancy and double/triple maintenance. One microservice = one database.</p>
+  </div>
+
+  <div class="explain">
+    <p>Every time you create a new microservice, you're creating: a new database, a new deployment pipeline, new monitoring, new API contracts between services, new failure points. If two things are tightly related (like reminders and RFQs), putting them in separate services means they constantly need to call each other — that's overhead, not architecture. Group by business cohesion, split only when the domains are truly independent.</p>
+  </div>
+</div>
+
+<!-- SECTION 8 -->
+<div class="section">
+  <div class="section-number">08 — Action Plan</div>
+  <h2>The Exact Steps They Want</h2>
+
+  <div class="card">
+    <h3><span class="badge badge-action">Action</span> Their Prescribed Workflow</h3>
+    <p><strong>1.</strong> Start from the interface (they will provide the UI mockups) — project yourself into the front-end and identify all user actions and functionalities. Critique if something is missing or unnecessary.</p>
+    <p><strong>2.</strong> Go to your data model and adjust it based on what the UI needs.</p>
+    <p><strong>3.</strong> Define the API resource endpoints — this gives you the V1.</p>
+    <p><strong>4.</strong> Freeze V1 (lock it down).</p>
+    <p><strong>5.</strong> Then move to the MS software architecture: create a new template and start implementation (controllers, routes, connectors, etc.).</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="badge badge-action">Action</span> Their Global Methodology</h3>
+    <p>Business need → Prototyping → Prepare microservices (front & back) → Divide the back as needed → Build Swagger contracts → Start implementation. This reflex applies to any project.</p>
+  </div>
+</div>
+
+<!-- CONCEPTS TO LEARN -->
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-number">Reference</div>
+  <h2>Concepts to Master</h2>
+
+  <div class="card">
+    <h3>Must Learn Before Proceeding</h3>
+    <ul>
+      <li><strong>API Resource vs. Database Entity</strong> — the distinction between what you expose and what you store</li>
+      <li><strong>RESTful API Design</strong> — CRUD, resource naming, HTTP methods, status codes</li>
+      <li><strong>Hexagonal Architecture (Ports & Adapters)</strong> — domain-centric design, BACAB's architecture</li>
+      <li><strong>Swagger / OpenAPI</strong> — writing the interface contract before coding</li>
+      <li><strong>Batch Processing Pattern</strong> — scheduled jobs running alongside a service</li>
+      <li><strong>URI Naming Standards</strong> — RESTful conventions with MS-prefixed paths</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Parked for Later</h3>
+    <ul>
+      <li><strong>Event-Driven Architecture</strong> — acknowledged but not V1</li>
+      <li><strong>RFQ_Blocker</strong> — concept valid, but deferred to a future iteration</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  RFQMGMT — Meeting Debrief — Guidara Personal Reference — February 2026
+</footer>
+
+</div>
+</body>
+</html>

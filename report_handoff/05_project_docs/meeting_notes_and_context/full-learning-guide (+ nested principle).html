@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Guide — Microservice API Design Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdfcfa;
+    --surface: #ffffff;
+    --surface-2: #f7f6f3;
+    --surface-3: #efeee9;
+    --border: #e2e0da;
+    --text: #2c2a25;
+    --text-soft: #6e6b63;
+    --ink: #1a1915;
+    --blue: #2b5ea7;
+    --blue-soft: rgba(43,94,167,0.07);
+    --blue-border: rgba(43,94,167,0.2);
+    --green: #2d7a4f;
+    --green-soft: rgba(45,122,79,0.07);
+    --green-border: rgba(45,122,79,0.2);
+    --red: #b83832;
+    --red-soft: rgba(184,56,50,0.06);
+    --red-border: rgba(184,56,50,0.15);
+    --amber: #946b1a;
+    --amber-soft: rgba(148,107,26,0.07);
+    --amber-border: rgba(148,107,26,0.2);
+    --purple: #6b4fa0;
+    --purple-soft: rgba(107,79,160,0.07);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Source Serif 4', Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.8; padding: 2.5rem; font-size: 16px; }
+  .container { max-width: 780px; margin: 0 auto; }
+  header { text-align: center; padding-bottom: 2.5rem; margin-bottom: 3rem; border-bottom: 2px solid var(--ink); }
+  .tag-line { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--blue); margin-bottom: 0.8rem; }
+  h1 { font-size: 2rem; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; line-height: 1.25; margin-bottom: 0.5rem; }
+  .subtitle { font-size: 1.05rem; color: var(--text-soft); font-style: italic; }
+  .toc { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; margin-bottom: 3rem; }
+  .toc-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 0.8rem; }
+  .toc ol { padding-left: 1.3rem; }
+  .toc li { font-size: 0.92rem; color: var(--blue); margin-bottom: 0.3rem; padding-left: 0.3rem; }
+  .toc li span { color: var(--text); }
+  .chapter { margin-bottom: 3.5rem; }
+  .chapter-num { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 0.3rem; }
+  h2 { font-size: 1.4rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; font-weight: 600; color: var(--ink); margin-top: 1.5rem; margin-bottom: 0.6rem; }
+  p { margin-bottom: 0.9rem; font-size: 0.95rem; }
+  .concept { border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1.2rem 0; border: 1px solid; }
+  .concept-blue { background: var(--blue-soft); border-color: var(--blue-border); }
+  .concept-green { background: var(--green-soft); border-color: var(--green-border); }
+  .concept-red { background: var(--red-soft); border-color: var(--red-border); }
+  .concept-amber { background: var(--amber-soft); border-color: var(--amber-border); }
+  .concept-purple { background: var(--purple-soft); border-color: rgba(107,79,160,0.2); }
+  .concept-label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .concept-blue .concept-label { color: var(--blue); }
+  .concept-green .concept-label { color: var(--green); }
+  .concept-red .concept-label { color: var(--red); }
+  .concept-amber .concept-label { color: var(--amber); }
+  .concept-purple .concept-label { color: var(--purple); }
+  .concept p { font-size: 0.9rem; margin-bottom: 0.5rem; }
+  .concept p:last-child { margin-bottom: 0; }
+  .code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: var(--ink); color: #e8e6e1; border-radius: 6px; padding: 1rem 1.3rem; margin: 1rem 0; overflow-x: auto; line-height: 1.7; white-space: pre; }
+  .code .comment { color: #7a7870; }
+  .code .keyword { color: #7dade2; }
+  .code .string { color: #a8cc8c; }
+  .code .method { color: #e8b87a; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.83em; background: var(--surface-3); padding: 0.15em 0.4em; border-radius: 3px; color: var(--ink); }
+  .analogy { background: var(--surface-2); border-left: 3px solid var(--amber); border-radius: 0 6px 6px 0; padding: 1rem 1.3rem; margin: 1rem 0; }
+  .analogy::before { content: '💡 Analogy'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+  .analogy p { font-size: 0.88rem; font-style: italic; color: var(--text); }
+  .vs-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+  .vs-table th { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-2); padding: 0.6rem 0.8rem; text-align: left; border-bottom: 2px solid var(--border); color: var(--text-soft); }
+  .vs-table td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .vs-table tr:last-child td { border-bottom: none; }
+  .diagram { background: var(--ink); color: #d4d2cc; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; border-radius: 6px; padding: 1.2rem 1.5rem; margin: 1rem 0; overflow-x: auto; line-height: 1.6; white-space: pre; }
+  .diagram .highlight { color: #7dade2; }
+  .diagram .accent { color: #e8b87a; }
+  .diagram .success { color: #a8cc8c; }
+  .diagram .dim { color: #6e6b63; }
+  .test-box { background: var(--surface); border: 2px solid var(--ink); border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1.2rem 0; }
+  .test-box-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.6rem; }
+  .test-box p { font-size: 0.88rem; }
+  footer { text-align: center; padding: 2rem 0; border-top: 2px solid var(--ink); margin-top: 2rem; }
+  footer p { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-soft); letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="tag-line">RFQMGMT — Learning Guide</div>
+  <h1>Microservice API Design<br>From First Principles</h1>
+  <p class="subtitle">Every concept discussed, explained simply, with examples from the RFQ project</p>
+</header>
+
+<div class="toc">
+  <div class="toc-title">Table of Contents</div>
+  <ol>
+    <li><span>Database Entity vs. API Resource</span></li>
+    <li><span>RESTful API Design</span></li>
+    <li><span>URI Naming Conventions</span></li>
+    <li><span>Front-to-Back Design Approach</span></li>
+    <li><span>Nested vs. Top-Level Resources</span></li>
+    <li><span>Hexagonal Architecture</span></li>
+    <li><span>Batch Processing & Two Mains</span></li>
+    <li><span>Business Logic & the Domain Layer</span></li>
+    <li><span>Swagger / OpenAPI</span></li>
+    <li><span>Guiding Principles</span></li>
+  </ol>
+</div>
+
+<!-- CHAPTER 1 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 1</div>
+  <h2>Database Entity vs. API Resource</h2>
+  <p>A <strong>database entity</strong> is a table in your database. It stores data. <code>rfq</code>, <code>rfq_stage</code>, <code>workflow</code> — those are entities with columns and relationships.</p>
+  <p>An <strong>API resource</strong> is something you deliberately expose to the outside world (the front-end). It's a door you open for the client to interact with.</p>
+  <div class="concept concept-blue">
+    <div class="concept-label">Core Rule</div>
+    <p>Not every database entity becomes an API resource. Some entities are <strong>intermediate</strong> — they exist in the database but are never exposed. They're created behind the scenes when another resource is created.</p>
+  </div>
+  <table class="vs-table">
+    <tr><th>Type</th><th>What it is</th><th>Example</th></tr>
+    <tr><td><strong>API Resource + Entity</strong></td><td>Exposed to front-end AND stored in DB</td><td><code>rfq</code> — users create and view RFQs</td></tr>
+    <tr><td><strong>Entity only (intermediate)</strong></td><td>Stored in DB, never exposed directly</td><td><code>rfq_stage</code> records auto-created when an RFQ is created</td></tr>
+    <tr><td><strong>API Resource only (computed)</strong></td><td>Exposed to front-end but NOT a table</td><td><code>/rfqs/stats</code> — computed from multiple tables</td></tr>
+  </table>
+  <div class="analogy">
+    <p>A restaurant menu (API) lists "Pasta Carbonara" — one item the customer can order. In the kitchen (database), making that dish involves boiling water, cooking bacon, whisking eggs, preparing sauce — multiple operations. The customer never says "please boil water." That's an internal operation.</p>
+  </div>
+  <div class="test-box">
+    <div class="test-box-title">The Test</div>
+    <p>Ask: <strong>"Does the front-end need to directly create, read, update, or delete this thing?"</strong></p>
+    <p>If yes → API resource. If no → intermediate entity (internal only).</p>
+  </div>
+  <div class="concept concept-amber">
+    <div class="concept-label">Important Nuance</div>
+    <p>An entity like <code>rfq_stage</code> can be both intermediate AND an API resource depending on context. The <strong>creation</strong> of stages is intermediate (auto-created behind <code>POST /rfqs</code>). But <strong>viewing and updating</strong> a stage is exposed (the workspace needs <code>GET</code> and <code>PATCH</code> on stages). The front-to-back approach tells you which operations to expose.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 2 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 2</div>
+  <h2>RESTful API Design</h2>
+  <p>REST is the language your front-end and back-end use to communicate over HTTP. It has two parts: <strong>resources</strong> (the things) and <strong>methods</strong> (the actions).</p>
+  <h3>HTTP Methods = CRUD</h3>
+  <table class="vs-table">
+    <tr><th>Method</th><th>Action</th><th>Meaning</th></tr>
+    <tr><td><code>POST</code></td><td>Create</td><td>"Make a new one"</td></tr>
+    <tr><td><code>GET</code></td><td>Read</td><td>"Give me one" or "Give me all"</td></tr>
+    <tr><td><code>PUT</code></td><td>Replace</td><td>"Replace this entirely with new data"</td></tr>
+    <tr><td><code>PATCH</code></td><td>Partial update</td><td>"Update just some fields"</td></tr>
+    <tr><td><code>DELETE</code></td><td>Delete</td><td>"Remove this one"</td></tr>
+  </table>
+  <h3>Combining Methods + Resources</h3>
+  <div class="code"><span class="method">POST</span>   /rfq-manager/v1/rfqs           <span class="comment">→ Create a new RFQ</span>
+<span class="method">GET</span>    /rfq-manager/v1/rfqs           <span class="comment">→ List all RFQs</span>
+<span class="method">GET</span>    /rfq-manager/v1/rfqs/42        <span class="comment">→ Get RFQ number 42</span>
+<span class="method">PATCH</span>  /rfq-manager/v1/rfqs/42        <span class="comment">→ Update some fields of RFQ 42</span>
+<span class="method">DELETE</span> /rfq-manager/v1/rfqs/42        <span class="comment">→ Delete RFQ 42</span></div>
+  <h3>Custom Actions</h3>
+  <p>Sometimes CRUD isn't enough. Advancing a stage isn't just "updating" it — it's a business operation with side effects. Custom actions go at the end of the path:</p>
+  <div class="code"><span class="method">POST</span>   /rfq-manager/v1/rfqs/42/stages/5/advance   <span class="comment">→ Complete stage, move forward</span>
+<span class="method">POST</span>   /rfq-manager/v1/reminders/test              <span class="comment">→ Send a test email</span></div>
+  <h3>Query Parameters = Filters</h3>
+  <p>When you need to filter or search, you add query parameters with <code>?</code> and join them with <code>&amp;</code>:</p>
+  <div class="code"><span class="method">GET</span> /rfq-manager/v1/rfqs<span class="string">?status=open&amp;workflow=long&amp;search=aramco</span>
+<span class="comment">→ "Give me RFQs that are open, use long workflow, and match 'aramco'"</span></div>
+  <div class="concept concept-green">
+    <div class="concept-label">Key Rules</div>
+    <p>Never put verbs in the URL. <code>/createRfq</code> is wrong — the method (<code>POST</code>) is the verb. Resource names are always <strong>plural</strong> and <strong>lowercase</strong>: <code>/rfqs</code> not <code>/rfq</code> or <code>/Rfqs</code>.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 3 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 3</div>
+  <h2>URI Naming Conventions</h2>
+  <p>BACAB's naming standard:</p>
+  <div class="code">/{microservice_name}/{version}/{resource_name}/{id_or_custom_action}</div>
+  <p>A full URL with the URI:</p>
+  <div class="diagram"><span class="dim">https://192.168.1.10:8080</span><span class="highlight">/rfq-manager/v1/rfqs/42</span>
+<span class="dim">|_________________________|</span><span class="highlight">|___________________________|</span>
+<span class="dim">       URL base                       URI</span>
+<span class="dim">    (IP + port)                (the path part)</span></div>
+  <p>Why prefix with the microservice name instead of just <code>/api</code>? Because if you have 6 microservices and they all start with <code>/api/</code>, it's confusing. The MS name creates a clear namespace — you always know which service you're calling.</p>
+  <div class="code"><span class="comment">Examples from RFQMGMT:</span>
+/rfq-manager/v1/rfqs              <span class="comment">→ RFQ manager service</span>
+/rfq-manager/v1/workflows         <span class="comment">→ RFQ manager service</span>
+/rfq-chatbot/v1/conversations     <span class="comment">→ Chatbot service</span>
+/rfq-iam/v1/users/me              <span class="comment">→ IAM service</span></div>
+</div>
+
+<!-- CHAPTER 4 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 4</div>
+  <h2>Front-to-Back Design Approach</h2>
+  <p>This is BACAB's core philosophy. The approach is: <strong>business need → technical solution</strong>, never the reverse.</p>
+  <div class="concept concept-red">
+    <div class="concept-label">Wrong Approach (Back-to-Front)</div>
+    <p>Start from database → design entities → create endpoints for each → hope the front-end needs them.</p>
+    <p>This is how RFQ_Blocker happened: a technical solution built before a business need was confirmed.</p>
+  </div>
+  <div class="concept concept-green">
+    <div class="concept-label">Right Approach (Front-to-Back)</div>
+    <p>Start from UI → identify user actions → those become API resources → design the data model to support them.</p>
+    <p>This is how Subtasks and File attachments were discovered — the UI showed them, so they're needed.</p>
+  </div>
+  <h3>The Workflow</h3>
+  <div class="diagram"><span class="highlight">UI Mockups</span> → <span class="accent">User Actions</span> → <span class="success">API Resources</span> → <span class="dim">Data Model</span> → <span class="dim">Swagger</span> → <span class="dim">Implementation</span>
+
+<span class="highlight">What do users</span>   <span class="accent">What can they</span>   <span class="success">What endpoints</span>   <span class="dim">What tables</span>    <span class="dim">Formalize</span>    <span class="dim">Write</span>
+<span class="highlight">see on screen?</span>   <span class="accent">do? (click,</span>    <span class="success">serve these</span>     <span class="dim">support</span>       <span class="dim">the contract</span>  <span class="dim">the code</span>
+                 <span class="accent">view, fill)</span>    <span class="success">actions?</span>         <span class="dim">these APIs?</span></div>
+  <div class="concept concept-blue">
+    <div class="concept-label">What "Viewing" Means</div>
+    <p>A user viewing data on a page IS an interaction. The user opens the page, and the front-end automatically calls the API to fetch data. Any data displayed on screen that comes from the server requires a <code>GET</code> endpoint. You don't need a button click — the page load itself triggers the API call.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 5 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 5</div>
+  <h2>Nested vs. Top-Level Resources</h2>
+  <p>This determines whether a resource gets its own independent endpoints or lives under a parent resource in the URI.</p>
+  <div class="test-box">
+    <div class="test-box-title">The Test</div>
+    <p><strong>"Can the user access this thing independently, across all parents?"</strong></p>
+    <p>If yes → <strong>Top-level resource</strong> (own base endpoint)</p>
+    <p>If no, it only makes sense inside a specific parent → <strong>Nested resource</strong></p>
+  </div>
+  <h3>Evidence from the UI</h3>
+  <table class="vs-table">
+    <tr><th>Resource</th><th>How users access it in the UI</th><th>Result</th></tr>
+    <tr><td><strong>Reminder</strong></td><td>Tasks page shows "all my reminders across all RFQs" globally</td><td>Top-level: <code>/reminders</code></td></tr>
+    <tr><td><strong>Workflow</strong></td><td>Admin page lists all workflows independently, before any RFQ exists</td><td>Top-level: <code>/workflows</code></td></tr>
+    <tr><td><strong>Stage</strong></td><td>User always picks an RFQ first, then sees its stages</td><td>Nested: <code>/rfqs/{id}/stages</code></td></tr>
+    <tr><td><strong>Subtask</strong></td><td>User goes RFQ → Stage → then sees subtasks</td><td>Nested: <code>/rfqs/{id}/stages/{stageId}/subtasks</code></td></tr>
+    <tr><td><strong>File</strong></td><td>Files always belong to a specific stage of a specific RFQ</td><td>Nested: <code>/rfqs/{id}/stages/{stageId}/files</code></td></tr>
+  </table>
+  <div class="concept concept-amber">
+    <div class="concept-label">Important</div>
+    <p>The <strong>database structure doesn't decide the nesting</strong>. You might have an <code>rfq_stage</code> table in the database — that's fine. But the API doesn't expose it as <code>/stages</code> independently because no UI flow needs "show me all stages across all RFQs." The way the user accesses data decides the nesting.</p>
+  </div>
+  <div class="concept concept-red">
+    <div class="concept-label">Common Mistake</div>
+    <p>Modeling an entity in the database and automatically assuming it gets its own independent endpoints. Having an <code>rfq_stage</code> table does NOT mean you need <code>GET /stages</code>. The entity exists in the DB, but the API resource is nested because that's how users access it.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 6 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 6</div>
+  <h2>Hexagonal Architecture (Ports &amp; Adapters)</h2>
+  <p>BACAB's standard architecture. The core idea: your <strong>business logic sits in the center</strong> and is protected from the outside world.</p>
+  <div class="diagram">┌──────────────────────────────────────┐
+│          <span class="dim">ADAPTERS (outer ring)</span>          │
+│     <span class="highlight">REST API</span>    |    <span class="accent">Batch Job</span>         │  ← How you talk to the world
+│                                      │
+│  ┌────────────────────────────────┐  │
+│  │       <span class="dim">PORTS (middle ring)</span>       │  │  ← Interfaces / contracts
+│  │                                │  │
+│  │  ┌──────────────────────────┐  │  │
+│  │  │    <span class="success">DOMAIN (center)</span>       │  │  │  ← Business rules
+│  │  │                          │  │  │
+│  │  │  getOverdueRfqs()        │  │  │
+│  │  │  createRfq()             │  │  │
+│  │  │  checkDeadlines()        │  │  │
+│  │  └──────────────────────────┘  │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘</div>
+  <p><strong>Domain</strong> (center) — the business logic. "How do I create an RFQ? When is an RFQ overdue?" These rules never change regardless of who's calling.</p>
+  <p><strong>Ports</strong> (middle) — interfaces that define what the domain can do. A menu of capabilities.</p>
+  <p><strong>Adapters</strong> (outer) — the different ways to access the domain. REST adapter for HTTP. Batch adapter for scheduled jobs. Both use the same domain.</p>
+  <h3>Without Hexagonal (the problem)</h3>
+  <div class="code"><span class="comment">❌ Business logic MIXED into REST code</span>
+app.get('/rfqs/overdue', (req, res) =&gt; {
+    const rfqs = db.query(<span class="string">"SELECT * FROM rfq WHERE deadline &lt; NOW()"</span>);
+    res.send(rfqs);
+});
+
+<span class="comment">❌ Batch needs same logic? Copy-paste!</span>
+schedule('8am', () =&gt; {
+    const rfqs = db.query(<span class="string">"SELECT * FROM rfq WHERE deadline &lt; NOW()"</span>);
+    sendEmails(rfqs);
+});
+<span class="comment">→ Two places to maintain. Rule changes? Update both. Forget one? Bug.</span></div>
+  <h3>With Hexagonal (the solution)</h3>
+  <div class="code"><span class="comment">✅ Business logic in the DOMAIN (one place)</span>
+function getOverdueRfqs() {
+    return db.query(<span class="string">"SELECT * FROM rfq WHERE deadline &lt; NOW()"</span>);
+}
+
+<span class="comment">✅ REST adapter — thin, just calls domain</span>
+app.get('/rfqs/overdue', (req, res) =&gt; {
+    res.send(getOverdueRfqs());
+});
+
+<span class="comment">✅ Batch adapter — thin, just calls domain</span>
+schedule('8am', () =&gt; {
+    sendEmails(getOverdueRfqs());
+});
+<span class="comment">→ Rule changes? Update once. Done.</span></div>
+  <div class="concept concept-green">
+    <div class="concept-label">The Reflex</div>
+    <p>You don't "choose" hexagonal in specific situations. You <strong>always</strong> keep business logic separate from how it's accessed. The architecture emerges from one discipline: <strong>business logic never lives inside an adapter.</strong></p>
+  </div>
+</div>
+
+<!-- CHAPTER 7 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Batch Processing &amp; Two Mains</h2>
+  <h3>REST vs. Batch</h3>
+  <table class="vs-table">
+    <tr><th></th><th>REST Endpoint</th><th>Batch Process</th></tr>
+    <tr><td><strong>Trigger</strong></td><td>Someone asks (HTTP request)</td><td>Clock fires (scheduled)</td></tr>
+    <tr><td><strong>When</strong></td><td>On demand</td><td>Automatically (e.g., daily at 8 AM)</td></tr>
+    <tr><td><strong>Example</strong></td><td>User clicks "Load RFQ"</td><td>System checks reminders, sends emails</td></tr>
+  </table>
+  <h3>The Two Mains Pattern</h3>
+  <p>Reminders need RFQ data. Two options:</p>
+  <div class="concept concept-red">
+    <div class="concept-label">Option A — Separate MS (problematic)</div>
+    <p>Reminder batch as a separate microservice. Calls <code>rfq_manager</code> via REST for data. Extra overhead, extra network calls, another service to deploy.</p>
+  </div>
+  <div class="concept concept-green">
+    <div class="concept-label">Option B — Two Mains (BACAB's choice)</div>
+    <p>One microservice, two entry points. Main 1 starts the REST server. Main 2 starts the batch scheduler. Both share the same domain layer. No redundant calls, no duplicated code, one database.</p>
+  </div>
+  <div class="diagram">rfq_manager_ms
+├── <span class="highlight">Main 1: REST Adapter</span>  → Front-end calls come in here
+├── <span class="accent">Main 2: Batch Adapter</span> → Reminder scheduler runs here
+│
+└── Both share the <span class="success">SAME DOMAIN</span>:
+    ├── listOverdueRfqs()
+    ├── getRfqDetails()
+    └── checkDeadlines()</div>
+  <div class="analogy">
+    <p>A building with two doors — a front door (REST API for the UI) and a back door (batch for reminders). Both doors lead to the same rooms inside (the domain layer). You don't need a second building and then shout across the street for information.</p>
+  </div>
+  <div class="concept concept-red">
+    <div class="concept-label">BACAB Lesson Learned</div>
+    <p>In a previous project, two microservices shared the same database table. When one changed the schema, it broke the other. Rule: <strong>one microservice = one database.</strong> Never share tables between services.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 8 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>Business Logic &amp; the Domain Layer</h2>
+  <p><strong>Business logic</strong> is the rules specific to your project's real-world problem — how GHI actually works.</p>
+  <p>What happens when a new RFQ is created? When is an RFQ overdue? Can a stage be skipped? What data is required before submission? When should a reminder fire?</p>
+  <p>These rules come from <strong>how GHI works</strong> — not from technology. If GHI used paper and filing cabinets, these rules would still exist.</p>
+  <table class="vs-table">
+    <tr><th>Business Logic (domain)</th><th>NOT Business Logic (adapters)</th></tr>
+    <tr><td>Creating an RFQ and auto-generating stages</td><td>Receiving an HTTP request</td></tr>
+    <tr><td>Calculating if an RFQ is overdue</td><td>Running a job at 8 AM</td></tr>
+    <tr><td>Checking mandatory fields before advancing</td><td>Sending back a JSON response</td></tr>
+    <tr><td>Determining which team owns a stage</td><td>Connecting to the database</td></tr>
+  </table>
+  <div class="concept concept-blue">
+    <div class="concept-label">The Principle</div>
+    <p>Business logic is the <strong>what and why</strong>. Adapters are the <strong>how and when</strong>. The domain doesn't know or care who's calling it.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 9 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 9</div>
+  <h2>Swagger / OpenAPI</h2>
+  <p>Swagger is the <strong>blueprint</strong> you write before coding. It's the formal contract between front-end and back-end.</p>
+  <p>For each endpoint it defines: what URI, what HTTP method, what data goes in (request), what data comes back (response), and what errors can happen.</p>
+  <div class="code"><span class="comment">Example: simplified Swagger for RFQ creation</span>
+
+<span class="method">POST</span> /rfq-manager/v1/rfqs
+  <span class="keyword">Input:</span>  { title, client, industry, country,
+           priority, deadline, owner,
+           description, workflow_id }
+  <span class="keyword">Output:</span> { id, title, client, status,
+           current_stage, created_at }
+  <span class="keyword">Errors:</span> 400 Bad Request
+          401 Unauthorized</div>
+  <div class="concept concept-green">
+    <div class="concept-label">Why It Matters</div>
+    <p>Once Swagger is agreed on, <strong>front-end and back-end work in parallel</strong>. The front-end knows what to send and expect. The back-end knows what to build. Nobody waits. This is the "interface contract."</p>
+  </div>
+</div>
+
+<!-- CHAPTER 10 -->
+<div class="chapter">
+  <div class="chapter-num">Chapter 10</div>
+  <h2>Guiding Principles</h2>
+  <p>The rules that govern every decision — from everything your bosses said.</p>
+  <div class="concept concept-blue">
+    <div class="concept-label">Principle 1 — Front-to-Back, Always</div>
+    <p>Start from the business need (UI) and work toward the technical solution (database). Never the reverse. The UI decides what gets exposed. The data model supports it.</p>
+  </div>
+  <div class="concept concept-green">
+    <div class="concept-label">Principle 2 — One Microservice = One Database</div>
+    <p>Never share database tables between services. If two things need the same data and share many entities, they probably belong in the same microservice.</p>
+  </div>
+  <div class="concept concept-amber">
+    <div class="concept-label">Principle 3 — Don't Over-Split</div>
+    <p>More microservices ≠ better. Every new MS means a new database, deployment, monitoring, and API contracts. Split only when there's a clear difference in business cohesion.</p>
+  </div>
+  <div class="concept concept-red">
+    <div class="concept-label">Principle 4 — V1 = Strictly Necessary</div>
+    <p>Only structuring elements and attributes that will definitely be present. The model will change — don't over-invest in uncertain details. Iterate until reaching a final version.</p>
+  </div>
+  <div class="concept concept-purple">
+    <div class="concept-label">Principle 5 — No Redundancy</div>
+    <p>Don't fall into double and triple maintenance. Use hexagonal architecture to share the domain layer. Design one endpoint and let multiple pages reuse it. One API, multiple consumers.</p>
+  </div>
+  <div class="test-box">
+    <div class="test-box-title">The Complete Workflow — Applies to Any Project</div>
+    <p><strong>1.</strong> Look at the UI mockups — what can the user see and do?</p>
+    <p><strong>2.</strong> Map those actions to API resources and endpoints</p>
+    <p><strong>3.</strong> Adjust the data model to support those endpoints</p>
+    <p><strong>4.</strong> Build the Swagger contract (formalize the interface)</p>
+    <p><strong>5.</strong> Start implementation (controllers, routes, connectors)</p>
+  </div>
+</div>
+
+<footer>
+  <p>RFQMGMT — Learning Guide — Guidara Personal Reference — February 2026</p>
+  <p>Concepts from BACAB Architecture Review + Phase A &amp; B Analysis</p>
+</footer>
+
+</div>
+</body>
+</html>

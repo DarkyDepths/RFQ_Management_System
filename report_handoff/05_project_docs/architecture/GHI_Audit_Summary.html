@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHI Estimation Department — Audit & Solution Blueprint</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0F1A;
+    --bg-card: #111827;
+    --bg-card-hover: #1A2235;
+    --border: #1E293B;
+    --border-accent: #334155;
+    --text: #E2E8F0;
+    --text-muted: #94A3B8;
+    --text-dim: #64748B;
+    --accent-blue: #3B82F6;
+    --accent-blue-glow: rgba(59, 130, 246, 0.15);
+    --accent-red: #EF4444;
+    --accent-red-soft: rgba(239, 68, 68, 0.12);
+    --accent-amber: #F59E0B;
+    --accent-amber-soft: rgba(245, 158, 11, 0.12);
+    --accent-green: #10B981;
+    --accent-green-soft: rgba(16, 185, 129, 0.12);
+    --accent-purple: #8B5CF6;
+    --accent-purple-soft: rgba(139, 92, 246, 0.12);
+    --accent-cyan: #06B6D4;
+    --accent-cyan-soft: rgba(6, 182, 212, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* === HERO === */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--accent-blue-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-label::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent-blue);
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent-blue); }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .hero-meta-item strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* === SECTIONS === */
+  section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+
+  .section-header {
+    margin-bottom: 36px;
+  }
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent-blue);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .section-header p {
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-size: 14px;
+    max-width: 700px;
+  }
+
+  /* === CONTEXT BLOCK === */
+  .context-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .context-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .context-card h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .context-card p {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .context-card.full { grid-column: 1 / -1; }
+
+  /* === MERMAID === */
+  .diagram-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 28px 0;
+    overflow-x: auto;
+  }
+  .diagram-container .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+  .diagram-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  /* === PAIN POINTS === */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .pain-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 0 10px 10px 0;
+    padding: 24px 28px;
+    transition: background 0.2s;
+  }
+  .pain-card:hover { background: var(--bg-card-hover); }
+  .pain-card .pain-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .pain-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent-red);
+    background: var(--accent-red-soft);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .pain-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .pain-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .pain-source {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .source-audit { color: var(--accent-amber); background: var(--accent-amber-soft); }
+  .source-analysis { color: var(--accent-cyan); background: var(--accent-cyan-soft); }
+
+  /* === SOLUTION PILLARS === */
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .pillar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .pillar-card:nth-child(1)::before { background: var(--accent-blue); }
+  .pillar-card:nth-child(2)::before { background: var(--accent-green); }
+  .pillar-card:nth-child(3)::before { background: var(--accent-purple); }
+  .pillar-card:nth-child(4)::before { background: var(--accent-amber); }
+
+  .pillar-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .pillar-card:nth-child(1) .pillar-num { color: var(--accent-blue); }
+  .pillar-card:nth-child(2) .pillar-num { color: var(--accent-green); }
+  .pillar-card:nth-child(3) .pillar-num { color: var(--accent-purple); }
+  .pillar-card:nth-child(4) .pillar-num { color: var(--accent-amber); }
+
+  .pillar-card h4 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .pillar-card p {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .pillar-features {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pillar-feature {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 16px;
+    position: relative;
+  }
+  .pillar-feature::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  /* === EXCEL ANATOMY === */
+  .excel-anatomy {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .excel-sheet {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .excel-sheet .sheet-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .excel-sheet .sheet-desc {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .excel-sheet .sheet-rows {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-amber);
+    margin-top: 4px;
+  }
+
+  /* === PIVOT BLOCK === */
+  .pivot-block {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 28px 0;
+  }
+  .pivot-block h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .pivot-block p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .pivot-block .strike {
+    text-decoration: line-through;
+    color: var(--accent-red);
+    opacity: 0.7;
+  }
+  .pivot-block .highlight {
+    color: var(--accent-green);
+    font-weight: 600;
+  }
+
+  /* === MAPPING TABLE === */
+  .mapping-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13.5px;
+  }
+  .mapping-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-accent);
+  }
+  .mapping-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .mapping-table tr:hover td { background: var(--bg-card); }
+  .mapping-table .pp-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent-red);
+  }
+  .mapping-table .pillar-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .p1 { color: var(--accent-blue); background: var(--accent-blue-glow); }
+  .p2 { color: var(--accent-green); background: var(--accent-green-soft); }
+  .p3 { color: var(--accent-purple); background: var(--accent-purple-soft); }
+  .p4 { color: var(--accent-amber); background: var(--accent-amber-soft); }
+
+  /* === STATS ROW === */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-box .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: #fff;
+  }
+  .stat-box .stat-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* === FOOTER === */
+  .doc-footer {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .context-grid, .pillar-grid { grid-template-columns: 1fr; }
+    .excel-anatomy { grid-template-columns: 1fr 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .hero h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="container">
+  <div class="hero">
+    <div class="hero-label">Confidential — Audit & Solution Blueprint</div>
+    <h1>GHI Estimation Department<br><span>RFQ Lifecycle Intelligence</span></h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Entity:</strong> Gulf Heavy Industries — Albassam Group</div>
+      <div class="hero-meta-item"><strong>Department Focus:</strong> Estimation</div>
+      <div class="hero-meta-item"><strong>Date:</strong> February 2026</div>
+      <div class="hero-meta-item"><strong>Status:</strong> Discovery & Pain Point Analysis</div>
+    </div>
+  </div>
+</div>
+
+<!-- 01 COMPANY CONTEXT -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">01</div>
+      <h2>Company Context & Strategic Importance</h2>
+    </div>
+
+    <div class="context-grid">
+      <div class="context-card">
+        <h4>Organization</h4>
+        <p>GHI is a subsidiary of Albassam Group, handling high-value industrial fabrication projects (pressure vessels, heat exchangers, piping systems).</p>
+      </div>
+      <div class="context-card">
+        <h4>Key Clients</h4>
+        <p>Aramco, SABIC, Al Bawani Group, and other major Saudi industrial players.</p>
+      </div>
+      <div class="context-card">
+        <h4>Departments</h4>
+        <p>Operational Production, HR, Engineering, Estimation, Project Management, Finance, QC, QA, Testing — and others.</p>
+      </div>
+      <div class="context-card">
+        <h4>ERP System</h4>
+        <p>Odoo — currently in very basic use, largely underutilized.</p>
+      </div>
+      <div class="context-card full">
+        <h4>Why GHI Is Critical</h4>
+        <p>GHI handles multi-million SAR projects where margins and risks are both extreme. A single estimation error can lead to catastrophic losses. Albassam leadership engaged this audit because they want to implement AI and lead the market in alignment with Saudi Vision 2030.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value">36</div>
+        <div class="stat-label">Sheets per Workbook</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">90%</div>
+        <div class="stat-label">RFQ Acceptance Rate</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">2</div>
+        <div class="stat-label">RFQ Intake Channels</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">~10 min</div>
+        <div class="stat-label">Feasibility Gut-Check</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 02 AS-IS PROCESS -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <h2>Current RFQ Lifecycle — AS-IS Process</h2>
+      <p>The end-to-end estimation workflow from RFQ reception to final proposal, as observed during the audit.</p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-label">Full RFQ Lifecycle Flow</div>
+      <div class="mermaid">
+flowchart TB
+    subgraph INTAKE["① INTAKE & TRIAGE"]
+        direction LR
+        A1["📧 Email\nDirect from Client"] --> B["RFQ\nReceived"]
+        A2["🌐 SAP Ariba Portal\nMultiple End Users"] --> B
+        B --> C["Dept. Manager\nFeasibility Check\n~10-20 min"]
+        C -->|"No (~10%)"| D["Decline\nNotify Client"]
+        C -->|"Yes (~90%)"| E["Register in\nBidding List"]
+    end
+
+    subgraph REG["② REGISTRATION & CLASSIFICATION"]
+        E --> F["Assign Unique\nReference Number"]
+        F --> G{"Classify"}
+        G -->|"IB"| G1["Internal Bid"]
+        G -->|"IF"| G2["Internal Fabrication"]
+    end
+
+    subgraph DESIGN["③ DESIGN PHASE"]
+        G1 & G2 --> H{"Basic Design\nNeeded?"}
+        H -->|"No"| I["Use Existing\nDesign Data"]
+        H -->|"Yes"| J["Engineering Team\nBasic Design"]
+        I & J --> K["Detailed BOQ / BOM\n36-Sheet Excel Workbook"]
+    end
+
+    subgraph COST["④ COST ESTIMATION ENGINE"]
+        K --> L["Material Cost\nBreak-up & Pricing"]
+        K --> M["Direct & Indirect\nLabour / Man-Hours"]
+        K --> N["Fabrication &\nDesign MH Cost"]
+        K --> O["Consumables,\nNDT, PWHT, Paint"]
+        K --> P["ASME / TEMA\nCompliance Costs"]
+        K --> Q["Transportation,\nInsurance, Financial"]
+        L & M & N & O & P & Q --> R["Bid Summary\n& Top Sheet"]
+    end
+
+    subgraph FAB["⑤ FABRICATION DECISION"]
+        R --> S{"Internal\nFabrication?"}
+        S -->|"Yes"| T["Internal\nFabrication Input"]
+        S -->|"No - Brownfield"| U["Subcontractor\nMaintenance"]
+        S -->|"No - Greenfield"| V["Subcontractor\nNew Fabrication"]
+        T & U & V --> W["Final Estimation\n& Proposal"]
+    end
+
+    subgraph CLOSE["⑥ SUBMISSION & FOLLOW-UP"]
+        W --> X["Bid Approval\nProcess"]
+        X --> Y["Submit Proposal\nto Client"]
+        Y --> Z{"Outcome"}
+        Z -->|"Won"| AA["Awarded Bid\n→ Project Phase"]
+        Z -->|"Lost"| AB["Lost Bid\nNo Feedback Loop"]
+        Z -->|"Pending"| AC["Manual\nFollow-up"]
+    end
+
+    style INTAKE fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style REG fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style DESIGN fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style COST fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style FAB fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style CLOSE fill:#0f172a,stroke:#334155,color:#e2e8f0
+      </div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-label">Estimation Workbook Anatomy — 36 Sheets, One Excel File</div>
+      <div class="mermaid">
+flowchart LR
+    subgraph HEADER["Header & Summary"]
+        S1["Weight Sheet"]
+        S2["Price Sheet"]
+        S3["Top Sheet"]
+        S4["General Info"]
+        S5["Bid Summary"]
+        S6["Schedule"]
+    end
+
+    subgraph CORE["Core Cost Centers"]
+        S7["B-O-Q\n2,210 rows"]
+        S8["Material Break-up\n& Cost Summary"]
+        S9["Direct Labour\n& Hire Cost"]
+        S10["Indirect MH Cost"]
+        S11["Fabrication MH"]
+        S12["Design MH"]
+    end
+
+    subgraph PROCESS["Process & Testing"]
+        S13["Consumables"]
+        S14["Surface Prep\nPaint & Passivation"]
+        S15["NDT\n4,717 rows"]
+        S16["PWHT /\nStress Relieving"]
+        S17["Hydro Testing"]
+        S18["ASME / NB / FEA\nBolt Tensioning"]
+    end
+
+    subgraph LOGISTICS["Logistics & Finance"]
+        S19["Internal Protection\nHelium / N2"]
+        S20["Transportation"]
+        S21["Financial Charges\nBank Guarantees"]
+        S22["Cash Flow"]
+        S23["KOM & Agent\n& Contingency"]
+        S24["Insurance &\nBU Overheads"]
+    end
+
+    subgraph APPROVAL["Approval & Planning"]
+        S25["Bid Approval"]
+        S26["Shop Load"]
+    end
+
+    HEADER --> CORE --> PROCESS --> LOGISTICS --> APPROVAL
+
+    style HEADER fill:#1e3a5f,stroke:#334155,color:#e2e8f0
+    style CORE fill:#1e3a5f,stroke:#334155,color:#e2e8f0
+    style PROCESS fill:#1e3a5f,stroke:#334155,color:#e2e8f0
+    style LOGISTICS fill:#1e3a5f,stroke:#334155,color:#e2e8f0
+    style APPROVAL fill:#1e3a5f,stroke:#334155,color:#e2e8f0
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 03 THE PIVOT -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">03</div>
+      <h2>The Strategic Pivot</h2>
+    </div>
+
+    <div class="pivot-block">
+      <h3>Original Ask → New Direction</h3>
+      <p>
+        GHI initially requested help to <span class="strike">automate BOQ creation using AI</span>. After deep audit, this was determined to be <strong style="color:var(--accent-red);">100% infeasible</strong> — the estimation process is entirely expertise-driven, with no extractable rules, no replicable formulas, and no structured knowledge base. The BOQ's 36 interconnected sheets are filled by senior estimators whose judgment cannot be codified.
+      </p>
+      <p style="margin-top:12px;">
+        <span class="highlight">New approach:</span> Analyze the full RFQ lifecycle end-to-end — from reception to executive reporting — and build an <strong style="color:#fff;">AI-powered RFQ Lifecycle Intelligence Platform</strong> that eliminates every pain point, bottleneck, and communication failure surrounding the estimation process, without attempting to replace the estimators' expertise.
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- 04 PAIN POINTS -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">04</div>
+      <h2>Identified Pain Points</h2>
+      <p>Combined findings from the on-site audit and the subsequent analytical review of the process and workbook.</p>
+    </div>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-01</span>
+          <h4>Inter-Departmental Communication Breakdown</h4>
+        </div>
+        <p>Departments operate in complete silos. No centralized system tracks RFQ status across Estimation, Engineering, Production, QC, or Procurement. Projects have been lost because critical information (e.g., a component deemed infeasible by Engineering) never reached Estimation in time. A single unfeasible piece can kill an entire project — and the signal doesn't propagate.</p>
+        <span class="pain-source source-audit">Audit Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-02</span>
+          <h4>Manual Client Follow-Up & Communication</h4>
+        </div>
+        <p>All client interactions — reminders, responses, follow-ups, deadline tracking — are handled manually. This has directly caused lost projects due to missed deadlines, forgotten follow-ups, and delayed responses. No automation, no alerts, no audit trail of client communication.</p>
+        <span class="pain-source source-audit">Audit Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-03</span>
+          <h4>Zero Executive Visibility — No BI / KPI Layer</h4>
+        </div>
+        <p>GHI and Albassam leadership have no dashboards, no KPIs, no real-time view of the estimation pipeline. They depend entirely on verbal updates or direct questioning. Cannot answer: Where is RFQ X now? What's our win rate? Which clients are most profitable? What's our pipeline value?</p>
+        <span class="pain-source source-audit">Audit Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-04</span>
+          <h4>No Learning from Historical RFQs</h4>
+        </div>
+        <p>Every new RFQ is treated as a completely fresh exercise. No institutional memory, no pattern recognition, no leverage from past bids. Historical pricing, win/loss outcomes, client behavior patterns, and similar project data are never systematically reused.</p>
+        <span class="pain-source source-audit">Audit Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-05</span>
+          <h4>Late Discovery of Infeasibility</h4>
+        </div>
+        <p>Projects can reach advanced stages before a critical blocker is discovered — a mandatory subvendor who can't deliver, a material that's unavailable, or a specification that can't be met. These late-stage discoveries are extremely costly in wasted man-hours and lost opportunity.</p>
+        <span class="pain-source source-audit">Audit Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-06</span>
+          <h4>Excel Workbook — Single Point of Failure</h4>
+        </div>
+        <p>The entire financial model for multi-million SAR projects lives in a single Excel file with 36 interconnected sheets. No version control, no audit trail, no concurrent editing. A broken formula in one sheet silently cascades across the entire estimation. Two people cannot work on the same file simultaneously.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-07</span>
+          <h4>Undocumented Feasibility Expertise</h4>
+        </div>
+        <p>The 10–20 minute feasibility gut-check by the department manager is never recorded or structured. The reasoning behind every go/no-go decision is lost. This expertise cannot be analyzed, learned from, or transferred — it walks out the door when the manager retires.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-08</span>
+          <h4>IB/IF Classification Not Enforcing Downstream Workflows</h4>
+        </div>
+        <p>The IB (Internal Bid) vs. IF (Internal Fabrication) classification determines the entire downstream path, but no system enforces the workflow implications. Different classifications should trigger different department notifications, checklists, and approval gates — currently they don't.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-09</span>
+          <h4>Unmanaged Subvendor & Supplier Risk</h4>
+        </div>
+        <p>The supplier market is highly volatile. Certain clients mandate specific suppliers (RVL for Aramco). But there's no system tracking supplier lead times, historical reliability, price trends, or availability. Estimators call/email and wait. No supplier intelligence layer exists.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-10</span>
+          <h4>Odoo ERP — Underutilized Ghost System</h4>
+        </div>
+        <p>Odoo is deployed but barely used. Likely causes duplicated data entry (Excel + Odoo) or worse — data only in Excel with Odoo perpetually out of date. The ERP is not fulfilling its core purpose, creating data fragmentation across the organization.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-11</span>
+          <h4>No Data-Driven Bid Strategy (Awarded vs. Focused Bids)</h4>
+        </div>
+        <p>GHI makes strategic choices about which bids to focus on (focused bids) vs. standard submissions. But this decision is intuition-based, not data-driven. No analysis of win probability by client, project type, size, or competitive landscape exists to inform bid prioritization.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-header">
+          <span class="pain-id">PP-12</span>
+          <h4>Standards & Compliance Not Triggering Cost Implications</h4>
+        </div>
+        <p>ASME, TEMA, FATI requirements aren't just checkboxes — they trigger specific cost lines (ASME stamp, NB registration, FEA), specific supplier mandates, and specific QC/QA workflows. Currently, these implications may be discovered mid-process rather than flagged automatically at RFQ intake.</p>
+        <span class="pain-source source-analysis">Analytical Finding</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 05 SOLUTION ARCHITECTURE -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">05</div>
+      <h2>Proposed Solution — Four Pillars</h2>
+      <p>An AI-powered RFQ Lifecycle Intelligence Platform built on four interdependent capability pillars.</p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-label">Solution Architecture Overview</div>
+      <div class="mermaid">
+flowchart TB
+    subgraph PLATFORM["RFQ LIFECYCLE INTELLIGENCE PLATFORM"]
+        direction TB
+
+        subgraph P1["PILLAR 1 — Workflow & Tracking Engine"]
+            P1A["Cross-department\nreal-time tracking"]
+            P1B["Role-based access\nmanagement"]
+            P1C["IB/IF workflow\nrouting & enforcement"]
+            P1D["Dependency tracking\n& early warnings"]
+            P1E["Compliance auto-flag\nASME / TEMA / FATI"]
+        end
+
+        subgraph P2["PILLAR 2 — Client Communication Automation"]
+            P2A["AI-assisted\nresponse drafting"]
+            P2B["Smart reminders\n& deadline alerts"]
+            P2C["Portal monitoring\nEmail + SAP Ariba"]
+            P2D["Human-in-the-loop\nconfirmation"]
+        end
+
+        subgraph P3["PILLAR 3 — Executive Intelligence & BI"]
+            P3A["Real-time KPI\ndashboards"]
+            P3B["Pipeline visibility\n& funnel analytics"]
+            P3C["Client profitability\nsegmentation"]
+            P3D["Win/loss analysis\n& bid performance"]
+        end
+
+        subgraph P4["PILLAR 4 — Historical Learning & Prediction"]
+            P4A["Past RFQ pattern\nrecognition"]
+            P4B["Preliminary cost\nrange estimation"]
+            P4C["Client win\nprobability prediction"]
+            P4D["Supplier intelligence\n& risk scoring"]
+            P4E["Bid strategy\noptimization"]
+        end
+    end
+
+    P1 --> P3
+    P2 --> P3
+    P4 --> P1
+    P4 --> P3
+
+    style PLATFORM fill:#0a0f1e,stroke:#3b82f6,color:#e2e8f0
+    style P1 fill:#0f172a,stroke:#3b82f6,color:#e2e8f0
+    style P2 fill:#0f172a,stroke:#10b981,color:#e2e8f0
+    style P3 fill:#0f172a,stroke:#8b5cf6,color:#e2e8f0
+    style P4 fill:#0f172a,stroke:#f59e0b,color:#e2e8f0
+      </div>
+    </div>
+
+    <div class="pillar-grid">
+      <div class="pillar-card">
+        <div class="pillar-num">PILLAR 1</div>
+        <h4>Workflow & Tracking Engine</h4>
+        <p>Real-time cross-departmental visibility into every RFQ, with automated routing based on project classification.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Live RFQ status across all departments</div>
+          <div class="pillar-feature">Role-based permissions (worker → lead → manager → C-suite)</div>
+          <div class="pillar-feature">IB/IF classification triggers different workflow paths</div>
+          <div class="pillar-feature">Dependency tracking with early blocker alerts</div>
+          <div class="pillar-feature">ASME/TEMA/FATI auto-flagging at intake</div>
+          <div class="pillar-feature">Excel workbook version tracking & anomaly detection</div>
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">PILLAR 2</div>
+        <h4>Client Communication Automation</h4>
+        <p>AI-assisted client engagement with smart suggestions and human-in-the-loop approval before every action.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Auto-generated follow-up drafts & reminders</div>
+          <div class="pillar-feature">Deadline tracking with escalation alerts</div>
+          <div class="pillar-feature">Unified inbox: Email + SAP Ariba portal monitoring</div>
+          <div class="pillar-feature">Lead/worker confirms before any outbound action</div>
+          <div class="pillar-feature">Full communication audit trail per RFQ</div>
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">PILLAR 3</div>
+        <h4>Executive Intelligence & BI</h4>
+        <p>Real-time dashboards giving GHI and Albassam leadership full visibility into performance and pipeline.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Pipeline funnel: RFQs received → estimated → submitted → won</div>
+          <div class="pillar-feature">Win rate, hit rate, and margin KPIs</div>
+          <div class="pillar-feature">Client segmentation by profitability & volume</div>
+          <div class="pillar-feature">Department performance & bottleneck analytics</div>
+          <div class="pillar-feature">Focused bid vs. standard bid outcome comparison</div>
+          <div class="pillar-feature">Shop load & capacity utilization</div>
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">PILLAR 4</div>
+        <h4>Historical Learning & Prediction</h4>
+        <p>AI engine that learns from past RFQs to accelerate decisions and reduce risk on future bids.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Similar project matching from historical data</div>
+          <div class="pillar-feature">Preliminary cost range (not detailed — ballpark only)</div>
+          <div class="pillar-feature">Client win probability scoring</div>
+          <div class="pillar-feature">Supplier price trend tracking & risk scoring</div>
+          <div class="pillar-feature">Feasibility pattern recognition from past go/no-go decisions</div>
+          <div class="pillar-feature">Bid strategy optimization: where to invest effort</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 06 PAIN-TO-PILLAR MAPPING -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">06</div>
+      <h2>Pain Point → Solution Mapping</h2>
+      <p>How each identified pain point maps to the solution pillars.</p>
+    </div>
+
+    <table class="mapping-table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Pain Point</th>
+          <th>Solved By</th>
+          <th>Pillar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pp-ref">PP-01</td>
+          <td>Inter-departmental communication breakdown</td>
+          <td>Real-time tracking, role-based visibility, blocker alerts</td>
+          <td><span class="pillar-ref p1">P1</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-02</td>
+          <td>Manual client follow-up</td>
+          <td>AI-assisted drafting, smart reminders, human-in-the-loop</td>
+          <td><span class="pillar-ref p2">P2</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-03</td>
+          <td>Zero executive visibility</td>
+          <td>KPI dashboards, pipeline analytics, profitability reports</td>
+          <td><span class="pillar-ref p3">P3</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-04</td>
+          <td>No learning from historical RFQs</td>
+          <td>Past RFQ pattern matching, cost range estimation</td>
+          <td><span class="pillar-ref p4">P4</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-05</td>
+          <td>Late discovery of infeasibility</td>
+          <td>Dependency tracking, early warning alerts, supplier risk</td>
+          <td><span class="pillar-ref p1">P1</span> <span class="pillar-ref p4">P4</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-06</td>
+          <td>Excel single point of failure</td>
+          <td>Version tracking, anomaly detection, integrity wrapper</td>
+          <td><span class="pillar-ref p1">P1</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-07</td>
+          <td>Undocumented feasibility expertise</td>
+          <td>Structured go/no-go capture → feeds predictive models</td>
+          <td><span class="pillar-ref p1">P1</span> <span class="pillar-ref p4">P4</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-08</td>
+          <td>IB/IF classification not enforcing workflows</td>
+          <td>Classification-triggered workflow routing</td>
+          <td><span class="pillar-ref p1">P1</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-09</td>
+          <td>Unmanaged subvendor & supplier risk</td>
+          <td>Supplier intelligence layer, price trends, risk scoring</td>
+          <td><span class="pillar-ref p4">P4</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-10</td>
+          <td>Odoo ERP underutilized</td>
+          <td>Integration or replacement decision within architecture</td>
+          <td><span class="pillar-ref p1">P1</span> <span class="pillar-ref p3">P3</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-11</td>
+          <td>No data-driven bid strategy</td>
+          <td>Win probability scoring, margin analysis, bid portfolio mgmt</td>
+          <td><span class="pillar-ref p3">P3</span> <span class="pillar-ref p4">P4</span></td>
+        </tr>
+        <tr>
+          <td class="pp-ref">PP-12</td>
+          <td>Standards & compliance not triggering cost flows</td>
+          <td>Auto-flagging at intake, downstream cost implication alerts</td>
+          <td><span class="pillar-ref p1">P1</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<!-- 07 TO-BE PROCESS -->
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-number">07</div>
+      <h2>Envisioned RFQ Lifecycle — TO-BE Process</h2>
+      <p>The transformed process with the intelligence platform integrated at every stage.</p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-label">TO-BE: Intelligent RFQ Lifecycle</div>
+      <div class="mermaid">
+flowchart TB
+    subgraph INTAKE["① SMART INTAKE"]
+        direction LR
+        A["Email + SAP Ariba\nUnified Monitoring"] --> B["Auto-Register\n& Classify IB/IF"]
+        B --> C["AI Feasibility\nPre-Score +\nManager Validation"]
+        C --> D["Historical Match:\nSimilar Past RFQs\n& Preliminary Range"]
+        D --> E["Auto-Flag\nASME / TEMA / FATI\n& Supplier Mandates"]
+    end
+
+    subgraph TRACK["② TRACKED ESTIMATION"]
+        E --> F["Workflow Engine\nRoutes to Correct\nDepartments"]
+        F --> G["Live Status\nDashboard\nAll Stakeholders"]
+        G --> H["Dependency\nMonitoring &\nEarly Warnings"]
+        H --> I["Excel Workbook\nwith Version Control\n& Anomaly Alerts"]
+    end
+
+    subgraph COMM["③ AUTOMATED COMMUNICATION"]
+        I --> J["AI Drafts\nClient Responses"]
+        J --> K["Smart Deadline\nReminders & Alerts"]
+        K --> L["Human Confirms\n→ Action Sent"]
+    end
+
+    subgraph DECIDE["④ INTELLIGENT DECISION"]
+        L --> M["Final Estimation\nBid Summary"]
+        M --> N["AI Win Probability\n& Margin Analysis"]
+        N --> O["Bid Strategy\nRecommendation:\nFocused vs Standard"]
+        O --> P["Bid Approval\nwith Full Data"]
+    end
+
+    subgraph EXEC["⑤ EXECUTIVE LAYER"]
+        P --> Q["Submit to Client"]
+        Q --> R["Outcome Tracked\n→ Feeds Learning"]
+        R --> S["Real-Time BI\nDashboards for\nGHI & Albassam"]
+    end
+
+    style INTAKE fill:#0f172a,stroke:#3b82f6,color:#e2e8f0
+    style TRACK fill:#0f172a,stroke:#3b82f6,color:#e2e8f0
+    style COMM fill:#0f172a,stroke:#10b981,color:#e2e8f0
+    style DECIDE fill:#0f172a,stroke:#f59e0b,color:#e2e8f0
+    style EXEC fill:#0f172a,stroke:#8b5cf6,color:#e2e8f0
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<div class="container">
+  <div class="doc-footer">
+    GHI × Albassam Group — RFQ Lifecycle Intelligence Platform — Audit & Blueprint — February 2026<br>
+    <span style="color:var(--accent-blue);">Confidential</span>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#334155',
+      lineColor: '#475569',
+      secondaryColor: '#1a2235',
+      tertiaryColor: '#0f172a',
+      fontFamily: 'DM Sans, sans-serif',
+      fontSize: '13px',
+      nodeBorder: '#475569',
+      clusterBkg: '#0f172a',
+      clusterBorder: '#334155',
+      edgeLabelBackground: '#111827'
+    },
+    flowchart: {
+      htmlLabels: true,
+      curve: 'basis',
+      padding: 16,
+      nodeSpacing: 40,
+      rankSpacing: 50
+    }
+  });
+</script>
+
+</body>
+</html>

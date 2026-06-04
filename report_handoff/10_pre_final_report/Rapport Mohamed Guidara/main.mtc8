@@ -1,0 +1,24 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode INTRODUCTION}{\reset@font\mtcSfont 32}{section*.19}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.1}Global Architecture and Four-Pillar Layering}{\reset@font\mtcSfont 32}{section.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1.1}The Four Architectural Layers and the Cross-Cutting Copilot}{\reset@font\mtcSSfont 32}{subsection.4.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1.2}The Four Pillars as an Architectural Map}{\reset@font\mtcSSfont 33}{subsection.4.1.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.2}Microservices Inventory and BACAB Pattern}{\reset@font\mtcSfont 34}{section.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.2.1}Service Inventory}{\reset@font\mtcSSfont 34}{subsection.4.2.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.2.2}The BACAB Layered Pattern}{\reset@font\mtcSSfont 35}{subsection.4.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.2.3}Inter-Service Communication}{\reset@font\mtcSSfont 36}{subsection.4.2.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.3}Manager Service: Domain Model and Lifecycle}{\reset@font\mtcSfont 37}{section.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.3.1}Mission and Domain Model}{\reset@font\mtcSSfont 37}{subsection.4.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.3.2}Workflow and Stage Progression}{\reset@font\mtcSSfont 38}{subsection.4.3.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.4}Copilot Service: Trust-Boundary Architecture}{\reset@font\mtcSfont 39}{section.4.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.1}Design Philosophy}{\reset@font\mtcSSfont 39}{subsection.4.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.2}Positioning Against Alternative Conversational AI Patterns}{\reset@font\mtcSSfont 40}{subsection.4.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.3}The Eight Trust Boundaries}{\reset@font\mtcSSfont 40}{subsection.4.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.4}Two Classification Sources, One Plan Factory}{\reset@font\mtcSSfont 42}{subsection.4.4.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.5}The Path Registry as Policy-as-Configuration}{\reset@font\mtcSSfont 43}{subsection.4.4.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.6}The Pipeline and the Five Evidence Sources}{\reset@font\mtcSSfont 43}{subsection.4.4.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.7}Why This Architecture Represents the Project's Primary Innovation}{\reset@font\mtcSSfont 43}{subsection.4.4.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.5}Evidence Boundary}{\reset@font\mtcSfont 44}{section.4.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.6}Platform Integration and ADR Summary}{\reset@font\mtcSfont 44}{section.4.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.6.1}Platform Integration}{\reset@font\mtcSSfont 44}{subsection.4.6.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.6.2}Architectural Decisions}{\reset@font\mtcSSfont 45}{subsection.4.6.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode CONCLUSION}{\reset@font\mtcSfont 45}{subsection.4.6.2}}

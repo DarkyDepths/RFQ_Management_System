@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RFQMGMT — Visual Architecture Package V1</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=Playfair+Display:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fafaf8; --surface:#ffffff; --ink:#1a1a2e; --ink-2:#2d2d2d; --ink-3:#5a5a5a;
+  --ink-4:#8a8a8a; --ink-5:#b0b0b0; --border:#e5e5e0; --border-s:#d0d0c8;
+  --blue:#2563eb; --blue-s:rgba(37,99,235,0.07); --blue-m:rgba(37,99,235,0.15);
+  --green:#059669; --green-s:rgba(5,150,105,0.07); --green-m:rgba(5,150,105,0.15);
+  --red:#dc2626; --red-s:rgba(220,38,38,0.06);
+  --amber:#d97706; --amber-s:rgba(217,119,6,0.07); --amber-m:rgba(217,119,6,0.15);
+  --purple:#7c3aed; --purple-s:rgba(124,58,237,0.07); --purple-m:rgba(124,58,237,0.15);
+  --cyan:#0891b2; --cyan-s:rgba(8,145,178,0.07); --cyan-m:rgba(8,145,178,0.15);
+  --teal:#0d9488; --slate:#475569; --slate-s:rgba(71,85,105,0.07);
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink-2);line-height:1.7;font-size:14.5px;-webkit-font-smoothing:antialiased;}
+.page{max-width:1060px;margin:0 auto;padding:0 36px;}
+code{font-family:'IBM Plex Mono',monospace;font-size:0.85em;background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:3px;}
+
+/* COVER */
+.cover{background:var(--ink);color:#fff;padding:68px 0 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;top:-25%;left:-5%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(217,119,6,0.06) 0%,transparent 70%);}
+.cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--blue),var(--cyan),var(--purple));}
+.cover-ey{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:18px;}
+.cover h1{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,38px);font-weight:700;line-height:1.2;margin-bottom:10px;}
+.cover h1 em{font-style:italic;color:rgba(255,255,255,0.35);font-weight:400;}
+.cover-sub{font-size:15px;color:rgba(255,255,255,0.4);font-weight:300;margin-bottom:32px;max-width:640px;}
+.cover-meta{display:flex;gap:28px;font-size:12px;color:rgba(255,255,255,0.28);flex-wrap:wrap;}
+.cover-meta strong{color:rgba(255,255,255,0.55);font-weight:500;}
+
+/* SECTIONS */
+section{padding:48px 0;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+.sh{margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.sh-n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.sh h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--ink);line-height:1.3;}
+.sh p{color:var(--ink-3);font-size:13.5px;margin-top:4px;}
+h3{font-size:16px;font-weight:600;color:var(--ink);margin:24px 0 12px;}
+p+p{margin-top:10px;}
+
+/* ===== DIAGRAM CANVAS ===== */
+.diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:36px;margin:16px 0;overflow-x:auto;}
+.diagram-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-4);margin-bottom:20px;text-align:center;}
+
+/* ===== DIAGRAM 1: MICROSERVICE BOXES ===== */
+.ms-grid{display:grid;gap:0;position:relative;min-height:520px;}
+
+/* Service boxes */
+.svc{border-radius:10px;padding:16px 18px;position:relative;text-align:center;}
+.svc-name{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.5px;}
+.svc-role{font-size:11.5px;margin-top:4px;line-height:1.45;opacity:0.8;}
+.svc-closed{font-size:9.5px;font-family:'IBM Plex Mono',monospace;opacity:0.5;margin-top:4px;letter-spacing:0.5px;text-transform:uppercase;}
+
+.svc-manager{background:var(--blue-s);border:2px solid var(--blue-m);color:var(--blue);}
+.svc-intel{background:var(--amber-s);border:2px solid var(--amber-m);color:#92400e;}
+.svc-chatbot{background:var(--cyan-s);border:2px solid var(--cyan-m);color:#0e7490;}
+.svc-ui{background:var(--slate-s);border:2px solid rgba(71,85,105,0.15);color:var(--slate);}
+.svc-iam{background:var(--purple-s);border:2px solid var(--purple-m);color:var(--purple);}
+.svc-ext{background:#f8f8f6;border:2px dashed var(--border-s);color:var(--ink-3);border-radius:10px;padding:14px 16px;text-align:center;}
+.svc-ext .svc-name{font-size:10px;color:var(--ink-4);}
+.svc-ext .svc-role{font-size:10.5px;}
+
+/* D1 layout */
+.d1-layout{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto auto;gap:16px;align-items:start;}
+.d1-ui{grid-column:1/4;}
+.d1-iam{grid-column:1/4;}
+.d1-manager{grid-column:1;}
+.d1-intel{grid-column:2;}
+.d1-chatbot{grid-column:3;}
+.d1-ext-row{grid-column:1/4;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;}
+
+/* Connection lines */
+.conn-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0;}
+.conn-line{height:2px;flex:1;max-width:120px;}
+.conn-arrow{font-size:16px;color:var(--ink-4);}
+.conn-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-4);letter-spacing:0.5px;text-align:center;padding:2px 8px;background:var(--bg);border-radius:3px;}
+
+/* Arrow annotations between rows */
+.arrows-row{grid-column:1/4;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center;padding:4px 0;}
+.arr-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.arr-cell .arr-icon{font-size:18px;color:var(--ink-5);line-height:1;}
+.arr-cell .arr-label{font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:var(--ink-4);letter-spacing:0.5px;line-height:1.3;max-width:140px;}
+
+/* ===== DIAGRAM 2: FLOW ===== */
+.flow-track{display:flex;flex-direction:column;gap:0;position:relative;}
+.flow-step{display:grid;grid-template-columns:120px 1fr;gap:0;min-height:70px;}
+.flow-lane{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;padding:16px 8px;display:flex;align-items:flex-start;justify-content:flex-end;text-align:right;line-height:1.3;}
+.flow-lane-manager{color:var(--blue);}
+.flow-lane-intel{color:#92400e;}
+.flow-lane-chatbot{color:#0e7490;}
+.flow-lane-ui{color:var(--slate);}
+.flow-lane-human{color:var(--ink-3);}
+.flow-lane-ext{color:var(--ink-4);}
+
+.flow-content{padding:12px 20px;border-left:3px solid var(--border);position:relative;}
+.flow-content::before{content:'';position:absolute;left:-7px;top:16px;width:10px;height:10px;border-radius:50%;border:2px solid var(--border-s);background:var(--bg);}
+
+.flow-content.fc-manager{border-left-color:var(--blue);}
+.flow-content.fc-manager::before{border-color:var(--blue);background:var(--blue-s);}
+.flow-content.fc-intel{border-left-color:var(--amber);}
+.flow-content.fc-intel::before{border-color:var(--amber);background:var(--amber-s);}
+.flow-content.fc-chatbot{border-left-color:var(--cyan);}
+.flow-content.fc-chatbot::before{border-color:var(--cyan);background:var(--cyan-s);}
+.flow-content.fc-ui{border-left-color:var(--slate);}
+.flow-content.fc-ui::before{border-color:var(--slate);background:var(--slate-s);}
+.flow-content.fc-human{border-left-color:var(--ink-5);}
+.flow-content.fc-human::before{border-color:var(--ink-4);background:#f3f4f6;}
+.flow-content.fc-ext{border-left-color:var(--ink-5);border-left-style:dashed;}
+.flow-content.fc-ext::before{border-color:var(--ink-5);background:#f8f8f6;}
+.flow-content.fc-event{border-left-color:var(--green);}
+.flow-content.fc-event::before{border-color:var(--green);background:var(--green-s);}
+.flow-content.fc-feedback{border-left-color:var(--purple);}
+.flow-content.fc-feedback::before{border-color:var(--purple);background:var(--purple-s);}
+
+.fc-title{font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.fc-desc{font-size:12px;color:var(--ink-3);line-height:1.55;}
+.fc-tags{margin-top:6px;}
+.fc-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.3px;padding:2px 7px;border-radius:3px;margin:1px 3px 1px 0;}
+.tag-event{background:var(--green-s);color:var(--green);}
+.tag-output{background:var(--amber-s);color:#92400e;}
+.tag-data{background:var(--blue-s);color:var(--blue);}
+.tag-human{background:#f3f4f6;color:var(--ink-3);}
+
+/* ===== DIAGRAM 3: TRIGGER TIMELINE ===== */
+.trigger-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+@media(max-width:800px){.trigger-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:500px){.trigger-grid{grid-template-columns:1fr 1fr;}}
+.trigger-card{border-radius:8px;padding:16px;text-align:center;position:relative;}
+.trigger-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:8px 8px 0 0;}
+.tc-num{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;line-height:1;margin-bottom:6px;}
+.tc-name{font-size:11.5px;font-weight:600;line-height:1.3;margin-bottom:8px;}
+.tc-owner{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.5px;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
+.tc-outputs{text-align:left;font-size:10.5px;line-height:1.5;color:var(--ink-3);}
+.tc-outputs span{display:block;padding-left:10px;position:relative;}
+.tc-outputs span::before{content:'→';position:absolute;left:0;color:var(--ink-5);}
+
+.tc-arrival{background:var(--blue-s);border:1px solid var(--blue-m);color:var(--blue);}
+.tc-arrival::before{background:var(--blue);}
+.tc-feasibility{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.tc-feasibility::before{background:var(--green);}
+.tc-estimation{background:var(--amber-s);border:1px solid var(--amber-m);color:#92400e;}
+.tc-estimation::before{background:var(--amber);}
+.tc-workbook{background:var(--red-s);border:1px solid rgba(220,38,38,0.13);color:#991b1b;}
+.tc-workbook::before{background:var(--red);}
+.tc-bid{background:var(--purple-s);border:1px solid var(--purple-m);color:var(--purple);}
+.tc-bid::before{background:var(--purple);}
+.tc-outcome{background:var(--cyan-s);border:1px solid var(--cyan-m);color:#0e7490;}
+.tc-outcome::before{background:var(--cyan);}
+
+/* ===== DIAGRAM 4: DATA OWNERSHIP ===== */
+.do-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:700px){.do-grid{grid-template-columns:1fr;}}
+.do-card{border-radius:10px;padding:22px;position:relative;}
+.do-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0;}
+.do-card h4{font-size:13px;font-weight:600;margin-bottom:4px;}
+.do-card .do-svc{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.5px;margin-bottom:10px;opacity:0.7;}
+.do-card .do-tech{font-family:'IBM Plex Mono',monospace;font-size:10px;margin-bottom:10px;opacity:0.5;}
+.do-card ul{list-style:none;font-size:12px;line-height:1.7;color:var(--ink-3);}
+.do-card ul li::before{content:'·';font-weight:700;margin-right:6px;}
+.do-manager{background:var(--blue-s);border:1px solid var(--blue-m);color:var(--blue);}
+.do-manager::before{background:var(--blue);}
+.do-manager h4{color:var(--blue);}
+.do-intel{background:var(--amber-s);border:1px solid var(--amber-m);color:#92400e;}
+.do-intel::before{background:var(--amber);}
+.do-intel h4{color:#92400e;}
+.do-chatbot{background:var(--cyan-s);border:1px solid var(--cyan-m);color:#0e7490;}
+.do-chatbot::before{background:var(--cyan);}
+.do-chatbot h4{color:#0e7490;}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* NOTES */
+.note{font-size:12.5px;color:var(--ink-4);line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+
+/* FOOTER */
+.doc-footer{padding:32px 0;text-align:center;color:var(--ink-5);font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="page">
+    <div class="cover-ey">RFQMGMT Platform · Visual Architecture</div>
+    <h1>V1 Architecture Package<br/><em>Diagrams & System Views</em></h1>
+    <div class="cover-sub">Four diagrams that explain the platform: who talks to whom, how an RFQ flows from arrival to outcome, when intelligence activates, and who owns which data.</div>
+    <div class="cover-meta">
+      <span><strong>Version</strong> 1.0</span>
+      <span><strong>Scope</strong> V1 — All 5 Microservices</span>
+      <span><strong>Audience</strong> BACAB · GHI · PFE Defense</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ============================================ -->
+  <!-- DIAGRAM 1: V1 MICROSERVICES RELATIONS -->
+  <!-- ============================================ -->
+  <section>
+    <div class="sh">
+      <div class="sh-n">Diagram 01</div>
+      <h2>V1 Microservices Relations</h2>
+      <p>Who talks to whom. High-level service boundaries and interactions. <code>rfq_iam_ms</code> and <code>rfq_ui_ms</code> are shown as closed boxes — important but not the core of this story.</p>
+    </div>
+
+    <div class="diagram">
+      <div class="diagram-title">RFQMGMT Platform — V1 Service Architecture</div>
+
+      <div class="d1-layout">
+        <!-- ROW 1: External sources -->
+        <div class="d1-ext-row" style="grid-column:1/4;">
+          <div class="svc-ext">
+            <div class="svc-name">Client Email / SAP Ariba</div>
+            <div class="svc-role">RFQ source — ZIP with MR package</div>
+          </div>
+          <div class="svc-ext">
+            <div class="svc-name">Azure Blob Storage</div>
+            <div class="svc-role">Document &amp; file storage</div>
+          </div>
+          <div class="svc-ext" style="border-color:transparent;background:transparent;">
+            <!-- Empty placeholder for alignment -->
+          </div>
+        </div>
+
+        <!-- Arrows: external → services -->
+        <div class="arrows-row">
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">RFQ documents arrive</div></div>
+          <div class="arr-cell"><div class="arr-icon">↕</div><div class="arr-label">Read &amp; write files</div></div>
+          <div class="arr-cell"></div>
+        </div>
+
+        <!-- ROW 2: UI -->
+        <div class="d1-ui">
+          <div class="svc svc-ui">
+            <div class="svc-name">rfq_ui_ms</div>
+            <div class="svc-role">Frontend — all user-facing screens, briefing panels, dashboards, chatbot widget</div>
+            <div class="svc-closed">Closed box · Consumes all backend APIs</div>
+          </div>
+        </div>
+
+        <!-- Arrows: UI → backend -->
+        <div class="arrows-row">
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">REST API calls</div></div>
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">Query intelligence</div></div>
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">Chat messages</div></div>
+        </div>
+
+        <!-- ROW 3: IAM -->
+        <div class="d1-iam">
+          <div class="svc svc-iam">
+            <div class="svc-name">rfq_iam_ms</div>
+            <div class="svc-role">Authentication &amp; authorization boundary — all API calls pass through</div>
+            <div class="svc-closed">Closed box · Auth gateway</div>
+          </div>
+        </div>
+
+        <!-- Arrows: IAM → core services -->
+        <div class="arrows-row">
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">Authorized requests</div></div>
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">Authorized requests</div></div>
+          <div class="arr-cell"><div class="arr-icon">↓</div><div class="arr-label">Authorized requests</div></div>
+        </div>
+
+        <!-- ROW 4: Core services -->
+        <div class="d1-manager">
+          <div class="svc svc-manager">
+            <div class="svc-name">rfq_manager_ms</div>
+            <div class="svc-role">Operational lifecycle engine — RFQs, workflows, stages, files, notes</div>
+          </div>
+        </div>
+        <div class="d1-intel">
+          <div class="svc svc-intel">
+            <div class="svc-name">rfq_intelligence_ms</div>
+            <div class="svc-role">Shared intelligence engine — parsing, matching, cost analysis, KPIs</div>
+          </div>
+        </div>
+        <div class="d1-chatbot">
+          <div class="svc svc-chatbot">
+            <div class="svc-name">rfq_chatbot_ms</div>
+            <div class="svc-role">Thin conversational layer — sessions, intent, response UX</div>
+          </div>
+        </div>
+
+        <!-- Inter-service arrows -->
+        <div class="arrows-row" style="margin-top:8px;">
+          <div class="arr-cell">
+            <div class="arr-label" style="max-width:160px;">Events: rfq.created, workbook.uploaded, outcome.recorded</div>
+            <div class="arr-icon">→</div>
+          </div>
+          <div class="arr-cell">
+            <div class="arr-label" style="max-width:160px;">Structured JSON APIs (briefings, similar projects, cost ranges, KPIs)</div>
+          </div>
+          <div class="arr-cell">
+            <div class="arr-icon">←</div>
+            <div class="arr-label" style="max-width:160px;">Calls intelligence APIs + manager APIs to answer questions</div>
+          </div>
+        </div>
+
+        <!-- Azure OpenAI — connects only to intelligence + chatbot -->
+        <div style="grid-column:1/4;display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-top:10px;">
+          <div></div>
+          <div class="svc-ext" style="display:flex;align-items:center;gap:16px;padding:10px 18px;">
+            <div>
+              <div class="svc-name">Azure OpenAI</div>
+              <div class="svc-role">LLM inference — used only by intelligence (P1 parsing, optional caveats) and chatbot (conversation reasoning)</div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-4);text-align:center;flex-shrink:0;line-height:1.5;">↕ intelligence<br/>↕ chatbot<br/><span style="color:var(--red);font-weight:600;">✕ manager</span></div>
+          </div>
+        </div>
+
+        <!-- ROW 5: Databases -->
+        <div class="d1-ext-row" style="grid-column:1/4;margin-top:8px;">
+          <div class="svc-ext">
+            <div class="svc-name">Operational DB</div>
+            <div class="svc-role">PostgreSQL — owned by manager</div>
+          </div>
+          <div class="svc-ext">
+            <div class="svc-name">Historical / Analytical DB</div>
+            <div class="svc-role">Owned by intelligence — separate schema</div>
+          </div>
+          <div class="svc-ext">
+            <div class="svc-name">Session Store</div>
+            <div class="svc-role">Owned by chatbot — conversations &amp; history</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div> Manager (operational lifecycle)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div> Intelligence (analytical brain)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan);"></div> Chatbot (conversational layer)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div> IAM (auth boundary)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--slate);"></div> UI (frontend)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--border-s);border:1px dashed var(--ink-5);"></div> External systems</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Key interaction patterns:</strong> Manager → Intelligence is primarily event-driven (lifecycle events trigger proactive intelligence). Intelligence → consumers is request-response (structured JSON APIs). Chatbot → Intelligence and Chatbot → Manager are both synchronous API calls. All services share the auth boundary through IAM. Each core service owns its own database — no shared DB.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- DIAGRAM 2: END-TO-END RFQ FLOW -->
+  <!-- ============================================ -->
+  <section>
+    <div class="sh">
+      <div class="sh-n">Diagram 02</div>
+      <h2>End-to-End RFQ Lifecycle Flow</h2>
+      <p>The "movie" of the platform — what happens from the moment an RFQ arrives to the moment its outcome is recorded. Each step shows who is responsible and what is produced.</p>
+    </div>
+
+    <div class="diagram" style="padding:28px 24px;">
+      <div class="diagram-title">RFQ Journey — From Arrival to Outcome</div>
+
+      <div class="flow-track">
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-ext">External</div>
+          <div class="flow-content fc-ext">
+            <div class="fc-title">1. RFQ Arrives</div>
+            <div class="fc-desc">Client sends email with ZIP file containing MR package (numbered folder tree: 00-Approval through 15-Notes to Vendor, plus BOM, RVL, specs, standards, drawings). May also arrive via SAP Ariba portal.</div>
+            <div class="fc-tags"><span class="fc-tag tag-data">ZIP / MR package</span><span class="fc-tag tag-data">Email / SAP Ariba</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-manager">Manager</div>
+          <div class="flow-content fc-manager">
+            <div class="fc-title">2. RFQ Registered</div>
+            <div class="fc-desc"><code>rfq_manager_ms</code> creates the RFQ record, assigns a workflow, clones stage instances, and stores documents in Azure Blob Storage. Status moves to "In preparation."</div>
+            <div class="fc-tags"><span class="fc-tag tag-event">rfq.created event published</span><span class="fc-tag tag-data">Files → Azure Blob</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-intel">Intelligence</div>
+          <div class="flow-content fc-intel">
+            <div class="fc-title">3. Proactive Intelligence — Briefing Generated</div>
+            <div class="fc-desc"><code>rfq_intelligence_ms</code> receives the event and activates automatically. Two-layer parsing: deterministic extraction (folder tree, BOM Excel, standard filenames) + LLM for unstructured docs (specs, scope, QA/QC). Produces the <strong>Intelligence Briefing</strong> — a persistent dossier with: document understanding, similar past projects (partial similarity — Layers 1+2), preliminary cost envelope, client history, compliance flags, supplier signals.</div>
+            <div class="fc-tags"><span class="fc-tag tag-output">Intelligence Briefing</span><span class="fc-tag tag-output">Compliance Flags</span><span class="fc-tag tag-output">Supplier Signals</span><span class="fc-tag tag-output">Historical DB enriched</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-ui">UI</div>
+          <div class="flow-content fc-ui">
+            <div class="fc-title">4. Briefing Available on RFQ Overview</div>
+            <div class="fc-desc">The UI displays the briefing as a panel on the RFQ overview page. Sections render progressively as they complete. Manager opens the RFQ and the system has already done homework.</div>
+            <div class="fc-tags"><span class="fc-tag tag-output">Briefing panel</span><span class="fc-tag tag-human">Manager reviews</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-human">Human</div>
+          <div class="flow-content fc-human">
+            <div class="fc-title">5. Feasibility Decision</div>
+            <div class="fc-desc">Department manager reviews the briefing and makes go/no-go decision with data context instead of undocumented gut check. Decision captured structurally — reasoning, risk factors — feeding future analytical patterns.</div>
+            <div class="fc-tags"><span class="fc-tag tag-data">Decision → Historical DB</span><span class="fc-tag tag-human">PP-07 solved</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-human">Human</div>
+          <div class="flow-content fc-human">
+            <div class="fc-title">6. Estimation — Workbook In Progress</div>
+            <div class="fc-desc">Estimator works on the 36-sheet workbook (their domain — the platform does not guide or prescribe). Historical reference context is available on demand through the briefing, the RFQ overview, or the chatbot. Pull-based: the estimator consults when they want to.</div>
+            <div class="fc-tags"><span class="fc-tag tag-human">Expertise-driven work</span><span class="fc-tag tag-output">Benchmarks on demand</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-chatbot">Chatbot</div>
+          <div class="flow-content fc-chatbot" style="border-left-style:dashed;">
+            <div class="fc-title" style="font-size:12.5px;">Available throughout — Thin Orchestrator</div>
+            <div class="fc-desc">At any point from step 4 onward, a user can open the chatbot. It does not own any lifecycle step. Its role is to <strong>navigate, explain, and extend</strong> intelligence: "show me the briefing for this RFQ" → calls intelligence. "What stage is this RFQ at?" → calls manager. "Find similar projects with PWHT" → calls intelligence. "What if we used 316L stainless?" → calls intelligence cost pipeline. The chatbot orchestrates calls to other services and presents the answers conversationally.</div>
+            <div class="fc-tags"><span class="fc-tag" style="background:var(--cyan-s);color:#0e7490;">Calls rfq_intelligence_ms</span><span class="fc-tag" style="background:var(--blue-s);color:var(--blue);">Calls rfq_manager_ms</span><span class="fc-tag tag-human">Owns only conversation UX</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-manager">Manager</div>
+          <div class="flow-content fc-manager">
+            <div class="fc-title">7. Workbook Uploaded</div>
+            <div class="fc-desc"><code>rfq_manager_ms</code> receives the estimation workbook file upload (type: "Estimation Workbook"). File stored in Azure Blob.</div>
+            <div class="fc-tags"><span class="fc-tag tag-event">workbook.uploaded event published</span><span class="fc-tag tag-data">Workbook → Azure Blob</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-intel">Intelligence</div>
+          <div class="flow-content fc-intel">
+            <div class="fc-title">8. Workbook Validation — "This Deserves Review"</div>
+            <div class="fc-desc"><code>rfq_intelligence_ms</code> parses the workbook deterministically (same template, fixed cell positions). Compares values against historical patterns. Three safe anomaly families: (1) structural/completeness gaps, (2) benchmark outliers vs. similar projects, (3) briefing-vs-actual deviations. Posture: review, not judgment.</div>
+            <div class="fc-tags"><span class="fc-tag tag-output">Validation Report</span><span class="fc-tag tag-output">Anomaly Flags</span><span class="fc-tag tag-output">Briefing vs. Actual Gap</span><span class="fc-tag tag-output">Historical DB enriched</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-intel">Intelligence</div>
+          <div class="flow-content fc-intel">
+            <div class="fc-title">9. Bid Strategy Support</div>
+            <div class="fc-desc">Before bid submission, intelligence provides margin-vs-win-probability analysis: "at 8% margin, similar projects had 65% win rate with this client." 3-scenario cost range with confidence levels. <strong>These are advisory historical signals, not pricing recommendations.</strong> The bid decision remains entirely with GHI leadership — intelligence provides context, not instruction.</div>
+            <div class="fc-tags"><span class="fc-tag tag-output">Win Probability Signal</span><span class="fc-tag tag-output">Margin Analysis</span><span class="fc-tag tag-human">PP-11 solved</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-manager">Manager</div>
+          <div class="flow-content fc-manager">
+            <div class="fc-title">10. Outcome Recorded</div>
+            <div class="fc-desc">RFQ reaches terminal state: won, lost, or declined. <code>rfq_manager_ms</code> records the outcome.</div>
+            <div class="fc-tags"><span class="fc-tag tag-event">outcome.recorded event published</span></div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-lane flow-lane-intel">Intelligence</div>
+          <div class="flow-content fc-feedback">
+            <div class="fc-title">11. Feedback Loop — The System Learns</div>
+            <div class="fc-desc">The outcome enriches the historical database. The system now knows: for this vessel type, with this client, at this margin, the result was X. Future similarity matching becomes more precise, cost ranges tighter, confidence higher. No retraining needed — the database grows organically.</div>
+            <div class="fc-tags"><span class="fc-tag tag-data">Outcome → Historical DB</span><span class="fc-tag tag-output">Future intelligence improved</span><span class="fc-tag tag-output">Similarity weights refined (Phase 2+)</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="legend" style="margin-top:20px;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div> rfq_manager_ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div> rfq_intelligence_ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan);"></div> rfq_chatbot_ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--slate);"></div> rfq_ui_ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d1d5db;"></div> Human action</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div> Event published</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div> Feedback loop</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Chatbot's role in the flow:</strong> The chatbot is shown as a dashed side-lane because it does not own any lifecycle step — it is available throughout. Its role is thin orchestration: receive a user question, determine which backend service has the answer (intelligence for analytical data, manager for operational state), call the right API, and present the response conversationally. It produces no intelligence of its own.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- DIAGRAM 3: INTELLIGENCE TRIGGERS & OUTPUTS -->
+  <!-- ============================================ -->
+  <section>
+    <div class="sh">
+      <div class="sh-n">Diagram 03</div>
+      <h2>Intelligence Triggers & Outputs</h2>
+      <p>When <code>rfq_intelligence_ms</code> activates, what triggers it, and what it produces at each moment.</p>
+    </div>
+
+    <div class="diagram">
+      <div class="diagram-title">Six Intelligence Moments Across the RFQ Lifecycle</div>
+
+      <div class="trigger-grid">
+        <div class="trigger-card tc-arrival">
+          <div class="tc-num">T1</div>
+          <div class="tc-name">RFQ Arrival</div>
+          <div class="tc-owner">Mode: Proactive</div>
+          <div class="tc-outputs">
+            <span>Intelligence Briefing</span>
+            <span>Similar projects</span>
+            <span>Cost envelope</span>
+            <span>Compliance flags</span>
+            <span>Supplier signals</span>
+            <span>Client history</span>
+          </div>
+        </div>
+
+        <div class="trigger-card tc-feasibility">
+          <div class="tc-num">T2</div>
+          <div class="tc-name">Feasibility Decision</div>
+          <div class="tc-owner">Mode: Proactive</div>
+          <div class="tc-outputs">
+            <span>Decision capture</span>
+            <span>Historical enrichment</span>
+            <span>Pattern learning</span>
+          </div>
+        </div>
+
+        <div class="trigger-card tc-estimation">
+          <div class="tc-num">T3</div>
+          <div class="tc-name">During Estimation</div>
+          <div class="tc-owner">Mode: Reactive</div>
+          <div class="tc-outputs">
+            <span>Reference ranges</span>
+            <span>Comparable contexts</span>
+            <span>Chatbot Q&A</span>
+          </div>
+        </div>
+
+        <div class="trigger-card tc-workbook">
+          <div class="tc-num">T4</div>
+          <div class="tc-name">Workbook Upload</div>
+          <div class="tc-owner">Mode: Proactive</div>
+          <div class="tc-outputs">
+            <span>Structural checks</span>
+            <span>Benchmark outliers</span>
+            <span>Briefing vs. actual</span>
+            <span>DB enrichment</span>
+          </div>
+        </div>
+
+        <div class="trigger-card tc-bid">
+          <div class="tc-num">T5</div>
+          <div class="tc-name">Bid Decision</div>
+          <div class="tc-owner">Mode: Reactive · Advisory only</div>
+          <div class="tc-outputs">
+            <span>Margin vs. win prob.</span>
+            <span>Client patterns</span>
+            <span>Bid strategy signal</span>
+            <span style="font-style:italic;opacity:0.7;">Not pricing recommendations</span>
+          </div>
+        </div>
+
+        <div class="trigger-card tc-outcome">
+          <div class="tc-num">T6</div>
+          <div class="tc-name">Outcome Recorded</div>
+          <div class="tc-owner">Mode: Proactive</div>
+          <div class="tc-outputs">
+            <span>Feedback loop</span>
+            <span>Historical enrichment</span>
+            <span>KPI update</span>
+            <span>Weight refinement</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Proactive vs. Reactive:</strong> T1, T2, T4, and T6 are proactive — the system works automatically without being asked, triggered by lifecycle events. T3 and T5 are reactive — the system responds when a user (or the chatbot) asks a question. <strong>Aggregate mode</strong> (Mode 3) is not tied to a specific trigger — it serves portfolio-level analytics on demand for dashboards and executive views.
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- DIAGRAM 4: DATA OWNERSHIP -->
+  <!-- ============================================ -->
+  <section>
+    <div class="sh">
+      <div class="sh-n">Diagram 04</div>
+      <h2>Data Ownership</h2>
+      <p>Each core service owns its own database. No shared DB. Intelligence receives data via events and optional REST reads — it never writes to the operational database.</p>
+    </div>
+
+    <div class="diagram">
+      <div class="diagram-title">Database Ownership — Three Bounded Contexts</div>
+
+      <div class="do-grid">
+        <div class="do-card do-manager">
+          <h4>Operational Database</h4>
+          <div class="do-svc">Owned by rfq_manager_ms</div>
+          <div class="do-tech">PostgreSQL · Transactional writes</div>
+          <ul>
+            <li>Live RFQ records &amp; status</li>
+            <li>Workflow templates &amp; stage instances</li>
+            <li>Stage progress &amp; blocker state</li>
+            <li>Subtasks &amp; assignments</li>
+            <li>Notes (append-only)</li>
+            <li>File metadata (refs to Blob)</li>
+            <li>Deadlines &amp; reminders</li>
+            <li>History / audit log</li>
+          </ul>
+        </div>
+
+        <div class="do-card do-intel">
+          <h4>Historical &amp; Analytical Database</h4>
+          <div class="do-svc">Owned by rfq_intelligence_ms</div>
+          <div class="do-tech">Schema evolves independently</div>
+          <ul>
+            <li>Parsed RFQ metadata (structured JSON)</li>
+            <li>Workbook extracted data</li>
+            <li>Cost breakdowns &amp; benchmarks</li>
+            <li>Similarity feature vectors</li>
+            <li>Intelligence Briefings (persistent artifacts)</li>
+            <li>Validation &amp; anomaly reports</li>
+            <li>Outcome records &amp; feedback data</li>
+            <li>Supplier history &amp; price trends</li>
+            <li>Aggregate KPIs &amp; portfolio analytics</li>
+            <li>Similarity weight calibration data</li>
+          </ul>
+        </div>
+
+        <div class="do-card do-chatbot">
+          <h4>Session Store</h4>
+          <div class="do-svc">Owned by rfq_chatbot_ms</div>
+          <div class="do-tech">Conversation-optimized</div>
+          <ul>
+            <li>Conversation sessions</li>
+            <li>Message history</li>
+            <li>User intent context</li>
+            <li>RFQ context resolution state</li>
+            <li>Guardrail / fallback config</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px 0 8px;color:var(--ink-4);font-size:12px;">
+        <div style="display:inline-flex;align-items:center;gap:12px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);">rfq_manager_ms</span>
+          <span>—— events ——→</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#92400e;">rfq_intelligence_ms</span>
+          <span>←— API calls ——</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0e7490;">rfq_chatbot_ms</span>
+        </div>
+      </div>
+
+      <!-- Shared infrastructure strip -->
+      <div style="margin-top:16px;padding:14px 20px;background:#f8f8f6;border:2px dashed var(--border-s);border-radius:8px;display:flex;align-items:center;gap:16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);flex-shrink:0;">Shared Infrastructure</div>
+        <div style="flex:1;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--ink-3);">Azure Blob Storage</div>
+          <div style="font-size:11px;color:var(--ink-4);">—</div>
+          <div style="font-size:11.5px;color:var(--ink-4);line-height:1.45;">Document &amp; file content (MR packages, workbooks, drawings, specs). Not a database — no business logic, no queries. Manager writes file references. Intelligence reads file content for parsing. Shared by all services that need document access.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Data flow principle:</strong> Manager publishes events (rfq.created, workbook.uploaded, outcome.recorded). Intelligence subscribes, processes, and stores results in its own DB. Chatbot calls Intelligence and Manager APIs to serve user queries — it stores only conversation state. Azure Blob Storage is shared infrastructure for file content but is not a database.
+    </div>
+  </section>
+
+  <div class="doc-footer">
+    <p>RFQMGMT Visual Architecture Package V1 · BACAB Consulting × GHI / Albassam Group</p>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+% @Author: Mouna REKIK
+% @Date:   2024-10-11 / 12:30
+% @Last Modified by:   Mouna REKIK
+% @Last Modified time: 
+
+\documentclass[12pt, oneside, a4paper]{main}
+
+\graphicspath{{images/}}
+
+%% TODO: Remove this function when done %%
+%\newcommand\todoin[2][]{\todo[inline, caption={2do}, #1]{
+%\begin{minipage}{\textwidth-4pt}#2\end{minipage}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Include useful commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\include{Commands}
+\dominitoc
+
+    \input{chapitre/00-PageDeGarde}
+    % \doublespacing{}% Double spacing between lines
+    \pagenumbering{roman}% i ii iii iv ...
+    \sloppy
+    \linespread{1.2}
+    \input{chapitre/01-Dedication}
+    
+    \input{chapitre/02-Remerciement}
+    \doublespacing{}
+   
+    \addtocontents{toc}{\protect\thispagestyle{MyStyle}}
+    \renewcommand*\contentsname{TABLE DES MATIÈRES}
+    \begin{spacing}{1}
+    \tableofcontents
+    \end{spacing}
+
+    \addtocontents{lof}{\protect\thispagestyle{MyStyle}}
+    \renewcommand{\listfigurename}{LISTE DES FIGURES}
+    \begin{spacing}{1}
+    \listoffigures
+    \end{spacing}
+    \addcontentsline{toc}{chapter}{\listfigurename}
+    \adjustmtc
+
+    \addtocontents{lot}
+    {\protect\thispagestyle{MyStyle}}
+    \renewcommand{\listtablename}{LISTE DES TABLEAUX}
+    \begin{spacing}{1}
+    \listoftables
+    \end{spacing}
+    \addcontentsline{toc}{chapter}{\listtablename}
+    \adjustmtc
+    
+    \input{chapitre/03-ListeDesAbr}
+    
+    % decrease spacing between lines
+    \setstretch{1.3}
+    \setlength{\parskip}{-2pt}
+
+    \clearpage
+    \pagenumbering{arabic}% 1 2 3 4 5
+    \input{chapitre/04-IntroductionGeneral}
+
+    % \doublespacing{}% Double spacing between lines
+    %\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+    
+    \input{chapitre/05-Chapitre1}
+
+    \input{chapitre/06-Chapitre2}
+    
+    \input{chapitre/07-Chapitre3}
+    
+    \input{chapitre/08-ConclusionGenerale}
+
+    \input{chapitre/09-Bibliographie}
+
+    \input{chapitre/10-Webographie}
+    \newpage
+    \let\clearpage\relax
+\let\cleardoublepage\relax
+\includepdf[pages=1]{chapitre/DosDuRapport.pdf}
+
+
+
+    % \input{chapitre/11-Annexes}
+    
+    % \input{chapitre/12-DosDuRapport}
+    
+% \printbibliography
+\end{document}

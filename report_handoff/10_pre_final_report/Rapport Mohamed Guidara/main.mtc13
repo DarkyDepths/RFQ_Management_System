@@ -1,0 +1,21 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.1}Detailed Use Case Descriptions}{\reset@font\mtcSfont 72}{section.Alph0.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.1}UC-01, Register RFQ}{\reset@font\mtcSSfont 72}{subsection.Alph0.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.2}UC-02, Advance RFQ Stage}{\reset@font\mtcSSfont 72}{subsection.Alph0.1.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.3}UC-03, Manage Stage Artifacts}{\reset@font\mtcSSfont 73}{subsection.Alph0.1.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.4}UC-04, Configure Reminders}{\reset@font\mtcSSfont 73}{subsection.Alph0.1.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.5}UC-05, Consult Pipeline Analytics}{\reset@font\mtcSSfont 73}{subsection.Alph0.1.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.6}UC-06, Query Copilot in Portfolio Mode}{\reset@font\mtcSSfont 73}{subsection.Alph0.1.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.7}UC-07, Query Copilot in RFQ-Bound Mode}{\reset@font\mtcSSfont 74}{subsection.Alph0.1.7}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.1.8}UC-08, Manage Workflow Templates}{\reset@font\mtcSSfont 74}{subsection.Alph0.1.8}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.2}Product Backlog}{\reset@font\mtcSfont 74}{section.Alph0.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.3}Path Registry Structure}{\reset@font\mtcSfont 75}{section.Alph0.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.4}Anti-Drift Tests and Test Invocation Evidence}{\reset@font\mtcSfont 76}{section.Alph0.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.4.1}Anti-Drift Test Files (Copilot Service)}{\reset@font\mtcSSfont 76}{subsection.Alph0.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.4.2}Test Invocations and Pass Counts}{\reset@font\mtcSSfont 77}{subsection.Alph0.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {A.4.3}Frontend Source-Contract Scripts}{\reset@font\mtcSSfont 77}{subsection.Alph0.4.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.5}Golden Scenario Test Set}{\reset@font\mtcSfont 77}{section.Alph0.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.6}Postman Validation Structure}{\reset@font\mtcSfont 77}{section.Alph0.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.7}Integration Paths}{\reset@font\mtcSfont 78}{section.Alph0.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.8}Business Impact Mapping}{\reset@font\mtcSfont 78}{section.Alph0.8}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.9}Limitations Register}{\reset@font\mtcSfont 79}{section.Alph0.9}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {A.10}Architectural Decisions Register}{\reset@font\mtcSfont 80}{section.Alph0.10}}

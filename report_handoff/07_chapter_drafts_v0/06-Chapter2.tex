@@ -1,0 +1,399 @@
+\chapter{Requirements, Methodology, and Project Management}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section{INTRODUCTION}
+This chapter formalizes the engineering structure of the project. It begins by identifying the stakeholders and actors that shape the system's requirements, then presents the functional and non-functional requirements derived from the audit findings of the previous chapter. The chapter continues with the product backlog, the use case decomposition, and the activity diagrams that capture the most consequential workflows. It then presents the project management practices that disciplined the work, including the choice of Scrumban as the iteration framework, the architectural decision register, and the risk management practice. The chapter closes with a traceability matrix that links each requirement to the module that implements it and to the validation evidence that supports it in Chapter 5.
+
+\section{Stakeholders and Actors}
+The system serves and answers to two distinct populations. The first is the population of \textit{stakeholders}: the people whose expectations frame the project's definition of success but who do not necessarily interact with the platform in its operational form. The second is the population of \textit{actors}: the roles that interact with Itqan through its user interfaces, its API, or its conversational layer. Both populations must be characterized explicitly because they shape requirements in different ways.
+
+\subsection*{Project Stakeholders}
+Four stakeholders shape the success criteria of this project. The \textbf{academic supervisor} at \mbox{ENET'COM} ensures the work meets the methodological and reporting standards of an end-of-studies project, and is the primary audience for early report drafts and architectural decision reviews. The \textbf{professional supervisor} at \hostCompany\ ensures the work delivers value to the firm and to its client, and is the primary audience for weekly progress updates and demo-ready milestones. The \textbf{technical and leadership stakeholders at \clientCompany} ensure the implemented capabilities reflect the operational reality observed during the audit, and are the primary audience for incremental functional demos. The \textbf{academic jury} evaluates the project at its defense and is the audience for the final report, the defense presentation, and the validation evidence that supports both. Each stakeholder operates on a different cadence, expects different artifacts, and applies a different evaluation lens. Table~\ref{tab:stakeholders} summarizes how these expectations are managed throughout the project.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{3.2cm}|p{2.4cm}|p{4.5cm}|p{4.0cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Stakeholder} & \textbf{Cadence} & \textbf{Alignment Approach} & \textbf{Proof Artifacts} \\ \hline
+Academic supervisor & Bi-weekly & Clear scope definition, documented architectural decisions, early report drafts & Control Center, Decision Register, report drafts \\ \hline
+Professional supervisor & Weekly & Structured progress updates, visible deliverables, scope and deadline discipline & Execution log, KPI dashboard, demos \\ \hline
+GHI technical and leadership stakeholders & Weekly & Incremental functional demos, focus on lifecycle use cases observed during audit & Scrumban board, demo recordings, execution log \\ \hline
+Academic jury & Defense only & Structured report, honest discussion of scope and limits, defended validation results & Final report, defense slides, validation evidence \\ \hline
+\end{tabular}
+\caption{Stakeholder alignment matrix showing the cadence, alignment approach, and proof artifacts for each project stakeholder}
+\label{tab:stakeholders}
+\end{table}
+
+\subsection*{System Actors}
+The actors that interact with Itqan correspond to the roles observed at GHI during the audit and to the additional administrative roles that any production deployment requires. Six actors are distinguished, each with responsibilities that the platform must support.
+
+The \textbf{Estimation manager} oversees the RFQ portfolio, performs the initial feasibility check at intake, classifies incoming RFQs, and approves bids before submission to the client. The \textbf{Estimator} performs the detailed cost work for each RFQ assigned to them, advances the RFQ through the cost estimation phase, and submits the completed workbook for internal review. The \textbf{Department user} represents the engineering, production, quality control, and procurement contributors who provide inputs to specific stages of the lifecycle and whose blockers must be visible to the rest of the organization. The \textbf{Executive} is a leadership-level actor (typically the General Manager of GHI or senior leadership at \clientCompany) who consumes pipeline-level views, win-loss analytics, and bottleneck reports without typically operating on individual RFQs. The \textbf{Administrator} manages user accounts, role assignments, workflow templates, and platform configuration. The \textbf{Copilot user} is a cross-cutting role rather than a separate person: any of the actors above can interact with the platform through the conversational layer to query the state of an RFQ, retrieve evidence-grounded answers about the lifecycle, or surface analytical observations.
+
+The use case diagram in Section 2.6 presents how these actors interact with the system at a higher level of abstraction.
+
+\section{Functional Requirements}
+The functional requirements of Itqan describe the operational capabilities the platform must offer to the actors identified in Section 2.2. They are derived directly from the audit findings of Chapter 1: each pain point identified there shapes one or more requirements that the platform addresses. Requirements are organized by module to make their mapping to implementation straightforward, and each requirement carries a unique identifier that is referenced in the traceability matrix of Section 2.8 and in the validation evidence of Chapter 5.
+
+\subsection*{Manager Service Requirements}
+The manager service provides the operational backbone of the platform. Its requirements correspond to the lifecycle management responsibilities formerly handled through scattered Excel files, email threads, and verbal coordination. Table~\ref{tab:fr_manager} lists the functional requirements assigned to this module.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.8cm}|p{12cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Requirement} \\ \hline
+FR-MGR-01 & The system shall allow authorized users to register a new RFQ with its identifying metadata, source channel, and classification. \\ \hline
+FR-MGR-02 & The system shall maintain a structured representation of each RFQ's lifecycle stages, instantiated from a workflow template at creation time. \\ \hline
+FR-MGR-03 & The system shall enforce stage progression rules, including mandatory field completion and blocker resolution before stage advancement. \\ \hline
+FR-MGR-04 & The system shall support attachment of files, notes, and subtasks to any stage of an RFQ, with append-only semantics for notes. \\ \hline
+FR-MGR-05 & The system shall track manual and rule-based reminders associated with stages or subtasks, with assignee and due date. \\ \hline
+FR-MGR-06 & The system shall expose analytical endpoints that aggregate RFQs by status, classification, stage, and other operationally meaningful dimensions. \\ \hline
+FR-MGR-07 & The system shall preserve traceability of lifecycle changes through timestamps, status history on advancing stages, and non-destructive update semantics on critical records; comprehensive audit-log expansion is treated as a hardening concern beyond the current scope. \\ \hline
+FR-MGR-08 & The system shall support soft deletion of subtasks with automatic propagation to parent progress calculations. \\ \hline
+\end{tabular}
+\caption{Functional requirements of the manager service}
+\label{tab:fr_manager}
+\end{table}
+
+\subsection*{Copilot Service Requirements}
+The copilot service provides the conversational layer through which actors interact with the platform in natural language. Its requirements emphasize evidence-grounded answers and explicit scope discipline rather than raw conversational fluency. Table~\ref{tab:fr_copilot} lists the functional requirements assigned to this module.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.8cm}|p{12cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Requirement} \\ \hline
+FR-COP-01 & The system shall accept natural language queries from authorized users and produce responses grounded in platform evidence. \\ \hline
+FR-COP-02 & The system shall support two distinct entry contexts: a portfolio-level mode and an RFQ-bound mode tied to a specific RFQ. \\ \hline
+FR-COP-03 & The system shall classify each turn into a known interaction path before generating a response. \\ \hline
+FR-COP-04 & The system shall ground each factual claim in the evidence source authorized for the active path, primarily manager service state in the implemented operational paths, with intelligence service artifacts incorporated as those paths become available. \\ \hline
+FR-COP-05 & The system shall refuse to answer queries that fall outside its supported scope, returning a structured refusal with a reason rather than fabricating an answer. \\ \hline
+FR-COP-06 & The system shall route every retrieval through manager-mediated access checks, so that the copilot cannot retrieve or expose data outside the actor context available to the requesting user. \\ \hline
+FR-COP-07 & The system shall maintain bounded conversation history and working memory within a thread, with explicit scoping by RFQ or by portfolio context. \\ \hline
+FR-COP-08 & The system shall verify the assistant's draft response against retrieved evidence before delivering it to the user. \\ \hline
+\end{tabular}
+\caption{Functional requirements of the copilot service}
+\label{tab:fr_copilot}
+\end{table}
+
+\subsection*{Intelligence Service Requirements}
+The intelligence service provides deterministic parsing and analytical capabilities over the documents that surround an RFQ, primarily the Material Requisition package and the estimation workbook. The requirements presented here are the \textit{current-scope foundation requirements}: they cover the parsing capabilities and the briefing produced from them, both of which are implemented and validated in this work. The richer analytical and predictive capabilities sketched by the four-pillar vision in Section 1.6, including historical pattern matching, supplier intelligence, and cost-range estimation, are deliberately excluded from these requirements and remain future scope. Table~\ref{tab:fr_intelligence} lists the foundation requirements assigned to this module.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.8cm}|p{12cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Requirement} \\ \hline
+FR-INT-01 & The system shall parse Material Requisition packages structured according to the standard sixteen-section layout and produce a deterministic profile of their contents. \\ \hline
+FR-INT-02 & The system shall parse estimation workbooks structured according to the thirty-six-sheet template and extract identity, item, cost-breakdown, and schedule profiles. \\ \hline
+FR-INT-03 & The system shall produce an intelligence briefing that summarizes parsed content for downstream presentation to estimators and the conversational layer. \\ \hline
+FR-INT-04 & The system shall surface anomalies and cross-check failures detected during parsing as structured review flags rather than silent corrections. \\ \hline
+\end{tabular}
+\caption{Functional requirements of the intelligence service}
+\label{tab:fr_intelligence}
+\end{table}
+
+\subsection*{User Interface and Cross-Cutting Requirements}
+A small number of requirements apply to the user interface or cut across multiple services. They are listed together in Table~\ref{tab:fr_ui_cross} for completeness.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.8cm}|p{12cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Requirement} \\ \hline
+FR-UI-01 & The user interface shall present a portfolio view of RFQs filtered and sorted by operationally meaningful attributes. \\ \hline
+FR-UI-02 & The user interface shall present a detail view of each RFQ with its full lifecycle, attached artifacts, and copilot entry point. \\ \hline
+FR-UI-03 & The user interface shall surface key performance indicators relevant to the executive role, drawn from the manager service's analytical endpoints. \\ \hline
+FR-X-01 & The system shall be deployable as a set of containerized microservices, each independently startable and observable. \\ \hline
+FR-X-02 & The system shall expose health and readiness probes on every service to support orchestration and operational monitoring. \\ \hline
+\end{tabular}
+\caption{User interface and cross-cutting functional requirements}
+\label{tab:fr_ui_cross}
+\end{table}
+
+\section{Non-Functional Requirements}
+The non-functional requirements of Itqan describe the qualities the platform must exhibit independent of any specific feature. They reflect both standard concerns of any production-grade software system, such as reliability, security, and maintainability, and concerns specific to a system whose conversational layer relies on a large language model. The latter category includes explicit guarantees about explainability, grounding in platform evidence, and the absence of fabricated content. Each requirement carries a unique identifier referenced in the traceability matrix of Section 2.8.
+
+For brevity, the requirements are presented in a single grouped table organized by category. Five categories are distinguished: \textit{Reliability and Traceability} (REL), capturing the observability and predictability of state changes; \textit{Security and Access Control} (SEC), capturing service-layer authorization independent of the calling client; \textit{AI Integrity} (AI), capturing the integrity guarantees that distinguish the copilot from a generic conversational agent; \textit{Maintainability and Architecture} (MNT), capturing the architectural discipline required to evolve the platform's services independently; and \textit{Operability} (OPS), capturing the deployment, observability, and operational characteristics required to run the platform beyond the developer's machine. Some non-functional requirements describe target behavior whose full validation is contingent on capabilities deferred to future scope, including the dedicated identity service noted in Section 1.6 and Section 2.5; this is acknowledged in the relevant rows.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{2cm}|p{1.6cm}|p{10.4cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Category} & \textbf{Requirement} \\ \hline
+NFR-REL-01 & Reliability & State-changing operations on lifecycle records shall preserve traceability through timestamps and non-destructive update semantics; the dedicated audit-log surface is a hardening concern beyond the current scope. \\ \hline
+NFR-REL-02 & Reliability & The system shall handle transient infrastructure failures gracefully by preserving already persisted state, returning structured errors, and allowing the failed operation to be retried safely. \\ \hline
+NFR-REL-03 & Reliability & Soft-deleted artifacts shall remain retrievable for review purposes; no destructive deletion shall occur on critical lifecycle records. \\ \hline
+NFR-REL-04 & Reliability & Errors shall be reported with a structured, correlatable identifier that permits end-to-end tracing across services. \\ \hline
+NFR-SEC-01 & Security & The system shall be designed so that role-based access control can be enforced at the service layer independently of the calling client. In the current scope, access behavior is exercised through actor-context headers and manager-mediated retrieval; full integration with a dedicated identity service is deferred. \\ \hline
+NFR-SEC-02 & Security & The copilot service shall not bypass the access controls of the manager service: every retrieval shall be mediated through the manager's authorized endpoints. \\ \hline
+NFR-SEC-03 & Security & Authentication credentials and external API keys shall not appear in logs, responses, or persisted records. \\ \hline
+NFR-SEC-04 & Security & The schema and queries shall be structured so that per-user scoping of retrievals is achievable at the data layer; full enforcement of cross-user data isolation is contingent on the dedicated identity service deferred to future scope. \\ \hline
+NFR-AI-01 & AI Integrity & The copilot shall not produce factual claims about RFQs, lifecycle state, or platform data that are not supported by evidence retrieved at the same turn. \\ \hline
+NFR-AI-02 & AI Integrity & The copilot shall provide explanations for its responses that reference the evidence used, in a form that allows the user to verify the claim. \\ \hline
+NFR-AI-03 & AI Integrity & The copilot shall refuse, rather than approximate, queries that fall outside its supported scope or that lack sufficient evidence to answer. \\ \hline
+NFR-AI-04 & AI Integrity & The copilot's authority over operational truth, evidence selection, and access enforcement shall remain owned by deterministic platform components, not by the language model. \\ \hline
+NFR-MNT-01 & Maintainability & Each service shall expose its capabilities through a versioned, documented API contract; internal data structures shall not leak across service boundaries. \\ \hline
+NFR-MNT-02 & Maintainability & Each service shall follow the BACAB layered architecture pattern (routes, controllers, datasources, with translators, models, configuration, and utilities as support layers). \\ \hline
+NFR-MNT-03 & Maintainability & Major architectural decisions shall be captured in a structured Architectural Decision Record register with context, alternatives, and consequences. \\ \hline
+NFR-OPS-01 & Operability & Each service shall be containerized and startable through a single orchestration command, with all configuration externalized. \\ \hline
+NFR-OPS-02 & Operability & Each service shall expose a readiness probe, and core services shall expose metrics endpoints suitable for basic observability. \\ \hline
+NFR-OPS-03 & Operability & Service logs shall be structured and shall include a correlation identifier propagated across service boundaries. \\ \hline
+NFR-OPS-04 & Operability & Synchronous operational endpoints shall respond within tolerances appropriate for an interactive user experience under nominal load. \\ \hline
+\end{tabular}
+\caption{Non-functional requirements grouped by category}
+\label{tab:nfr}
+\end{table}
+
+\section{Product Backlog}
+The product backlog presents the work scoped for the project from the perspective of the actors that benefit from it. Each backlog item is expressed as a user story following the conventional format \textit{As a [actor], I want [capability], so that [value]}, and is assigned a priority that reflects its centrality to the project's narrative and its readiness for development. The backlog is not a fixed plan: items have been added, refined, and reprioritized throughout the project as the audit findings translated into concrete capabilities and as the strategic pivot reshaped what the platform should deliver. The version presented in this section reflects the consolidated state at the project's mid-point, after the first vertical slices had been delivered and validated.
+
+Backlog items are grouped by module to align with the requirements organization in Sections 2.3 and 2.4. Priority is expressed on three levels: \textit{High} for items central to the demonstration narrative and required for the defense, \textit{Medium} for items that strengthen the platform without being defense-critical, and \textit{Low} for items that are scoped but deferred to future iterations.
+
+\subsection*{Manager Service Backlog}
+The manager service backlog covers the operational backbone of the platform. Its items are uniformly high-priority because the entire platform depends on the lifecycle representation this service provides.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.4cm}|p{10.6cm}|p{1.5cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{User Story} & \textbf{Priority} \\ \hline
+B-MGR-01 & As an Estimation Manager, I want to register an incoming RFQ with its source, classification, and identifying metadata, so that it enters the lifecycle in a structured and trackable form. & High \\ \hline
+B-MGR-02 & As an Estimator, I want to advance an RFQ through its lifecycle stages with mandatory fields and blocker checks, so that the workflow enforces the discipline that was previously informal. & High \\ \hline
+B-MGR-03 & As a Department User, I want to attach notes, files, and subtasks to a stage of an RFQ, so that my contributions are visible in context to the rest of the team. & High \\ \hline
+B-MGR-04 & As an Estimator, I want to set reminders on stages or subtasks, so that follow-up actions are not lost in private notebooks or scattered email threads. & High \\ \hline
+B-MGR-05 & As an Executive, I want analytical endpoints that aggregate the RFQ portfolio by status, classification, and stage, so that I have visibility into the pipeline without depending on verbal updates. & High \\ \hline
+B-MGR-06 & As an Administrator, I want to define and version workflow templates, so that the lifecycle structure can evolve without breaking existing RFQs. & Medium \\ \hline
+\end{tabular}
+\caption{Manager service backlog}
+\label{tab:backlog_manager}
+\end{table}
+
+\subsection*{Copilot Service Backlog}
+The copilot service backlog reflects the iterative development of the conversational layer. Early items established the pipeline and the first end-to-end path; later items broadened path coverage and refined the trust-boundary enforcement.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.4cm}|p{10.6cm}|p{1.5cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{User Story} & \textbf{Priority} \\ \hline
+B-COP-01 & As a Copilot User, I want to ask natural-language questions about a specific RFQ and receive answers grounded in platform data, so that I can investigate the lifecycle without navigating multiple screens. & High \\ \hline
+B-COP-02 & As a Copilot User, I want the copilot to refuse questions outside its scope rather than fabricating an answer, so that I can trust the responses I receive. & High \\ \hline
+B-COP-03 & As a Copilot User, I want my conversation to maintain bounded context within the active thread, so that I can build on recent questions naturally without forcing the copilot to guess. & High \\ \hline
+B-COP-04 & As a Copilot User, I want the copilot to handle ambiguous or incomplete questions by asking for clarification rather than guessing, so that the answers remain reliable. & Medium \\ \hline
+B-COP-05 & As a Copilot User, I want a portfolio-level conversational entry point in addition to the RFQ-bound mode, so that I can explore the broader pipeline conversationally. & Medium \\ \hline
+B-COP-06 & As a Copilot User, I want the copilot to verify its draft response against retrieved evidence before delivering it, so that hallucinations are caught before they reach me. & Medium \\ \hline
+\end{tabular}
+\caption{Copilot service backlog}
+\label{tab:backlog_copilot}
+\end{table}
+
+\subsection*{Intelligence Service and Cross-Cutting Backlog}
+The intelligence service backlog within the present scope focuses on parsing capabilities; the predictive components remain future work. The cross-cutting items cover the platform-level concerns of containerization, observability, and the demonstration user interface.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.4cm}|p{10.6cm}|p{1.5cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{User Story} & \textbf{Priority} \\ \hline
+B-INT-01 & As an Estimator, I want the platform to parse Material Requisition packages deterministically and surface their content, so that I can quickly orient on a new RFQ without manually reading every file. & High \\ \hline
+B-INT-02 & As an Estimator, I want the platform to parse the estimation workbook and extract structured cost and identity profiles, so that downstream services can reason over the workbook content. & High \\ \hline
+B-INT-03 & As an Estimator, I want the platform to flag anomalies and cross-check failures detected during parsing, so that review-worthy artifacts are not silently accepted. & Medium \\ \hline
+B-UI-01 & As any actor, I want a clean web interface that exposes the platform's portfolio view, RFQ detail view, and copilot entry point, so that the system is usable without API tools. & High \\ \hline
+B-X-01 & As an Administrator, I want each service deployable as a container with externalized configuration, so that the platform can be brought up reproducibly. & High \\ \hline
+B-X-02 & As an Administrator, I want each service to expose readiness and metrics endpoints, so that the platform's operational health is observable. & Medium \\ \hline
+B-X-03 & As an Administrator, I want a dedicated identity service to centralize authentication and role management, so that access control is not duplicated across services. & Low \\ \hline
+\end{tabular}
+\caption{Intelligence service and cross-cutting backlog}
+\label{tab:backlog_intelligence}
+\end{table}
+
+The relative priority of items reflects the demonstration-readiness of the platform rather than the long-term importance of each capability. The single Low-priority item, the dedicated identity service (B-X-03), is acknowledged here because it appeared in the four-pillar vision but was deliberately deferred: its functionality is currently provided by a minimal authentication shim within the manager service, and its extraction into a dedicated service belongs to the future scope established in Section 1.6.
+
+\section{Use Cases and Activity Diagrams}
+This section presents the behavioral view of Itqan. The use case diagram in Figure~\ref{fig:use_cases} shows how the actors identified in Section 2.2 interact with the major capabilities of the platform. The activity diagrams that follow detail the two workflows whose internal logic best characterizes the project: the advancement of an RFQ through its lifecycle stages, which exercises the discipline of the manager service, and the conversational interaction with the copilot, which exercises the trust-bound pipeline that distinguishes this work from generic conversational systems.
+
+\subsection*{System-Level Use Case Diagram}
+The use case diagram condenses the most consequential interactions between actors and the platform. It is not exhaustive: it focuses on the use cases that anchor the demonstration narrative and that carry traceable functional requirements. Use cases reachable through both the user interface and the conversational layer are shown as connected to both, reflecting the cross-cutting nature of the copilot user role established in Section 2.2.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_2_1_use_cases.png}{%
+            \includegraphics[width=14cm]{images/fig_2_1_use_cases.png}%
+        }{%
+            \begin{minipage}[c][7cm][c]{14cm}
+                \centering
+                \textit{[Figure 2.1 placeholder: system-level use case diagram showing the actors and the major use cases of the platform]}
+            \end{minipage}%
+        }
+    }
+    \caption{System-level use case diagram of the Itqan platform}
+    \label{fig:use_cases}
+\end{figure}
+
+The major use cases visible in the diagram are: \textit{Register RFQ}, \textit{Advance RFQ Stage}, \textit{Manage Stage Artifacts} (notes, files, subtasks), \textit{Configure Reminders}, \textit{Consult Pipeline Analytics}, \textit{Query Copilot in Portfolio Mode}, \textit{Query Copilot in RFQ-Bound Mode}, and \textit{Manage Workflow Templates}. Each use case is realized by a combination of services described in Chapter 3.
+
+\subsection*{Activity Diagram: Advance RFQ Stage}
+The advancement of an RFQ from one stage to the next is the most consequential workflow in the manager service. It is the workflow where the platform's lifecycle discipline becomes concrete: a stage cannot be advanced if its mandatory fields are incomplete, if it has unresolved blockers, or if its computed next stage is not reachable from the current state. When advancement succeeds, the change propagates: the parent RFQ's progress is recomputed, the next stage is activated, and a status history entry is written. Figure~\ref{fig:activity_advance_stage} shows the full flow.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_2_2_advance_stage.png}{%
+            \includegraphics[width=14cm]{images/fig_2_2_advance_stage.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 2.2 placeholder: activity diagram for Advance RFQ Stage, showing validation, blocker check, transition, and propagation]}
+            \end{minipage}%
+        }
+    }
+    \caption{Activity diagram for the \textit{Advance RFQ Stage} use case}
+    \label{fig:activity_advance_stage}
+\end{figure}
+
+The diagram exposes the three decision points that the manager service enforces deterministically: the mandatory-field gate, the blocker gate, and the transition-validity gate. Each gate corresponds to a private method in the controller layer of the manager service, presented in detail in Chapter 4.
+
+\subsection*{Activity Diagram: Ask Copilot About an RFQ}
+The conversational interaction with the copilot is structurally different from the lifecycle workflows of the manager service. A single user turn passes through a sequence of stages, several of which are deterministic policy checks rather than language-model invocations. Figure~\ref{fig:activity_ask_copilot} presents the activity flow at a level of abstraction appropriate for this chapter; the detailed component architecture and the trust boundaries enforced at each stage are developed in Chapter 3.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_2_3_ask_copilot.png}{%
+            \includegraphics[width=14cm]{images/fig_2_3_ask_copilot.png}%
+        }{%
+            \begin{minipage}[c][8cm][c]{14cm}
+                \centering
+                \textit{[Figure 2.3 placeholder: activity diagram for Ask Copilot About an RFQ, showing classification, evidence retrieval, composition, and verification stages, with deterministic stages clearly distinguished from language-model invocations]}
+            \end{minipage}%
+        }
+    }
+    \caption{Activity diagram for the \textit{Ask Copilot About an RFQ} use case}
+    \label{fig:activity_ask_copilot}
+\end{figure}
+
+The activity diagram makes visible a property of the copilot that distinguishes it from generic conversational systems: the language model is invoked at specific, bounded stages of the flow (classification of the user turn, composition of the draft response, and verification of the draft) and not as the sole agent driving the interaction. The deterministic stages that surround these invocations are where the trust-boundary architecture operates.
+
+\section{Methodology and Project Management}
+The methodology that structured this project responds to a specific constraint: a single developer working over several months across the platform's services, with regular but asynchronous interaction with two supervisors and a remote industrial client. This constraint excludes both the heavy ceremony of pure Scrum, which depends on a co-located team, and the absence of structure that often accompanies solo work. The practices presented in this section were chosen and adapted to fit this constraint while preserving the engineering rigor that the project requires. They are presented in three parts: the iteration framework that organizes the work, the decision register that captures architectural choices as they are made, and the risk practice that surfaces threats before they become incidents.
+
+\subsection*{Scrumban as the Iteration Framework}
+The iteration framework adopted is Scrumban, a hybrid that retains the cadence and demo discipline of Scrum while substituting Kanban-style work-in-progress limits for the rigidity of fixed-length sprints. The hybrid form is well suited to a solo PFE for two complementary reasons.
+
+The first reason is that the social mechanisms of Scrum are not available. There is no team for daily standups, no peer to review pull requests in real time, and no scrum master to remove impediments. The discipline that these mechanisms enforce in a team setting must come from elsewhere when the work is solo. Kanban-style work-in-progress limits provide that discipline structurally: the developer cannot start a new task while too many tasks are in flight, which prevents the most common failure mode of solo software work, namely the simultaneous spreading of attention across too many parallel threads.
+
+The second reason is that the demo cadence of Scrum is precisely what stakeholder alignment requires. The professional supervisor and the GHI technical stakeholders both expect visible, demonstrable progress on a regular schedule. Pure Kanban does not impose such a cadence; pure Scrum imposes it but at the cost of fixed-duration sprints that can either truncate or pad work artificially. Scrumban's hybrid structure preserves the demo discipline while allowing iteration boundaries to align with natural completion points of the work.
+
+The Scrumban board used throughout the project follows a six-state workflow: \textit{Backlog (Frozen Scope)}, \textit{Ready}, \textit{In Progress}, \textit{Review and Demo}, \textit{Done}, and \textit{Documented}. The presence of a \textit{Documented} terminal state, distinct from \textit{Done}, deserves explicit mention. Most Scrumban implementations treat documentation as part of the definition of done or, more commonly, as an afterthought to be addressed later. In this project, documentation is treated as a separate column with its own work-in-progress limit. A task is not removed from the active board until its documentation, whether code-level (docstrings, READMEs), architectural (decision records, design notes), or report-level (chapter draft updates), has been written. This discipline is what permits the chapter content of this report to track development continuously rather than being assembled at the end. Figure~\ref{fig:sprint_timeline} presents the consolidated sprint timeline of the project from the start of development in January.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_2_4_sprint_timeline.png}{%
+            \includegraphics[width=14cm]{images/fig_2_4_sprint_timeline.png}%
+        }{%
+            \begin{minipage}[c][6cm][c]{14cm}
+                \centering
+                \textit{[Figure 2.4 placeholder: consolidated sprint timeline showing the six-state Scrumban workflow across the project's iterations from January onward]}
+            \end{minipage}%
+        }
+    }
+    \caption{Consolidated sprint timeline of the project, showing iteration boundaries and the distribution of work across the platform's services}
+    \label{fig:sprint_timeline}
+\end{figure}
+
+\subsection*{Architectural Decision Records}
+A solo PFE produces architectural decisions at high frequency. The decision to adopt the BACAB layered pattern, the decision to keep reminders inside the manager service rather than splitting them out, the decision to use a single ExecutionPlanFactory in the copilot, the decision to defer the dedicated identity service to future work: each of these is a real fork in the project's evolution, with alternatives that were considered and consequences that became apparent later. Without explicit capture, these decisions are quickly forgotten and the rationale behind them is lost.
+
+The project therefore maintains an Architectural Decision Record (ADR) register. Each entry follows a consistent structure: the \textit{context} that triggered the decision, the \textit{options considered} with their respective pros and cons, the \textit{decision} itself stated in a single sentence, the \textit{justification} that connects the decision to the specific constraints of this project, the \textit{consequences} (both positive and negative) accepted by adopting the chosen option, and the \textit{validation} mechanism through which the decision is or will be confirmed. The register is referenced throughout Chapter 3, where major architectural decisions are introduced with their ADR identifier and a pointer to the register entry.
+
+The discipline of recording decisions formally rather than informally serves three purposes that justify the overhead in a solo context. It forces the consideration of at least one alternative before committing, which often surfaces a better option than the first one considered. It produces an artifact that supervisors and the jury can examine to evaluate the engineering judgment exercised, independent of whether they agree with each individual decision. And it leaves a trail that supports honest discussion of limitations and future work in Chapter 5.
+
+\subsection*{Risk Management}
+A risk register accompanies the decision register. Where the decision register documents what was chosen, the risk register documents what could go wrong with what was chosen and what countermeasures are in place. Each risk entry follows a four-part structure: the \textit{description} of what could occur, the \textit{impact} if it does, the \textit{mitigation} actions taken or planned to reduce its probability or severity, and \textit{review notes} updated as the risk evolves.
+
+In the solo PFE context, the risk register is less about insurance against organizational failures than about disciplined acknowledgment of known fragilities. Risks tracked in the register include scope creep beyond the implemented baseline, dependence on third-party API stability for the language model layer of the copilot, the limited scale of the validation dataset, and the academic timeline pressure relative to the platform's full vision. These risks are revisited at each iteration boundary; significant changes are discussed with the academic and professional supervisors during the regular alignment cadences described in Section 2.2. Specific risks materially affecting the project's deliverables are presented again in Chapter 5 as part of the limitations discussion.
+
+\subsection*{The Control Center}
+The Scrumban board, the decision register, the risk register, the stakeholder alignment matrix, and the sprint execution log are maintained together in a project Control Center that serves as the single operational hub for the project. The Control Center is not part of the deliverable platform; it is the project management surface through which the work is planned, tracked, and documented. Its existence as a unified surface, rather than as fragmented spreadsheets and chat threads, is itself a small example of the discipline this chapter argues the project requires.
+
+\section{Traceability Matrix}
+The traceability matrix presented in Table~\ref{tab:traceability} links each functional requirement of Section 2.3 to the module that implements it and to the area of Chapter 5 where its validation evidence will be presented. The Chapter 5 references are provisional at this stage of the report and will be synchronized with the final section numbering once Chapter 5 is finalized.
+
+The matrix serves three purposes. It provides the reader with a compact reference for navigating between requirements, implementation, and validation throughout the rest of the report. It exposes any requirement that lacks a clear implementation locus or a clear validation path, and therefore functions as a structural quality check on the project itself. And it supports the discussion of business impact in Chapter 5, where Itqan's capabilities are mapped back to the audit pain points of Chapter 1 by composing this matrix with the pain-point table in Section 1.4.
+
+Non-functional requirements are not enumerated row by row in the matrix. Their validation is qualitative rather than scenario-driven, and is presented as part of the trust-boundary verification, the operability checks, and the architectural decisions discussed in Chapter 5. Specific NFRs of particular consequence (notably the AI integrity requirements) are revisited explicitly in that chapter.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{2cm}|p{6cm}|p{2.5cm}|p{3cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Requirement} & \textbf{Capability} & \textbf{Module} & \textbf{Validation} \\ \hline
+FR-MGR-01 & RFQ registration with metadata and classification & Manager & Ch. 5 (Manager) \\ \hline
+FR-MGR-02 & Workflow-driven stage instantiation & Manager & Ch. 5 (Workflow) \\ \hline
+FR-MGR-03 & Stage progression with mandatory fields and blocker checks & Manager & Ch. 5 (Workflow) \\ \hline
+FR-MGR-04 & Notes, files, subtasks attached to stages & Manager & Ch. 5 (Manager) \\ \hline
+FR-MGR-05 & Manual and rule-based reminders on stages and subtasks & Manager & Ch. 5 (Manager) \\ \hline
+FR-MGR-06 & Analytical aggregation endpoints & Manager & Ch. 5 (Manager) \\ \hline
+FR-MGR-07 & Lifecycle traceability through timestamps and history & Manager & Ch. 5 (Workflow) \\ \hline
+FR-MGR-08 & Soft-delete semantics with parent progress propagation & Manager & Ch. 5 (Workflow) \\ \hline
+FR-COP-01 & Natural-language queries with evidence-grounded responses & Copilot & Ch. 5 (Copilot Scenarios) \\ \hline
+FR-COP-02 & Portfolio and RFQ-bound conversation modes & Copilot & Ch. 5 (Copilot Scenarios) \\ \hline
+FR-COP-03 & Path classification of each turn & Copilot & Ch. 5 (Copilot Scenarios) \\ \hline
+FR-COP-04 & Path-authorized evidence grounding & Copilot & Ch. 5 (Trust Boundary) \\ \hline
+FR-COP-05 & Structured refusal of out-of-scope queries & Copilot & Ch. 5 (Copilot Scenarios) \\ \hline
+FR-COP-06 & Per-user access control on every retrieval & Copilot & Ch. 5 (Trust Boundary) \\ \hline
+FR-COP-07 & Bounded conversation history and working memory & Copilot & Ch. 5 (Copilot Scenarios) \\ \hline
+FR-COP-08 & Verification of draft responses against retrieved evidence & Copilot & Ch. 5 (Trust Boundary) \\ \hline
+FR-INT-01 & Material Requisition package parsing & Intelligence & Ch. 5 (Integration) \\ \hline
+FR-INT-02 & Estimation workbook parsing & Intelligence & Ch. 5 (Integration) \\ \hline
+FR-INT-03 & Intelligence briefing generation & Intelligence & Ch. 5 (Integration) \\ \hline
+FR-INT-04 & Anomaly and cross-check surfacing & Intelligence & Ch. 5 (Integration) \\ \hline
+FR-UI-01 & Portfolio view of RFQs & UI & Ch. 5 (Integration) \\ \hline
+FR-UI-02 & RFQ detail view with copilot entry & UI & Ch. 5 (Integration) \\ \hline
+FR-UI-03 & Executive KPI views & UI & Ch. 5 (Integration) \\ \hline
+FR-X-01 & Containerized service deployment & Cross-cutting & Ch. 5 (Manager) \\ \hline
+FR-X-02 & Health and readiness probes per service & Cross-cutting & Ch. 5 (Manager) \\ \hline
+\end{tabular}
+\caption{Traceability matrix linking functional requirements to implementing modules and to the validation evidence in Chapter 5}
+\label{tab:traceability}
+\end{table}
+
+Two observations are worth surfacing from the matrix. The copilot requirements concentrate the largest fraction of validation activity in Chapter 5, reflecting the centrality of the conversational layer to the project's innovation and the corresponding need for rigorous evidence that its trust-boundary properties hold in practice. The intelligence service requirements all map to a single validation area because the present scope of that service is the parsing foundation, and the foundation is validated as a unit against the golden reference artifacts established during the audit.
+
+\section{CONCLUSION}
+This chapter has formalized the engineering structure that disciplined the project. It identified the four stakeholders whose alignment shapes the project's success criteria and the six actors that interact with the platform in operation. It catalogued twenty-five functional requirements organized by module, nineteen non-functional requirements covering reliability, security, AI integrity, maintainability, and operability, and a product backlog whose user stories reflect the actors' perspectives and the project's priorities. It presented the use case decomposition and the activity diagrams that capture the most consequential workflows of the platform. It explained the methodology adopted, including Scrumban as the iteration framework with its distinctive \textit{Documented} terminal state, the architectural decision register that captures choices as they are made, and the risk register that surfaces fragilities before they materialize. It closed with a traceability matrix that links each functional requirement to its implementing module and to the validation evidence presented in Chapter 5. The next chapter develops the conceptual and technical architecture that delivers on these requirements, with particular emphasis on the trust-bound copilot architecture as the principal innovation contribution of the project.

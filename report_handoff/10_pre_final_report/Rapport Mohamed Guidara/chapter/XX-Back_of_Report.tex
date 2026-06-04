@@ -1,0 +1,52 @@
+\newgeometry{left=2.25cm,right=2.25cm,top=1.35cm,bottom=1.6cm}
+\thispagestyle{empty}
+\begin{center}
+  \renewcommand*{\familydefault}{\defaultFont}
+  \fontsize{10.5pt}{11pt}\selectfont%
+  \textbf{
+  \reportTitle\\%
+  }
+\vspace{7pt} {%
+  \begin{spacing}{0.05}
+    \rule{200pt}{2pt}\\
+    \rule{200pt}{0.75pt}\\
+  \end{spacing}
+  \renewcommand*{\familydefault}{\defaultFont}
+  \fontsize{12.5pt}{13pt}\selectfont%
+  \vspace{7pt}
+  \textbf{\reportAuthor}
+  \vspace{5pt}
+  \begin{spacing}{0.05}
+    \rule{200pt}{0.75pt}\\
+    \rule{200pt}{2pt}\\
+  \end{spacing}
+}
+\end{center}
+
+\vspace{-0.1cm}
+\begin{spacing}{0.93}
+%English
+\fontsize{10pt}{10.8pt}\selectfont%
+\underline{\textbf{Abstract~:}}\\
+This dissertation presents the design and implementation of Itqan, a data engineering platform developed to streamline the Request for Quotation (RFQ) lifecycle within an industrial estimation context. Addressing the limitations of localized automation and severe communication silos, the project introduces a systemic architectural solution. The core innovation is a conversational copilot governed by strict deterministic trust boundaries, which safeguards operational truth and neutralizes vulnerabilities inherent to probabilistic language models. Deployed as four cooperating microservices, with its three backend services structured under the BACAB pattern, the platform delivers a resilient transactional backbone. Validated through extensive backend automated testing within a documented evidence scope, it establishes the foundational infrastructure required for future predictive analytics capabilities.\par
+\vspace{0.04cm}
+\underline{\textbf{Key Words~:}} Data Engineering, Business Intelligence, Microservices, RFQ Lifecycle, Trust Boundaries.\\[0.12cm]
+
+%Français
+\underline{\textbf{Résumé~:}}\\
+Ce mémoire détaille la conception et l'implémentation d'Itqan, une plateforme d'ingénierie des données conçue pour rationaliser le cycle de vie des appels d'offres (RFQ) dans un environnement industriel. Face aux limites de l'automatisation locale et aux silos de communication, le projet propose une architecture systémique. L'innovation majeure réside dans un copilote conversationnel structuré par de strictes frontières de confiance déterministes. Cette approche garantit l'exactitude opérationnelle et neutralise les vulnérabilités inhérentes aux modèles de langage probabilistes. Déployée via quatre microservices coopérants, dont les trois services backend suivent le modèle BACAB, la plateforme établit un socle transactionnel résilient, validé par des tests automatisés étendus côté backend, posant ainsi l'infrastructure nécessaire aux futures capacités analytiques prédictives.\par
+\vspace{0.04cm}
+\underline{\textbf{Mots Clés~:}} Ingénierie des Données, Systèmes Décisionnels, Microservices, Cycle de vie RFQ, Frontières de Confiance.\\[0.12cm]
+
+\begin{flushright}
+\textbf{\RL{تلخيص:}}\\[-0.03cm]
+\end{flushright}
+\begin{RLtext}
+يعرض هذا التقرير تصميم وتنفيذ منصة إتقان، وهي منصة هندسة بيانات موجهة لتحسين دورة حياة طلبات عروض الأسعار في سياق التقدير الصناعي. يعالج المشروع ضعف التواصل والتتبع ومحدودية الأتمتة المحلية عبر بنية خدمات مصغرة تفصل بين الحقيقة التشغيلية وقدرات النماذج اللغوية. ويرتكز الابتكار الأساسي على مساعد محادثة محكوم بحدود ثقة حتمية تحفظ سلامة القرارات ودور الخبرة البشرية. وقد تم التحقق من المنصة ضمن نطاق أدلة موثق، مع تمهيد الطريق لقدرات تحليلية وتنبؤية مستقبلية.
+\end{RLtext}
+\vspace{-0.05cm}
+\begin{flushright}
+\textbf{\RL{الكلمات المفتاحية:}} \RL{هندسة البيانات، ذكاء الأعمال، الخدمات المصغرة، دورة حياة طلبات العروض، حدود الثقة.}
+\end{flushright}
+\end{spacing}
+\restoregeometry

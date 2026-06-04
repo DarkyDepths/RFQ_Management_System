@@ -1,0 +1,297 @@
+\chapter{Implementation}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section{INTRODUCTION}
+This chapter presents the implementation of the architecture developed in Chapter 3. Where Chapter 3 explained the architectural commitments and the reasoning behind them, this chapter shows how those commitments became running code: the structural realization of the BACAB layered pattern in each service, the resources and lifecycle mechanics of the manager service, the per-turn pipeline of the copilot service from intake to persistence, and the parsing foundation of the intelligence service. The chapter also presents the user interface that exposes the platform to its actors and the development environment that supported the work throughout the project.
+
+The chapter is organized to match the depth distribution of Chapter 3. The two services that carry the technical weight of this work, the manager and the copilot, are developed in their own dedicated sections. The intelligence service and the user interface are developed jointly in a shorter section that reflects their foundation-level scope in the present work. The chapter is honest about the implementation status of every component it describes: capabilities that are implemented and tested are presented with strong wording, capabilities that are implemented but await full validation are presented as such, capabilities that are architecturally specified but not yet wired in code are explicitly labeled, and capabilities that are deferred to future scope are not claimed as present achievements.
+
+The chapter opens with the development environment and toolchain that frame the work. The validation of the implementation against the requirements catalogued in Chapter 2 and against the architectural commitments of Chapter 3 is the subject of Chapter 5.
+
+\section{Development Environment and Toolchain}
+The platform is implemented across a small set of cooperating technologies, chosen for fitness to purpose, alignment with the host firm's existing engagement conventions, and operability within the constraints of a solo end-of-studies project. This section presents the toolchain organized by the layer it serves, with versions noted where they are material to reproducibility or to understanding the implementation choices presented in subsequent sections.
+
+The three implemented backend services are written in Python 3.11. The web framework across the services is FastAPI version 0.115, which provides asynchronous request handling, automatic OpenAPI specification generation, and Pydantic-based input and output validation. The use of FastAPI is consistent across the manager, copilot, and intelligence services and preserves the layered pattern presented in Section 3.3 of Chapter 3, in which routes parse requests, controllers orchestrate logic, and datasources mediate persistence. Object-relational mapping in the services that own a relational database is provided by SQLAlchemy version 2, with declarative models defined in the models layer of each service. Pydantic version 2 provides the validation and serialization surfaces at the route and translator layers. The combination of SQLAlchemy for persistence and Pydantic for boundary validation gives each service a consistent two-layer typing discipline: persisted entities are typed by SQLAlchemy models, and external interfaces are typed by Pydantic schemas, with the translator layer mediating between them.
+
+The user interface is implemented in TypeScript on Next.js version 15 with React version 18. Styling is provided by Tailwind CSS, with the shadcn/ui component library used for higher-level interactive elements such as panels, modals, and form controls. The frontend's role within the platform, presented in Section 3.8 of Chapter 3, is to consume the manager service's analytical and lifecycle endpoints and to surface the copilot's conversational layer; its implementation is described in Section 4.5.
+
+The platform's persistence layer is not uniform across services, reflecting the differing maturity and operational needs of each. The manager service uses PostgreSQL as its primary database, with the schema realizing the seven entities presented in Section 3.4 of Chapter 3. The intelligence service also uses PostgreSQL for its persisted analytical artifacts. The copilot service uses a SQLite database for its development-mode persistence of threads, turns, and execution records; this choice reflects the fact that the copilot's persistence load in the present scope is conversational rather than transactional, and the development-mode SQLite configuration is sufficient for the validation activities of Chapter 5. Migration to PostgreSQL is straightforward thanks to the SQLAlchemy abstraction and is anticipated when the copilot's deployment context warrants it.
+
+The copilot service's language-model invocations are made through the Azure OpenAI deployment endpoint, with the specific model accessed through deployment environment variables rather than hardcoded constants. This indirection follows two practical disciplines: it permits the deployed model to be changed without code modification, and it keeps API credentials and deployment-specific identifiers out of the version-controlled source. The trust-boundary architecture presented in Chapter 3 is independent of the specific language model deployed, although the engineering decisions developed in Section 4.4 reflect calibration against the Azure OpenAI deployment used during the project.
+
+Each backend service is independently containerizable through its own Dockerfile. The manager and intelligence services include service-level docker-compose configurations for local and scenario-based execution, while the copilot service currently provides a Dockerfile without a dedicated compose file. A unified root docker-compose stack that brings the entire platform up as a single coherent orchestration is recognized as an integration-hardening direction rather than a current deliverable, consistent with the deployment posture noted in Section 3.7 of Chapter 3.
+
+Source control is provided by Git, with the services organized in a polyrepo-in-monorepo structure under a shared project repository. Each service keeps its own internal structure, dependencies, tests, and configuration files, while the top-level repository provides a common workspace for development and scenario orchestration. Each service follows a consistent internal structure aligned with the BACAB layered pattern, presented in detail in the implementation sections that follow. Automated tests are present across the backend services, and the copilot service includes anti-drift tests that verify architectural invariants such as the single-construction discipline of the ExecutionPlanFactory and the Path Registry reader allow-list. At repository level, continuous integration is currently configured for the manager service, while CI coverage for the copilot, intelligence, and frontend services remains a hardening direction. Project management artifacts (the Scrumban board, the architectural decision register, the risk register, the stakeholder alignment matrix, and the sprint execution log) are maintained in the project Control Center described in Chapter 2.
+
+A consolidated reference to the principal technologies used in the present work is presented in Table~\ref{tab:toolchain}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{3.4cm}|p{4.6cm}|p{6cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Layer} & \textbf{Technology} & \textbf{Role} \\ \hline
+Backend services & Python 3.11 & Implementation language across the three backend services. \\ \hline
+Backend services & FastAPI 0.115 & Web framework providing asynchronous request handling and OpenAPI generation. \\ \hline
+Backend services & SQLAlchemy 2 & Object-relational mapping in the models layer of each service. \\ \hline
+Backend services & Pydantic 2 & Input and output validation at routes and translators. \\ \hline
+Frontend & Next.js 15 / React 18 & Single-page application framework. \\ \hline
+Frontend & TypeScript & Implementation language for the user interface. \\ \hline
+Frontend & Tailwind CSS / shadcn/ui & Styling and component library. \\ \hline
+Data stores & PostgreSQL & Primary database for the manager and intelligence services. \\ \hline
+Data stores & SQLite & Development-mode persistence for the copilot service. \\ \hline
+External integrations & Azure OpenAI deployment & Language-model backend for the copilot, accessed via deployment environment variables. \\ \hline
+Containerization & Docker & Per-service container images. \\ \hline
+Containerization & docker-compose (manager and intelligence) & Service-level orchestration for the manager and intelligence services; no compose file for the copilot, no unified root composition. \\ \hline
+Development tooling & Git & Source control across the four service repositories. \\ \hline
+\end{tabular}
+\caption{Principal technologies used in the implementation of the Itqan platform}
+\label{tab:toolchain}
+\end{table}
+
+The implementation of each service against this toolchain, with the per-service configurations and the resource-level realization of the architectural commitments of Chapter 3, is the subject of the sections that follow.
+
+\section{Implementation of \texttt{rfq\_manager\_ms}}
+The manager service is the operational backbone of the platform, the most mature service in the present work, and the one whose implementation most directly delivers the lifecycle representation that every other service depends on. This section presents the manager service implementation in five parts: the BACAB layered structure as it is concretely realized in the manager codebase, the RFQ lifecycle and stage progression mechanics, the supporting resources for subtasks and notes and files and reminders, the statistics and analytics surface, and the containerization and operational hardening status of the service.
+
+\subsection{BACAB Layered Structure in Code}
+The manager service realizes the BACAB layered pattern presented in Section 3.3 of Chapter 3 through a consistent folder organization that mirrors the active and support layers of the pattern. Each Python module corresponds to one layer, and the layer's responsibilities are enforced by convention and by the import discipline maintained across the codebase. Figure~\ref{fig:manager_structure} presents the principal folders and the role of each.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_4_1_manager_structure.png}{%
+            \includegraphics[width=14cm]{images/fig_4_1_manager_structure.png}%
+        }{%
+            \begin{minipage}[c][7cm][c]{14cm}
+                \centering
+                \textit{[Figure 4.1 placeholder: folder structure of the manager service showing the BACAB layered organization with active layers (routes, controllers, datasources, translators, connectors) and support layers (models, schemas, config, utils)]}
+            \end{minipage}%
+        }
+    }
+    \caption{Folder structure of the \texttt{rfq\_manager\_ms} service realizing the BACAB layered pattern}
+    \label{fig:manager_structure}
+\end{figure}
+
+The \texttt{routes} folder contains one module per resource family, each defining the FastAPI router and the HTTP endpoint declarations. Routes parse the incoming request, validate the input shape against a Pydantic schema, delegate to the appropriate controller method, and translate the controller's return value into the HTTP response. Routes contain no business logic and never access the database directly. The \texttt{controllers} folder contains the business logic and the orchestration of operations: a controller method may invoke several datasource calls, apply business rules, and decide what data to read or write. Controllers are the layer where the lifecycle progression rules of the manager service live. The \texttt{datasources} folder contains the persistence operations: each datasource module wraps the SQLAlchemy queries for a specific entity and returns domain objects. Datasources do not make decisions; they execute reads and writes on behalf of the controller layer. The \texttt{translators} folder mediates between the SQLAlchemy models that represent persisted entities and the Pydantic schemas that cross the API boundary, preventing internal data structures from leaking into external contracts. The \texttt{connectors} folder is reserved for calls to external services; in the manager service, this layer is light because the manager does not currently consume external services in its principal flows.
+
+The support layers complete the structure. The \texttt{models} folder contains the SQLAlchemy declarative models for the seven primary entities introduced in Section 3.4 of Chapter 3. The \texttt{schemas} folder contains the Pydantic models used at the routes and translator boundaries. The \texttt{config} folder centralizes service configuration drawn from the environment, including the database connection string and the deployment-specific identifiers that should not appear in source. The \texttt{utils} folder collects helpers that do not belong to any single layer.
+
+The discipline this structure enforces is straightforward: a request flows through the layers in a single direction, and a layer can only call into the layer below it. A controller may call datasources and translators; a datasource may call models; a route may call controllers and translators but not datasources or models. The continuous integration checks for the manager service include lint rules that flag layer-boundary violations.
+
+\subsection{RFQ Lifecycle and Stage Progression}
+The lifecycle representation of an RFQ is realized through three database tables and the controller methods that maintain them. The \texttt{rfq} table holds the root record with identifying metadata, classification, source channel, and overall lifecycle status. The \texttt{workflow} table holds the versioned templates that define the sequence of stages an RFQ passes through. The \texttt{rfq\_stage} table holds the stage instances tied to a specific RFQ, with each instance carrying its progression state, its mandatory field values, its blocker state, and its timestamps.
+
+When an RFQ is created through the manager service, the controller orchestrates a multi-step operation: it validates the input metadata, creates the \texttt{rfq} record, looks up the workflow template referenced by the RFQ's classification, and instantiates one \texttt{rfq\_stage} record per stage in the template. The first stage of the new RFQ is marked active immediately. The overall status of the RFQ is computed from the state of its stages and is updated as the lifecycle progresses.
+
+The most consequential controller method in the manager service is the stage advancement method, which realizes the three deterministic gates introduced in Section 3.4 of Chapter 3. The mandatory-field gate reads the stage's mandatory field list from the workflow template and verifies that each required field is populated; missing fields produce a structured error identifying them. The blocker gate reads the stage-level blocker fields (the status indicator and the reason code) and refuses the advance while the blocker state is unresolved. The transition-validity gate computes the next valid stage from the workflow template and refuses any request whose target stage is not the computed next stage. When all three gates pass, the controller commits the advance: the current stage is marked complete with a timestamp, the next stage is activated, the RFQ's overall progress is recomputed, and the lifecycle timestamps and stage state are updated in a traceable way. Listing~\ref{lst:advance_stage} sketches the structure of the advance-stage controller at a level of abstraction appropriate for this chapter.
+
+\begin{lstlisting}[caption={Structure of the stage advancement controller method (illustrative).}, label={lst:advance_stage}, basicstyle=\ttfamily\small, frame=single, breaklines=true]
+def advance_stage(rfq_id, target_stage_id, payload, actor):
+    stage = stages_ds.get_active_stage(rfq_id)
+    template = workflows_ds.get_template(stage.workflow_id)
+
+    # Gate 1: mandatory-field gate
+    missing = check_mandatory_fields(stage, template, payload)
+    if missing:
+        raise MandatoryFieldsMissing(missing)
+
+    # Gate 2: blocker gate
+    if stage.blocker_status == "unresolved":
+        raise BlockerUnresolved(stage.blocker_reason_code)
+
+    # Gate 3: transition-validity gate
+    next_stage = compute_next_stage(stage, template)
+    if next_stage.id != target_stage_id:
+        raise InvalidTransition(expected=next_stage.id)
+
+    # Commit the advance
+    stages_ds.mark_complete(stage.id, actor)
+    stages_ds.activate(next_stage.id)
+    rfq_ds.recompute_progress(rfq_id)
+    # Traceability is preserved through lifecycle timestamps and persisted stage state.
+    return rfq_ds.get(rfq_id)
+\end{lstlisting}
+
+The three gates and the commit step are presented here in their conceptual order. The actual controller method composes these operations within a single database transaction so that a partial advance never leaves the lifecycle in an inconsistent state. The traceability posture currently rests on lifecycle timestamps, persisted stage state, append-only notes, and non-destructive update semantics; a dedicated audit-history surface remains a hardening direction (FR-MGR-07 in the requirements catalogue of Chapter 2).
+
+\subsection{Subtasks, Notes, Files, and Reminders}
+Around the core lifecycle resources, the manager service implements four supporting resource families that capture the artifacts and coordination signals attached to each stage of an RFQ.
+
+\textbf{Subtasks} are finer-grained units of work attached to a specific stage. Each subtask carries its own status, assignee, and due date. Subtasks support soft deletion: a deleted subtask is retained in the database with a deleted-at timestamp, and the parent stage's progress calculation excludes soft-deleted subtasks from its denominator. This semantics, named in FR-MGR-08, prevents progress regressions when subtasks are removed and preserves the audit value of the deletion event.
+
+\textbf{Notes} are append-only textual artifacts attached to a stage. The notes endpoint exposes only \texttt{POST} and \texttt{GET}; no \texttt{PUT} or \texttt{DELETE} is offered. This is an architectural defense, not a missing feature: the immutability of notes preserves the integrity of the communication trail attached to each stage and supports the audit posture established in Section 3.7 of Chapter 3.
+
+\textbf{Files} are persisted documents attached to a stage. The file model distinguishes file types in its schema, including a designated type for the estimation workbook. The upload endpoint accepts the file payload, stores it in the configured file storage backend, and creates the database record linking the file to its stage. In the present implementation, downstream parsing of the estimation workbook by the intelligence service is available through manual and direct trigger paths. The automatic event-driven cascade from manager upload to intelligence parsing is architecturally prepared but not yet wired as an autonomous event-bus consumer, consistent with the posture established in Section 3.3 of Chapter 3.
+
+\textbf{Reminders} are time-anchored notifications associated with a stage or a subtask. The reminder model supports two creation modes: manual reminders set by a user with an explicit due date and assignee, and rule-based reminders generated by the manager service in response to lifecycle conditions (for example, a reminder generated when a stage approaches a deadline). The reminder dispatch mechanism in the present work is log-only: when a reminder fires, the event is recorded in the service log with the reminder identifier, the firing time, and the assigned actor, but no outbound message is sent to a real communication channel. The wiring of reminders to actual delivery channels (email, in-application notifications) is part of the future communication service scope discussed in Section 3.9 of Chapter 3.
+
+\subsection{Statistics and Analytics Endpoints}
+The manager service exposes an analytical surface that aggregates RFQ data across operationally meaningful dimensions. The implemented analytical endpoints serve real database queries against the persisted lifecycle records and are sufficient for the demonstration narrative of Chapter 5.
+
+The currently-validated analytical capabilities are those that depend only on data that the manager service already owns. The \textbf{pipeline aggregation} endpoint groups RFQs by status, classification, and stage, producing the counts that the user interface uses to render its dashboard cards. The \textbf{win-rate aggregation} endpoint computes the win, loss, and pending counts across the RFQs that have reached a terminal status, with optional grouping by client or by workflow template. The \textbf{by-client aggregation} endpoint produces per-client portfolio summaries, including total RFQ count and current pipeline value where pricing has been recorded.
+
+Two analytical capabilities described in the four-pillar vision of Chapter 1 are deliberately not claimed as currently implemented. The \textbf{margin analysis} endpoint, which would compare bid prices to actual fabrication costs, depends on outcome data that the manager service does not currently capture and is deferred to future scope. The \textbf{estimation accuracy} endpoint, which would compare initial estimates to final billed values, depends on the same kind of outcome data and is also deferred. Both capabilities are part of the broader Pillar 3 (Executive Intelligence and BI) and Pillar 4 (Historical Learning and Prediction) maturation paths.
+
+\subsection{Containerization and Hardening}
+The manager service ships with a Dockerfile that produces a self-contained image with the Python runtime, the application code, and the FastAPI server. A service-level docker-compose configuration brings the manager service up alongside its PostgreSQL dependency for local development and demonstration scenarios. As noted in Section 4.2 and in the deployment posture of Chapter 3, no unified root docker-compose orchestration is provided in the current scope; per-service composition is the operational mode.
+
+Several hardening passes have been applied to the manager service over the course of development. Structured logging with correlation identifiers is enabled across the request path, allowing a single user-facing operation to be traced from the route through the controllers and datasources. The service exposes a readiness probe and a metrics endpoint compatible with standard orchestration and observability tooling, satisfying NFR-OPS-02 from the requirements catalogue. Database migrations are managed through Alembic, with the schema evolution captured in versioned migration files committed alongside the application code. Input validation at the route layer rejects malformed payloads before they reach the controllers, and the controllers raise typed exceptions that the route layer translates into structured HTTP error responses with stable error type codes. The full Postman collection that exercises the manager service end-to-end is maintained as part of the validation evidence presented in Chapter 5.
+
+A dedicated audit-log table covering every state-changing operation is acknowledged but not implemented in the current scope; the lifecycle traceability that the manager service provides today rests on timestamps, the append-only status history, and the non-destructive update semantics of the supporting resources, as established in Section 3.4 of Chapter 3 and FR-MGR-07 of Chapter 2.
+
+\section{Implementation of \texttt{rfq\_copilot\_ms}}
+The copilot service is the principal innovation contribution of this work, and its implementation is the most architecturally consequential part of the chapter. This section presents the copilot's implementation in five parts: the turn processing pipeline and the first vertical slice that the implementation delivers, the Path Registry and the planning logic that classifies user turns, the ExecutionPlanFactory and the single-construction discipline that anchors the trust-boundary architecture, the memory and guardrails and Judge layer that compose the response under deterministic supervision, and the Escalation Gate that handles failure modes safely. The implementation realizes the architecture presented in Section 3.5 of Chapter 3, with the scope honesty established there carried forward into this chapter without modification.
+
+The copilot codebase has evolved through two implementation lanes during the project, named v1 and v2. The v1 lane established the basic conversational surface with a minimal request-response endpoint, sufficient to validate the integration of the language model and to anchor the early demonstration narrative. The v2 lane is the trust-boundary implementation: it is the lane that delivers the FastIntake/Planner classification, the PlannerValidator, the ExecutionPlanFactory, the Path Registry, the Escalation Gate, and the full pipeline of deterministic stages presented in Chapter 3. The v1 lane is preserved in the codebase to support legacy demonstration paths that the user interface still consumes for thread lifecycle operations, but new architectural development happens entirely in the v2 lane. References to ``the copilot'' in the remainder of this section refer to the v2 implementation unless otherwise noted.
+
+\subsection{Turn Processing Pipeline and First Vertical Slice}
+The turn processing pipeline is the spine of the copilot implementation. A user turn enters the service through a single API endpoint that accepts the user's message, the active thread identifier, the actor context, and the conversational mode (portfolio or RFQ-bound). The turn flows through a fixed sequence of stages between intake and persistence, with each stage owning one decision and reporting structured success or failure to the stage that follows. Figure~\ref{fig:copilot_pipeline} presents the pipeline as it is realized in the v2 implementation.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_4_2_copilot_pipeline.png}{%
+            \includegraphics[width=14cm]{images/fig_4_2_copilot_pipeline.png}%
+        }{%
+            \begin{minipage}[c][9cm][c]{14cm}
+                \centering
+                \textit{[Figure 4.2 placeholder: turn processing pipeline of \texttt{rfq\_copilot\_ms} v2, showing the full stage sequence from intake to persistence with deterministic stages (code-owned) distinguished from language-model invocations (LLM-owned)]}
+            \end{minipage}%
+        }
+    }
+    \caption{Turn processing pipeline of \texttt{rfq\_copilot\_ms} (v2 implementation), with deterministic stages distinguished from language-model invocations}
+    \label{fig:copilot_pipeline}
+\end{figure}
+
+The pipeline begins with \textbf{FastIntake}, a deterministic classifier that matches the incoming user message against a small set of anchored regular expression patterns covering trivial messages: greetings, thanks, farewells, and pure-nonsense inputs. When FastIntake matches, it produces an \texttt{IntakeDecision} immediately and the language-model Planner is never invoked. When FastIntake does not match, the turn flows to the LLM \textbf{Planner}, a structured invocation of the configured Azure OpenAI deployment with a JSON-schema-enforced output. The Planner classifies the turn into a path, proposes the relevant intent topic, and emits a \texttt{PlannerProposal}.
+
+The \textbf{PlannerValidator} accepts the \texttt{PlannerProposal} and performs structural validation only: it verifies the JSON schema, checks that the emitted path is one the validator recognizes, and rejects malformed outputs. The validator does not enforce policy and does not read the Path Registry. It produces either a \texttt{ValidatedPlannerProposal} or a structured trigger that the Escalation Gate handles.
+
+Both the \texttt{IntakeDecision} from FastIntake and the \texttt{ValidatedPlannerProposal} from the Planner+Validator pair feed the \textbf{ExecutionPlanFactory}, the single component permitted to construct an executable \texttt{TurnExecutionPlan}. The factory reads the Path Registry, applies source-aware policy enforcement, and produces either a valid plan or a structured rejection that routes through the Escalation Gate.
+
+A valid plan flows through the deterministic execution stages. The \textbf{Resolver} converts the planner's target candidates into resolved targets. The \textbf{Access} stage verifies that the requesting actor has permission to read each resolved target by calling the manager service through the manager connector; an access denial routes through the Escalation Gate with a Path 8.4 reason code. The \textbf{Memory Load} stage retrieves the bounded working memory for the active thread; its capture-only role in the present implementation is detailed in subsection 4.4.4. The \textbf{Tool Executor} invokes the tools that the Path Registry mapped from the active path and intent topic, with the deterministic invocation receiving the resolved targets and the planner-extracted fields as input. The \textbf{Evidence Check} stage verifies that the tool execution produced evidence sufficient for composition; an empty evidence result routes through the Escalation Gate with a Path 8.5 reason code.
+
+When evidence is present, the \textbf{Context Builder} assembles the prompt for the language model from the per-path field whitelist and the per-target labelled evidence packets. For Path 4 (the demonstration-defining operational path), the implementation also provides a deterministic Path 4 renderer that produces the response without invoking the language model when the evidence and the path semantics permit it, reserving the language model invocation for cases where natural-language phrasing materially improves the answer. The \textbf{Compose} stage, when invoked, calls the language model to produce a draft response from the assembled context. The \textbf{Guardrails} stage applies a sequence of deterministic checks to the draft: evidence grounding, scope adherence, response shape conformance. The \textbf{Judge} stage performs a final language-model verification against explicit triggers (fabrication, scope drift, forbidden inference). The \textbf{Finalizer} renders the user-facing response from the draft and the verdict, and the \textbf{Persist} stage writes the per-turn execution record alongside the thread and turn updates.
+
+The first vertical slice of the v2 implementation ships three of the eight architecturally specified paths end-to-end. \textbf{Path 1} handles trivial conversational messages classified by FastIntake; its implementation reuses the Planner-validator-finalizer infrastructure with a minimal template set and bypasses the Tool Executor and Judge stages because no factual claim is being made. \textbf{Path 4} is the demonstration-defining operational path: an evidence-grounded answer about a specific RFQ, drawing manager service state through the manager connector. \textbf{Path 8} is the safety infrastructure: its five sub-cases (8.1 unsupported, 8.2 out-of-scope, 8.3 ambiguous target, 8.4 access denied or target missing, 8.5 insufficient evidence) ship together to guarantee that every turn terminates in a bounded, deterministic, defensible response regardless of which path the turn was classified into.
+
+Paths 2, 3, 5, 6, and 7 are architecturally specified in the Path Registry and routed through the Escalation Gate to Path 8.1 in the present implementation. This is not a degraded behaviour: it is the architecturally correct response when a path is recognized but its slice has not yet shipped. The deferred paths and their planned slice ordering are discussed in Chapter 5 as part of the path coverage validation.
+
+\subsection{Path Registry and Planning Logic}
+The Path Registry is implemented as a structured Python module, organized as a configuration artifact rather than as runtime logic. For each combination of path identifier and intent topic, the registry declares the allowed intake sources, the evidence tools, the resolver strategy, the access policy, the field whitelist, the field aliases, the confidence threshold, the active guardrails, the judge policy and triggers, the memory policy, the persistence policy, and the finalizer template keys keyed by reason code. The registry is the single source of policy truth for the copilot, and the runtime contract is that only the ExecutionPlanFactory and the Escalation Gate are permitted to read it. This restriction is enforced by an automated check described in subsection 4.4.3.
+
+The planning logic that produces a \texttt{PlannerProposal} from a user message is implemented as a structured prompt to the Azure OpenAI deployment, with the response shape constrained by a JSON schema. The prompt instructs the model to classify the turn into one of the recognized paths, to identify the intent topic, to extract any explicit target references, and to surface the field references the user is asking about. The schema enforcement is what distinguishes this Planner invocation from a free-form language-model call: the Planner's output is structured by construction, and any malformed output is rejected by the PlannerValidator before it can influence the rest of the pipeline.
+
+The PlannerValidator is implemented as a pipeline component of the copilot service and performs three classes of structural check. The first is JSON schema conformance: the validator verifies that the proposal contains the required fields and that each field is of the expected type. The second is enumeration validation: the validator checks that the path identifier is one the system recognizes and that the intent topic is one declared in the registry's index. The third is the absence of LLM-specific failure modes: empty fields, hallucinated path identifiers, contradictory metadata. The validator does not enforce policy; it does not check whether the proposed path is allowed for the actor, whether the requested fields are in the path's whitelist, or whether the proposal would assemble into a valid plan. Those checks belong to the ExecutionPlanFactory and are presented in subsection 4.4.3.
+
+\subsection{ExecutionPlanFactory and Single-Construction Discipline}
+The ExecutionPlanFactory is the architectural chokepoint of the copilot service. It is the single component permitted to construct a \texttt{TurnExecutionPlan}, the typed object that flows through the deterministic execution stages of the pipeline. The factory accepts three classes of input: an \texttt{IntakeDecision} from FastIntake, a \texttt{ValidatedPlannerProposal} from the Planner+Validator pair, or an \texttt{EscalationRequest} from the Escalation Gate. For each class of input, the factory exposes a distinct entry point, and the source of the resulting plan is recorded in the plan's \texttt{source} field for downstream observability.
+
+Within the factory, the path identifier and intent topic from the input are looked up in the Path Registry, and the policy attributes for that combination are applied to construct the executable plan. Source-aware policy enforcement applies a sequence of checks: the intent topic must exist in the registry, the proposed source (FastIntake, Planner, or Escalation) must be among the allowed intake sources for the (path, intent\_topic) combination, the requested fields must be in the path's allowed-field whitelist and must not appear in the forbidden-field list, the confidence threshold must be met for Planner-sourced proposals, and the field aliases must be normalized before they are written into the plan. A failure at any of these checks produces a structured \texttt{FactoryRejection} that the Escalation Gate intercepts.
+
+The single-construction discipline is enforced by an automated check that runs in continuous integration on every commit to the copilot repository. The check inspects the codebase for any direct construction of the \texttt{TurnExecutionPlan} type outside the factory module and fails the build if any such construction is detected. A complementary check enforces the registry-reader allow-list: only the ExecutionPlanFactory module and the Escalation Gate module are permitted to import from the Path Registry module, and any other import is flagged. A third check enforces the FastIntake path-range invariant: the FastIntake module is restricted to emitting decisions for the trivial-conversational and out-of-scope path identifiers, preventing an inadvertent extension of FastIntake's classification scope from silently bypassing the Planner. Listing~\ref{lst:factory_signature} sketches the public surface of the factory at the level of abstraction appropriate for this chapter.
+
+\begin{lstlisting}[caption={Public surface of the ExecutionPlanFactory (illustrative).}, label={lst:factory_signature}, basicstyle=\ttfamily\small, frame=single, breaklines=true]
+class ExecutionPlanFactory:
+    """Single permitted constructor of TurnExecutionPlan."""
+
+    def build_from_intake(
+        self, decision: IntakeDecision, actor: ActorContext, session: SessionState
+    ) -> TurnExecutionPlan | FactoryRejection:
+        ...
+
+    def build_from_planner(
+        self, proposal: ValidatedPlannerProposal, actor: ActorContext, session: SessionState
+    ) -> TurnExecutionPlan | FactoryRejection:
+        ...
+
+    def build_from_escalation(
+        self, request: EscalationRequest, actor: ActorContext, session: SessionState
+    ) -> TurnExecutionPlan:
+        ...
+
+    # Internal: reads the Path Registry and applies source-aware policy.
+    def _resolve_policy(self, path: PathId, intent_topic: IntentTopic, source: IntakeSource) -> PathPolicy:
+        ...
+\end{lstlisting}
+
+The three public entry points correspond to the three classes of input the factory accepts. The escalation entry point is distinguished by the fact that it cannot fail: by construction, an escalation always produces a Path 8 plan, because the Escalation Gate has already mapped the failure to a Path 8 sub-case and selected the appropriate finalizer template. The other two entry points may return a \texttt{FactoryRejection}, which the Escalation Gate then routes back through the escalation entry point to construct the safe Path 8 plan.
+
+\subsection{Memory, Guardrails, and Judge Layer}
+The composition stages of the pipeline are organized around three architectural commitments: bounded memory, deterministic guardrails, and a final language-model Judge. Each is implemented to honour the scope discipline established in Section 3.5 of Chapter 3.
+
+The \textbf{memory} layer in the present implementation is capture-only. Each turn's working memory is persisted as part of the per-turn execution record, with the most recent turns of the active thread accessible for inspection and audit. This capture is what gives the copilot its observability story: the conversation history is structured, queryable, and forensically complete. The two extensions identified in Chapter 3 are explicitly not implemented in the present scope. The first is the injection of working memory into the Planner, Compose, and Judge prompts; the present implementation captures the conversation history but does not yet feed it back into the language-model invocations as additional context. The second is long-term episodic summarization across sessions. Both extensions are accommodated by the architecture and are planned as future work; their absence in the present implementation means that the copilot's behaviour on a given turn is determined by that turn's content and by the deterministic policy of the active path, not by accumulated conversational context.
+
+The \textbf{guardrails} layer applies a sequence of deterministic checks to the draft response produced by the Compose stage (or to the response produced directly by the Path 4 deterministic renderer when the language model is bypassed). The evidence guardrail checks that factual statements in the draft remain consistent with the retrieved evidence packets and with the active path policy. The scope guardrail verifies that the draft does not introduce content outside the active path's declared scope. The shape guardrail verifies that the response conforms to the structural contract for the active path: required sections present, length within bounds, formatting valid. Each guardrail runs deterministically and produces a structured pass-or-fail result; a failure routes through the Escalation Gate to a Path 8 finalization with the appropriate reason code.
+
+The \textbf{Judge} layer is the final line of defense. It is implemented as a second language-model invocation against the configured Azure OpenAI deployment, with a JSON-schema-enforced output that classifies the draft response against explicit triggers: fabrication (the draft makes a factual claim not supported by retrieved evidence), scope drift (the draft addresses a question other than the one asked), and forbidden inference (the draft draws an inference that the path's policy explicitly disallows). The Judge is the architectural equivalent of a code review for the language model's output: it does not produce content, it inspects content. A negative verdict routes through the Escalation Gate to a Path 8 finalization. A positive verdict permits the Finalizer to render the user-facing response from the validated draft.
+
+\subsection{Escalation Gate and Safe Failure Modes}
+The Escalation Gate is the single deterministic intercept for every failure trigger across the pipeline. Its implementation is structurally simple by design: it accepts a failure trigger from any pipeline stage, maps the trigger to a Path 8 sub-case according to a deterministic rule table, constructs a structured \texttt{EscalationRequest} carrying the original trigger, the mapped sub-case, the reason code, and any context the failed stage produced, and re-enters the ExecutionPlanFactory through the escalation entry point to construct the Path 8 \texttt{TurnExecutionPlan}.
+
+The mapping from failure trigger to Path 8 sub-case is the core of the gate's logic. A target resolution failure or an access denial maps to Path 8.4 (target unreachable). A confidence threshold failure or a missing intent topic maps to Path 8.1 (unsupported). An out-of-domain classification from the Planner maps to Path 8.2 (out-of-scope). An ambiguous target reference maps to Path 8.3. An empty evidence result, a guardrail failure, or a negative Judge verdict maps to Path 8.5 (insufficient evidence or unsafe answer). Each mapping is encoded as a deterministic rule in the Escalation Gate module and is the single place in the codebase where these mappings live; no other component decides which Path 8 sub-case applies.
+
+The architectural significance of the Escalation Gate is that it converts every failure mode in the pipeline into a structured, finalized response rather than into an exception or a degraded answer. The Finalizer always renders from a \texttt{TurnExecutionPlan}, regardless of whether that plan came from FastIntake, the Planner, or an escalation. There is no parallel error path through which a partially-formed response or an unstructured exception could reach the user. The user always receives either a grounded answer or a Path 8 message identifying what the copilot could not do and why; the architectural property that makes this guarantee enforceable is the single-construction discipline of the ExecutionPlanFactory enforced by the continuous integration check described in subsection 4.4.3.
+
+The implementation of the copilot service across these five aspects realizes the trust-bound architecture of Chapter 3 in code. The validation activities of Chapter 5 demonstrate that the eight trust boundaries hold not only by construction but in measured behaviour against the path coverage scenarios and the targeted adversarial probes designed to stress the boundary enforcement.
+
+\section{Platform Integration: UI and Intelligence Modules}
+The user interface and the intelligence service are presented together in this section because both serve integration-level roles in the present work rather than carrying the technical centerpiece weight given to the manager and copilot services. The user interface composes the platform's services into a usable surface for the actors identified in Chapter 2; the intelligence service delivers the deterministic parsing foundation on which the platform's analytical capabilities will eventually rest. This section presents the implementation status of each, with the scope honesty required to position both within the realistic maturity of the current work.
+
+\subsection*{Intelligence Service Implementation}
+The intelligence service, \texttt{rfq\_intelligence\_ms}, is implemented as a FastAPI service following the same BACAB layered structure described for the manager service in Section 4.3. Its persistence layer uses PostgreSQL, and its principal output artifacts (parsed MR package profiles, parsed workbook profiles, intelligence briefings, cross-check reports) are persisted under the corresponding RFQ key for retrieval by downstream consumers.
+
+The implemented parsing capabilities cover two artifact families. The \textbf{MR package parser} consumes the structured Material Requisition packages produced by GHI's clients, exemplified by the golden reference package SA-AYPP-6-MR-022 introduced in Chapter 1. The parser identifies the package's sixteen-section layout, extracts the bill of materials, the restricted vendor list, the applicable standards references, and the technical specification metadata, and produces a deterministic profile of the package as its principal output. The structural assumptions on which the parser rests are validated against the single golden reference package available during the project; broader validation against additional packages is a hardening direction explicitly acknowledged in Chapter 5.
+
+The \textbf{workbook parser} consumes estimation workbooks structured according to the thirty-six-sheet template described in Chapter 1, exemplified by the reference workbook IF-25144.xls. The parser extracts identity metadata, item line entries from the bill of materials sheet, cost-breakdown values from the bid summary and top sheet, and schedule profiles from the cash-flow sheets. Both parsers expose their outputs through synchronous read endpoints, which downstream consumers (the manager service for trigger-driven flows, the user interface for direct presentation) invoke when the parsed artifacts are needed.
+
+A cross-check and anomaly surfacing capability complements the parsers. When the workbook parser encounters values that fail internal consistency checks (for example, a unit mismatch between a BOM line and its corresponding workbook entry, or a cost-per-ton value that falls outside expected bounds), the parser produces a structured anomaly flag rather than silently accepting the value or substituting a corrected one. The anomaly flags are persisted alongside the parsed profile and are retrievable through a dedicated endpoint, supporting the requirement that review-worthy artifacts not be silently accepted (FR-INT-04 in the requirements catalogue of Chapter 2).
+
+Several aspects of the intelligence service are explicitly partial in the present scope and are flagged here for accurate framing. The \textbf{briefing generation} surface is implemented at the level required to support the demonstration narrative: it aggregates parsed content from the MR package and the workbook into a structured briefing document, but the richer cross-artifact synthesis envisioned for the long-term Pillar 4 maturation is deferred. The \textbf{intake pipeline} that would automate the parsing trigger from upstream artifact uploads is implemented through manual and direct trigger paths, as established in Section 3.3 of Chapter 3 and Section 4.3 of this chapter; the autonomous event-bus consumer that would let the intelligence service react to lifecycle events without explicit invocation is architecturally specified but not wired in the current implementation. The \textbf{manager integration} is read-only and trigger-based: the intelligence service does not modify lifecycle state and does not initiate flows in the manager service. The \textbf{copilot integration} is not implemented in the present work; the connector that would let the copilot consume intelligence artifacts at runtime is deferred to the slices that ship Path 5 and the related intelligence-driven paths, as noted in Chapter 3. The \textbf{predictive intelligence} capabilities sketched by Pillar 4 in the four-pillar vision are explicitly future scope and are not present in the implemented service. With these scope statements in place, the intelligence service is accurately positioned as the parsing foundation of the future intelligence layer rather than as a fully-realized analytical engine.
+
+\subsection*{User Interface Implementation}
+The user interface, \texttt{rfq\_ui\_ms}, is implemented as a Next.js 15 application with React 18 and TypeScript, styled with Tailwind CSS and the shadcn/ui component library. Its role within the platform is to compose the manager service's lifecycle and analytical endpoints, the intelligence service's parsed artifacts, and the copilot's conversational layer into a single usable surface for the actors identified in Chapter 2.
+
+The principal screens implemented in the user interface span the operational lifecycle of an RFQ. The \textbf{RFQ list and portfolio view} presents the full set of RFQs accessible to the current actor, with filtering and sorting by status, classification, stage, and other operationally meaningful dimensions. The \textbf{RFQ detail view} presents a single RFQ's full lifecycle representation, including its stage timeline with progression history, its attached subtasks and notes and files, its associated reminders, and an intelligence panel that surfaces the parsed artifacts produced by the intelligence service when they are available. The \textbf{dashboard} provides the executive-level view of the portfolio through key performance indicator cards drawn from the manager service's analytical endpoints, including pipeline value by status, win-rate counts, and per-client portfolio summaries.
+
+The conversational layer is exposed through two complementary entry points consistent with the dual-mode design established in Section 3.5 of Chapter 3. The \textbf{copilot drawer} attached to the RFQ detail view provides the RFQ-bound conversational mode, in which queries are scoped to the currently-open RFQ. The \textbf{copilot page} accessible from the application shell provides the portfolio-level mode, in which queries operate over the broader portfolio context. Figure~\ref{fig:ui_screen} presents a representative screen of the user interface showing the RFQ detail view with the copilot drawer open.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_4_3_ui_screen.png}{%
+            \includegraphics[width=14cm]{images/fig_4_3_ui_screen.png}%
+        }{%
+            \begin{minipage}[c][9cm][c]{14cm}
+                \centering
+                \textit{[Figure 4.3 placeholder: representative screen of the user interface, showing the RFQ detail view with the lifecycle timeline, the intelligence panel, and the copilot drawer in RFQ-bound mode]}
+            \end{minipage}%
+        }
+    }
+    \caption{Representative screen of \texttt{rfq\_ui\_ms}: RFQ detail view with the copilot drawer open in RFQ-bound mode}
+    \label{fig:ui_screen}
+\end{figure}
+
+A development-mode capability supports the work of building and demonstrating the platform under variable backend availability. The frontend supports both live API consumption and demonstration mode through local fixtures, controlled through a configuration switch. Live API mode is used for integration-oriented development and for the validation activities of Chapter 5, while mock mode supports isolated UI development and demonstration resilience when one or more backend services are not running.
+
+Several aspects of the user interface are explicitly partial or deferred in the present scope and are flagged here for accuracy. There is \textbf{no production login flow}: the actor context that the frontend submits with each request is selected client-side through a development-mode role selector rather than through an authenticated session, consistent with the IAM scope discussion in Section 3.9 of Chapter 3. The user interface is not currently \textbf{containerized}; deployment in the present work is through the development server, with containerization recognized as an integration-hardening direction. \textbf{Browser-level end-to-end tests} are not present in the current scope; testing of the integrated platform is currently performed through the manager service's Postman collection, the copilot service's pytest suites, and manual demonstration walkthroughs. Finally, the frontend's \textbf{thread management for the copilot} currently consumes the v1 lane of the copilot service for thread lifecycle operations (creating threads, listing prior threads), while the v2 turn endpoint with its full trust-boundary pipeline serves the actual conversational exchanges; the migration of frontend thread lifecycle to the v2 lane is a recognized alignment task and is part of the future scope of the integration. With these scope statements in place, the user interface is accurately positioned as the integration and presentation surface of the platform with the integration maturity required for the validation activities of Chapter 5, rather than as a production-grade application ready for end-user deployment.
+
+\subsection*{Cross-Service Integration Status}
+Two cross-service integration paths matter for the validation activities of Chapter 5 and are summarized here as the closing of this section. The \textbf{manager-to-intelligence path}, in which an estimation workbook uploaded to the manager service is parsed by the intelligence service and its profile retrieved by downstream consumers, is implemented through the manual and direct trigger flows discussed earlier in this chapter; an end-to-end demonstration of the path is achievable but the autonomous event-driven realization remains a hardening direction. The \textbf{copilot-to-evidence path}, in which the copilot retrieves operational evidence to ground a Path 4 answer, is implemented and exercised end-to-end against the manager service's authorized endpoints; the symmetric path that would let the copilot retrieve evidence from the intelligence service is architecturally specified but not wired in the current implementation, as established for the Path 5 family in Section 3.5 of Chapter 3. With the implementation status of the four services and their integration paths now presented, the chapter concludes by handing off to the validation activities that exercise this implementation against the requirements and architectural commitments established in earlier chapters.
+
+\section{CONCLUSION}
+This chapter has presented the implementation of the architecture developed in Chapter 3. It opened with the development environment and toolchain that frame the work, including the Python and FastAPI backend stack, the Next.js frontend stack, the per-service persistence configuration, the Azure OpenAI deployment used by the copilot service, and the per-service containerization posture. It developed the manager service implementation in depth, presenting the BACAB layered structure as concretely realized in the manager codebase, the lifecycle and stage progression mechanics through which the three deterministic gates of the architecture become guarded code, the supporting resources for subtasks and notes and files and reminders, the analytical endpoints that serve real database aggregations within the bounds the present scope supports, and the containerization and hardening status of the service. It then developed the copilot service implementation, the principal innovation contribution of the work, presenting the v1 and v2 implementation lanes, the turn processing pipeline as the spine of the v2 implementation, the Path Registry and the Planner classification logic, the ExecutionPlanFactory and the single-construction discipline enforced by continuous integration checks, the memory and guardrails and Judge layers under explicit scope discipline, and the Escalation Gate as the single deterministic intercept for failure modes. It closed with the platform integration layer, presenting the intelligence service as the parsing foundation of the future intelligence layer and the user interface as the composing presentation surface, with the scope honesty required for both to be accurately positioned within the maturity of the present work.
+
+The next chapter validates this implementation against the requirements catalogued in Chapter 2 and the architectural commitments developed in Chapter 3, presents the formal metrics and the golden scenarios that exercise the platform end-to-end, demonstrates that the eight trust boundaries of the copilot architecture hold in measured behaviour, and discusses the business impact of the implemented capabilities against the audit pain points identified in Chapter 1.

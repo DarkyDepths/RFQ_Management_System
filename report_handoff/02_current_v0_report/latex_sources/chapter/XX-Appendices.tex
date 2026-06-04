@@ -1,0 +1,302 @@
+\chapter*{APPENDICES}
+\markboth{\MakeUppercase{APPENDICES}}{}
+\addcontentsline{toc}{chapter}{APPENDICES}
+\adjustmtc
+\thispagestyle{MyStyle}
+%% add to table of contents : Annexe.1
+\makeatletter\renewcommand\thesection{A.\@arabic\c@section}\makeatother
+%add spacing in the table of figures
+\addtocontents{lof}{\vspace{0.3cm}}
+\appendix
+\renewcommand{\thefigure}{A.\arabic{figure}}
+\setcounter{figure}{0}
+
+\section{Detailed Use Case Descriptions}
+\label{app:use-cases}
+
+This appendix expands the principal use cases introduced in Chapter~3 (Section~3.4) with structured descriptions covering actor, preconditions, main flow, alternate flows, and postconditions. Use cases related to target / future actors (Administrator template management, full executive analytics) are listed for completeness; current-scope implementation status is indicated per Chapter~3.
+
+\subsection{UC-01 --- Register RFQ}
+\textbf{Primary actor:} Estimation Manager. \textbf{Preconditions:} the user is authenticated; at least one workflow template (GHI-LONG, GHI-SHORT, or GHI-CUSTOM) is seeded in the manager service. \textbf{Main flow:} (1)~the user opens the new-RFQ form; (2)~the user provides identifying metadata (name, client, priority, deadline, owner) and selects a workflow template; (3)~the system instantiates the RFQ with the selected template, allocates a new unique RFQ code, and creates the per-stage instances from the template; (4)~the system returns the persisted RFQ to the user. \textbf{Alternate flows:} (3a)~validation failure --- the system returns a structured error identifying the missing or invalid fields and aborts the registration; (3b)~code-counter contention under load --- LG-06 limitation acknowledged; advisory-lock mitigation deferred. \textbf{Postconditions:} the RFQ exists in the manager service with its initial stage active, lifecycle timestamps recorded, and is visible in the portfolio view.
+
+\subsection{UC-02 --- Advance RFQ Stage}
+\textbf{Primary actor:} Estimator or Estimation Manager. \textbf{Preconditions:} the RFQ exists; the current stage has been entered. \textbf{Main flow:} (1)~the user submits the advance request with the proposed next stage; (2)~the system applies the mandatory-field gate against the stage's required field list; (3)~the system applies the blocker gate; (4)~the system applies the transition-validity gate against the workflow template; (5)~when all three gates pass, the stage-advance transaction commits atomically, the current stage is marked complete with a timestamp, the next stage is activated, and the RFQ's overall progress is recomputed. \textbf{Alternate flows:} (2a)~mandatory fields missing --- structured error returned identifying the missing fields; (3a)~blocker unresolved --- structured error returned with the blocker reason code; (4a)~invalid transition --- structured error returned with the computed valid next stage. \textbf{Postconditions:} on success, the RFQ is on its next lifecycle stage; on any gate failure, the lifecycle is unchanged.
+
+\subsection{UC-03 --- Manage Stage Artifacts}
+\textbf{Primary actor:} Department User, Estimator, or Estimation Manager. \textbf{Preconditions:} the RFQ and stage exist; the user has the appropriate role context for the artifact operation. \textbf{Main flow:} (1)~the user attaches a subtask, an append-only note, or a file to the current stage; (2)~the system validates the artifact (file-type discriminator for uploads, payload shape for notes and subtasks) and persists it; (3)~subtask updates propagate to the parent stage's progress denominator, with soft-deleted subtasks excluded. \textbf{Alternate flows:} (1a)~file-type rejected at upload; (1b)~note edited or deleted attempt --- refused (append-only contract); (1c)~subtask soft-deleted --- retained with deleted-at timestamp; parent stage progress recomputed. \textbf{Postconditions:} the artifact is persisted and visible in the RFQ detail view; lifecycle traceability mechanisms (timestamps, persisted state) are updated.
+
+\subsection{UC-04 --- Configure Reminders}
+\textbf{Primary actor:} Estimation Manager. \textbf{Preconditions:} the RFQ and the target stage or subtask exist. \textbf{Main flow:} (1)~the user creates a reminder manually or via an existing reminder rule (from the \texttt{reminder\_rule} table); (2)~the system persists the reminder with assignee, due date, and source attribution; (3)~the reminder appears in the reminder centre and is eligible for the reminder-processing endpoint. \textbf{Alternate flows:} (2a)~rule-based reminder duplicates a manual one --- both retained with distinct sources. \textbf{Postconditions:} the reminder is persisted; dispatch is log-only in the present scope, with the wiring to outbound delivery channels deferred to future communication capabilities.
+
+\subsection{UC-05 --- Consult Pipeline Analytics}
+\textbf{Primary actor:} Executive (target role) or Estimation Manager. \textbf{Preconditions:} the user is authenticated and has dashboard access. \textbf{Main flow:} (1)~the user opens the dashboard; (2)~the UI calls the manager service's \texttt{/rfqs/stats} and \texttt{/rfqs/analytics} endpoints; (3)~portfolio KPIs (total/open/critical RFQ counts, average cycle time), win-rate, and per-client breakdown are rendered. \textbf{Alternate flows:} (3a)~margin and estimation-accuracy fields are returned as null until outcome data is captured; the UI suppresses or marks these fields. \textbf{Postconditions:} the user has consulted the dashboard; no state change.
+
+\subsection{UC-06 --- Query Copilot in Portfolio Mode}
+\textbf{Primary actor:} any business-role actor (Copilot User as cross-cutting role). \textbf{Preconditions:} the user has authenticated and the copilot page is accessible. \textbf{Main flow:} (1)~the user opens or resumes a portfolio-mode thread; (2)~the user submits a turn; (3)~the v2 turn pipeline classifies the turn (FastIntake or Planner), assembles an execution plan via the ExecutionPlanFactory, runs the resolver and access stages, executes manager tools, performs evidence checks, builds context, composes or deterministically renders the response, runs guardrails, runs the Judge for compose-eligible intents, and finalises the response; (4)~the user receives the answer. \textbf{Alternate flows:} (3a)~any stage failure triggers the Escalation Gate, which routes the turn to a Path~8.x safe template; (3b)~the LLM is unavailable --- Path~8.5 graceful template returned. \textbf{Postconditions:} the turn is persisted in the execution-records surface for forensics; thread last-activity timestamp updated.
+
+\subsection{UC-07 --- Query Copilot in RFQ-Bound Mode}
+\textbf{Primary actor:} any business-role actor scoped to a specific RFQ. \textbf{Preconditions:} the user is in the RFQ detail view and opens the copilot drawer with the RFQ pre-selected as target. \textbf{Main flow:} as UC-06, but the target candidate is supplied at thread creation rather than resolved per turn. The dominant active path is Path~4 (RFQ-grounded operational answers). \textbf{Alternate flows:} as UC-06. \textbf{Postconditions:} as UC-06; \texttt{target\_rfq\_code} is propagated through the response payload so the UI can re-anchor evidence references.
+
+\subsection{UC-08 --- Manage Workflow Templates}
+\textbf{Primary actor:} Administrator (target role). \textbf{Preconditions:} the user holds an administrative role context. \textbf{Main flow:} (1)~the user lists workflow templates; (2)~the user inspects or updates a template's metadata (note: stage-template editing remains read-only in the current scope and is governed by seed-script bootstrap). \textbf{Alternate flows:} (2a)~template edits requiring schema migration --- deferred to the dedicated administrative tooling track. \textbf{Postconditions:} workflow catalogue remains consistent; existing RFQs are unaffected because each carries a snapshot of its template state at instantiation time.
+
+\section{Product Backlog}
+\label{app:backlog}
+
+The product backlog tracks each functional requirement of Chapter~3 as an operational item, grouped by module and prioritised by current implementation status. Priority reflects the project's strategic ranking and is distinct from status (\textit{Done}: implemented and validated in the current scope; \textit{In Progress}: partial implementation with named hardening direction; \textit{Deferred}: future scope). The dedicated IAM service is the single \textit{Low-priority} item, deliberately deferred per Chapter~1 (Section~1.6).
+
+\begingroup
+\renewcommand{\arraystretch}{1.3}
+\footnotesize
+\begin{longtable}{|p{1.2cm}|p{1.8cm}|p{6.6cm}|p{1.4cm}|p{1.6cm}|}
+\caption{Product backlog: 25 functional requirements grouped by module and prioritised; one Low-priority dedicated-IAM item is captured separately below.}
+\label{tab:backlog} \\
+\hline
+\rowcolor{lightgray}
+\textbf{Module} & \textbf{ID} & \textbf{Item} & \textbf{Priority} & \textbf{Status} \\ \hline
+\endfirsthead
+\multicolumn{5}{l}{\textit{\tablename~\thetable\ --- continued from previous page}} \\
+\hline
+\rowcolor{lightgray}
+\textbf{Module} & \textbf{ID} & \textbf{Item} & \textbf{Priority} & \textbf{Status} \\ \hline
+\endhead
+\hline
+\multicolumn{5}{r}{\textit{continued on next page}} \\
+\endfoot
+\hline
+\endlastfoot
+Manager & FR-MGR-01 & Register new RFQ with metadata and workflow template & High & Done \\ \hline
+Manager & FR-MGR-02 & Instantiate per-RFQ stages from workflow template & High & Done \\ \hline
+Manager & FR-MGR-03 & Three-gate stage progression (mandatory / blocker / transition) & High & Done \\ \hline
+Manager & FR-MGR-04 & Attach files, notes, and subtasks to stages (append-only notes) & High & Done \\ \hline
+Manager & FR-MGR-05 & Manual and rule-based reminders with assignee and due date & High & Done \\ \hline
+Manager & FR-MGR-06 & Analytical endpoints (status totals, win rate, per-client) & High & In Progress \\ \hline
+Manager & FR-MGR-07 & Lifecycle traceability via timestamps and non-destructive updates & High & Done \\ \hline
+Manager & FR-MGR-08 & Soft delete of subtasks with progress propagation & High & Done \\ \hline
+Copilot & FR-COP-01 & Natural-language queries with evidence-grounded responses & High & Done \\ \hline
+Copilot & FR-COP-02 & Portfolio-mode and RFQ-bound-mode entry points & High & Done \\ \hline
+Copilot & FR-COP-03 & Turn classification into a known interaction path & High & Done \\ \hline
+Copilot & FR-COP-04 & Path-authorised evidence grounding (manager state in current scope) & High & In Progress \\ \hline
+Copilot & FR-COP-05 & Structured refusal for out-of-scope queries (Path~8 family) & High & Done \\ \hline
+Copilot & FR-COP-06 & Manager-mediated access enforcement on every retrieval & High & Done \\ \hline
+Copilot & FR-COP-07 & Bounded conversation history and working-memory capture & High & In Progress \\ \hline
+Copilot & FR-COP-08 & Draft verification against retrieved evidence before delivery & High & Done \\ \hline
+Intelligence & FR-INT-01 & MR-package parser with deterministic profile output & Medium & Done \\ \hline
+Intelligence & FR-INT-02 & Workbook parser with identity / item / cost / schedule profiles & Medium & Done \\ \hline
+Intelligence & FR-INT-03 & Intelligence briefing for downstream presentation & Medium & In Progress \\ \hline
+Intelligence & FR-INT-04 & Anomaly and cross-check flags rather than silent corrections & Medium & Done \\ \hline
+UI & FR-UI-01 & Portfolio view with filter/sort attributes & High & Done \\ \hline
+UI & FR-UI-02 & RFQ detail view with lifecycle, artifacts, and copilot entry point & High & Done \\ \hline
+UI & FR-UI-03 & Portfolio-level executive indicators and role-aware presentation & High & In Progress \\ \hline
+Cross-cutting & FR-X-01 & Independently containerised and startable backend services & Medium & In Progress \\ \hline
+Cross-cutting & FR-X-02 & Health endpoint and metrics surface where implemented & Medium & In Progress \\ \hline
+\end{longtable}
+\endgroup
+
+\textit{Deferred — Low-priority item:} a dedicated identity and access-management service (\texttt{rfq\_iam\_ms}) is recognised as future scope, replacing the in-service IAM shim that the manager service currently carries; this item is not numbered in the FR table because it represents a service inventory item rather than a functional requirement.
+
+\section{Path Registry Structure}
+\label{app:path-registry}
+
+The Path Registry encodes the entire copilot policy surface as configuration, with one \texttt{PathConfig} entry per registered path. Each entry's fields control distinct facets of policy. \texttt{intent\_topics} declares the supported intents under the path. \texttt{resolver\_strategy} determines how target candidates are resolved (e.g.\ \texttt{NONE} for template-only paths, \texttt{SEARCH\_BY\_CODE} for RFQ-bound operational paths). \texttt{required\_target\_policy} sets the minimum and maximum number of targets the path expects. \texttt{access\_policy} names the access-enforcement style: \texttt{MANAGER\_MEDIATED} routes every retrieval through the manager service's authorised endpoints. \texttt{forbidden\_fields} enumerates the Group~C judgment fields (margin, bid amount, internal cost, win probability, ranking, winner, estimation quality) that are never exposed, regardless of the user's role. \texttt{memory\_policy} bounds how many prior pairs the working memory may carry and whether the path contributes to episodic memory. \texttt{persistence\_policy} controls which forensic fields are written to the execution-records surface. \texttt{active\_guardrails} lists the deterministic checks applied to the draft response (evidence grounding, forbidden-field detection, internal-label stripping, scope adherence, shape conformance). \texttt{judge\_policy} configures the LLM Judge triggers and timeout. \texttt{finalizer\_template\_keys} maps the path's intents (for normal paths) or reason codes (for the Path~8.x family) to the templates that render the final user-facing answer. \texttt{model\_profile} governs Compose-stage model selection and parameters; template-only paths set it to \texttt{None}.
+
+The registry currently encodes three active paths under this structure: \textbf{Path~1} (trivial conversational, template-only, with no resolver, no tools, no Judge, and a template-only finalizer keyed by greeting / thanks / farewell intent), \textbf{Path~4} (RFQ-grounded operational retrieval, with single-target resolution by RFQ code, manager-mediated access, the full Group~C forbidden-field list, all five active guardrails, the Path~4 Judge policy, and per-target episodic memory), and the \textbf{Path~8 family} of five protected sub-cases (8.1 through 8.5, each terminal-template-only and keyed by reason code rather than intent). Adding a new operational path is a configuration change against this structure, not a modification of pipeline stages or factory logic. The full registry lives at \texttt{microservices/rfq\_copilot\_ms/src/config/path\_registry.py}.
+
+\section{Anti-Drift Tests and Test Invocation Evidence}
+\label{app:test-evidence}
+
+This appendix records the anti-drift test files that protect the trust-boundary architecture of the copilot service and the exact invocations and pass-count outputs of the pytest suites across the three Python services. Test invocations were reproduced from the project repository against the \texttt{feat/rfq-copilot-batch10-v2-threads-working-memory} branch (commit \texttt{72d5ae2}, run 2026-05-20, Python 3.11.9).
+
+\subsection{Anti-Drift Test Files (Copilot Service)}
+
+The eight anti-drift test files at \texttt{microservices/rfq\_copilot\_ms/tests/anti\_drift/} together host 18 test functions enforcing the structural invariants summarised in Chapter~6 (Section~6.4):
+
+\begin{itemize}\setlength\itemsep{0.2em}
+\item \texttt{test\_no\_turn\_execution\_plan\_outside\_factory.py} --- single-construction discipline; AST inspection of every module in \texttt{src/pipeline/} and \texttt{src/controllers/} confirming that no construction site for \texttt{TurnExecutionPlan} exists outside the \texttt{ExecutionPlanFactory}.
+\item \texttt{test\_path\_registry\_reader\_allowlist.py} --- registry-reader allowlist; only the factory and the Escalation Gate may import the runtime \texttt{PATH\_CONFIGS} data module.
+\item \texttt{test\_fast\_intake\_anchored.py} --- FastIntake anchored-regex invariant; the patterns module uses anchored full-match semantics, exports the required symbols, and contains no LLM / network / DB imports.
+\item \texttt{test\_llm\_structured\_output\_enforced.py} --- Planner, Compose, and Judge invocations all pass the structured-output kwargs that the provider API requires.
+\item \texttt{test\_no\_llm\_sdk\_in\_deterministic\_stages.py} --- deterministic stages (Resolver, Access, Tool Executor, Evidence Check, Context Builder, Guardrails, Finalizer, Persist) contain no LLM SDK imports.
+\item \texttt{test\_memory\_policy\_load\_bearing.py} --- the registry's \texttt{MemoryPolicy.working\_pairs} field is read by production code, ensuring the memory configuration is load-bearing rather than dead.
+\item \texttt{test\_no\_v3\_references.py} --- no source references to the superseded v3 architecture remain in code or docs.
+\item \texttt{test\_batch10\_no\_history\_injection.py} --- Batch~10 capture-only contract; working memory must not be injected into Planner, Compose, or Judge prompts.
+\end{itemize}
+
+The intelligence and manager services do not host \texttt{tests/anti\_drift/} directories of their own; the structural invariants they rely on (the dormant-model decision in the manager and the parser-orchestrator contracts in the intelligence service) are protected by service-specific unit tests in \texttt{tests/unit/} and \texttt{tests/} respectively.
+
+\subsection{Test Invocations and Pass Counts}
+
+The pytest suites of the three Python services were reproduced from their respective \texttt{microservices/<service>} working directories during the validation audit. Each suite was invoked with \texttt{python -m pytest -q --tb=no} from \texttt{PYTHONPATH=.}; the manager service additionally requires \texttt{DATABASE\_URL=sqlite:///./.qg.db}, and the intelligence service requires the parser dependencies (\texttt{openpyxl}, \texttt{xlrd}, \texttt{python-docx}) installed into the shared virtual environment. Table~\ref{tab:pytest_results} summarises the outcomes.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|p{3.5cm}|>{\RaggedRight\arraybackslash}X|p{3.5cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{Service} & \textbf{Outcome} & \textbf{Runtime} \\ \hline
+\texttt{rfq\_manager\_ms} & 259 passed, 121 warnings & 22.87 s \\ \hline
+\texttt{rfq\_copilot\_ms} & 636 passed, 3 warnings & 6.24 s \\ \hline
+\texttt{rfq\_intelligence\_ms} & 64 passed, 48 fixture-dependent (missing local fixtures), 6 skipped, 2 warnings & 2.72 s \\ \hline
+\end{tabularx}
+\caption{Pytest results across the three Python services. Snapshot: branch \texttt{feat/rfq-copilot-batch10-v2-threads-working-memory}, commit \texttt{72d5ae2}, run 2026-05-20.}
+\label{tab:pytest_results}
+\end{table}
+
+The 48 fixture-dependent intelligence-service tests reference golden artifacts (the SA-AYPP-6-MR-022 MR package and the IF-25144 workbook) held under \texttt{tests/local\_fixtures/}; that directory is gitignored and is not present in a clean checkout, so the gap reflects environmental absence of external artifacts rather than parser regressions, as developed in Chapter~6 (Section~6.5).
+
+\subsection{Frontend Source-Contract Scripts}
+
+The frontend ships twelve source-contract scripts at \texttt{frontend/rfq\_ui\_ms/tests/}, each invoked individually with Node's strict-mode assertion module (e.g.\ \texttt{node tests/p0-truth-gates.test.mjs} for the principal gate suite, and analogous invocations for the intelligence-phase-truth, workflow-catalog-truth, and nine further scripts). Eleven of the twelve scripts pass against the audited branch; one (\texttt{p0-truth-gates.test.mjs}, line~83) currently fails because of a literal-string assertion that has drifted from the source file it inspects --- a contract-vs-source drift rather than a runtime regression, as developed in Chapter~6 (Section~6.6).
+
+\section{Golden Scenario Test Set}
+\label{app:golden-scenarios}
+
+The validation methodology of the present work does not include a separately-curated benchmark dataset of golden user queries with hand-labelled expected paths, reason codes, or expected text. Instead, the copilot service's pytest suite serves as the de facto golden-scenario set in the current scope: the pipeline tests under \texttt{microservices/rfq\_copilot\_ms/tests/pipeline/} (216~functions covering every pipeline stage in isolation) and the smoke tests under \texttt{microservices/rfq\_copilot\_ms/tests/smoke/} (98~functions exercising end-to-end flows, including FastIntake-classified trivial messages, Path~4 RFQ-grounded retrieval, Path~8 safe fallbacks, ownership enforcement, and persistence) together cover the principal flows that a curated benchmark would test.
+
+A separately-curated golden benchmark --- with a fixed scenario identifier, the input message, the expected path and reason code, and the observed result --- is acknowledged in Chapter~6 (Section~6.8) as the highest-priority validation hardening item for any subsequent work. Such a benchmark would extend rather than replace the existing pipeline and smoke tests, and would in particular permit the evaluation of language-model answer quality against the deployed Azure OpenAI model rather than against the deterministic \texttt{FakeLlmConnector} used in the current automated suite.
+
+\section{Postman Validation Structure}
+\label{app:postman}
+
+The manager service ships with a Postman collection (\texttt{rfq\_manager\_ms\_postman\_full\_walkthrough\_v2}) accompanied by an environment file. The collection is organised into four folders that together exercise the principal API surface of the service:
+
+\textbf{Folder~0 --- Bootstrap and Baseline (Run First).} Eight requests that establish the runtime variables used by Folder~1: a health check that bootstraps \texttt{base\_url} and \texttt{base\_origin}; listing of workflow templates, saving the workflow IDs for \texttt{GHI-LONG} and \texttt{GHI-SHORT} into \texttt{workflow\_long\_id} and \texttt{workflow\_short\_id}; retrieval of each workflow's stage templates, saving the per-stage template IDs (\texttt{tpl\_long\_s1}, \texttt{tpl\_long\_s2}, $\ldots$, \texttt{tpl\_short\_s1}, $\ldots$); a baseline list of existing RFQs to anchor diagnostics; the dashboard KPI endpoint (\texttt{/rfqs/stats}); the business-analytics endpoint (\texttt{/rfqs/analytics}); and a list of reminder rules to anchor reminder-related operations.
+
+\textbf{Folder~1 --- Continuous Boss Demo (Controlled RFQ Story).} A scripted walkthrough that creates a controlled RFQ under the \texttt{GHI-SHORT} workflow, advances it through its stages, exercises stage-level operations (notes, subtasks, files, blockers, soft-delete), and validates the lifecycle on each transition. The folder contains positive and negative requests: the positive requests advance the RFQ on the happy path with mandatory fields filled; the negative requests attempt out-of-sequence advances, attempts to advance without mandatory fields, and attempts to modify append-only notes. The negative requests are expected to return structured errors, and the in-collection \texttt{pm.test(...)} assertions verify both the error payload and the unchanged lifecycle state.
+
+\textbf{Folder~2 --- Optional Advanced Tricks and Guardrails.} A set of optional advanced requests exercising edge-case surfaces around RFQ creation and stage progression: invalid-payload rejection, skip-stages at creation, stage overrides on creation, and the blocker raise/resolve flow with attempted advance under an unresolved blocker. The in-collection assertions verify the structured-error responses and the resulting state, distinguishing rejected from accepted operations.
+
+\textbf{Folder~3 --- Optional Diagnostics (Non-Blocking).} A set of optional read-only diagnostics that probe seeded-data consistency and status-label normalisation across the manager service's analytical endpoints. These requests do not modify state; the in-collection assertions verify response shapes and the agreement between counters and breakdowns where applicable. Failures here flag environmental issues with the seed dataset rather than service regressions.
+
+The environment file declares the variables consumed by the collection, including \texttt{base\_origin}, \texttt{base\_url}, \texttt{health\_url}, demo deadlines, demo RFQ and client names, the workflow IDs and stage-template IDs populated at bootstrap, and a path to a demonstration file used by the upload requests. The collection is committed at \texttt{microservices/rfq\_manager\_ms/docs/postman/}; an automated Newman run of the same collection is not yet captured in the project's continuous-integration workflow, and is acknowledged in Chapter~6 (Section~6.8) as a recorded-Newman-execution hardening direction.
+
+\section{Integration Paths}
+\label{app:integration}
+
+This appendix reproduces the full cross-service integration mapping summarised in Chapter~6 (Section~6.6). The seven paths surveyed below cover every consumer/producer relationship between the four delivered platform components in the present work.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|p{3.8cm}|p{2.8cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Integration Path} & \textbf{Status} & \textbf{Validation Evidence} \\ \hline
+UI to manager service & Demonstration & Source-contract scripts and manual demonstration walkthroughs; no browser-driven end-to-end tests in the present scope. \\ \hline
+UI to copilot service & Demonstration & Manual demonstration of the RFQ-bound and portfolio-level conversational entry points; thread management consumes the v1 lane while turn submission consumes the v2 lane. \\ \hline
+UI to intelligence service & Demonstration & Read-only consumption of parsed artifacts surfaced through the intelligence panel of the RFQ detail view. \\ \hline
+Copilot to manager service & Tested via test double & Exercised through smoke and pipeline tests using a deterministic manager connector double; live manager integration validated through manual scenario runs. \\ \hline
+Manager to intelligence service & Manual/direct trigger & Workbook parsing initiated through manual or direct trigger paths; autonomous event-driven manager-to-intelligence flow deferred. \\ \hline
+Intelligence to manager service & Read-only client & Thin read-only connector implemented for intelligence-side consumption of lifecycle context. \\ \hline
+Copilot to intelligence service & Not implemented & Connector for runtime consumption of intelligence artifacts deferred to the slices that ship Path~5 and related intelligence-driven paths. \\ \hline
+\end{tabularx}
+\caption{Integration paths and their validation status in the present work}
+\label{tab:integration}
+\end{table}
+
+\section{Business Impact Mapping}
+\label{app:business-impact}
+
+This appendix reproduces the full twelve-point business-impact mapping summarised in Chapter~6 (Section~6.7). Each pain point identified in the audit (Chapter~1, Table~\ref{tab:pain_points}) is paired with its current implementation status and the architectural mechanism responsible.
+
+\begingroup
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{xltabular}{\textwidth}{|p{1cm}|p{3.8cm}|p{2.2cm}|>{\RaggedRight\arraybackslash}X|}
+\caption{Business impact mapping: audit pain points against implemented capabilities}
+\label{tab:business_impact} \\
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Pain Point} & \textbf{Status} & \textbf{Implementing Mechanism} \\ \hline
+\endfirsthead
+\multicolumn{4}{l}{\textit{\tablename~\thetable\ --- continued from previous page}} \\
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Pain Point} & \textbf{Status} & \textbf{Implementing Mechanism} \\ \hline
+\endhead
+\hline
+\multicolumn{4}{r}{\textit{continued on next page}} \\
+\endfoot
+\hline
+\endlastfoot
+PP-01 & Inter-departmental communication breakdown & Addressed & Shared RFQ lifecycle, stage tracking, and artifact attachment. \\ \hline
+PP-02 & Manual client follow-up & Partially addressed & Reminder infrastructure implemented; outbound channels and inbound monitoring deferred. \\ \hline
+PP-03 & Zero executive visibility & Partially addressed & Pipeline, win-rate, and per-client breakdown computed from real data; margin and estimation-accuracy fields reserved for future sources; full BI deferred. \\ \hline
+PP-04 & No reuse of past RFQs & Not yet addressed & Lifecycle data structured and persisted; predictive layer deferred to Pillar~4. \\ \hline
+PP-05 & Late discovery of infeasibility & Partially addressed & Stage-level blocker gate surfaces infeasibility earlier; deeper analytics deferred. \\ \hline
+PP-06 & Workbook as single point of failure & Partially addressed & Deterministic workbook parsing complements the workbook; workbook remains authoritative pricing instrument. \\ \hline
+PP-07 & Undocumented feasibility expertise & Partially addressed & Append-only notes and structured stage artifacts capture decisions; tacit-knowledge encoding deferred. \\ \hline
+PP-08 & Classification not enforcing workflow & Addressed & Workflow-driven stage instantiation and transition-validity gate. \\ \hline
+PP-09 & Unmanaged supplier risk & Not yet addressed & Depends on Pillar~4 predictive layer and deferred data flows. \\ \hline
+PP-10 & Underutilised ERP system & Not yet addressed & ERP integration recognised but outside current scope. \\ \hline
+PP-11 & Intuition-based bid prioritisation & Partially addressed & Win-rate and by-client analytics provide quantitative basis; predictive prioritisation deferred. \\ \hline
+PP-12 & Standards not driving early cost implications & Partially addressed & Workbook parsing surfaces referenced standards and anomalies; cost computation deferred. \\ \hline
+\end{xltabular}
+\endgroup
+
+\section{Limitations Register}
+\label{app:limitations}
+
+This appendix reproduces the full limitations register summarised by cluster in Chapter~6 (Section~6.8). Each item names a current limitation of the present work and its planned mitigation. No item requires reopening of the architectural commitments developed in Chapter~4.
+
+\begingroup
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{xltabular}{\textwidth}{|p{2.5cm}|>{\RaggedRight\arraybackslash}X|>{\RaggedRight\arraybackslash}X|}
+\caption{Limitations of the present work and their planned mitigations}
+\label{tab:limitations_future} \\
+\hline
+\rowcolor{lightgray}
+\textbf{Area} & \textbf{Current Limitation} & \textbf{Planned Mitigation} \\ \hline
+\endfirsthead
+\multicolumn{3}{l}{\textit{\tablename~\thetable\ --- continued from previous page}} \\
+\hline
+\rowcolor{lightgray}
+\textbf{Area} & \textbf{Current Limitation} & \textbf{Planned Mitigation} \\ \hline
+\endhead
+\hline
+\multicolumn{3}{r}{\textit{continued on next page}} \\
+\endfoot
+\hline
+\endlastfoot
+Validation methodology & Service-level execution without a continuous-integration workflow exercising every service on every commit. & Continuous-integration workflow across copilot, intelligence, and frontend services. \\ \hline
+Database & Manager pytest suite executes against SQLite quality-gate target rather than PostgreSQL. & Extension of the manager suite to a PostgreSQL execution mode. \\ \hline
+Manager API evidence & Postman collection present, but no recorded Newman execution. & Recorded Newman runs of the Postman collection. \\ \hline
+Concurrency & RFQ code generation is not yet concurrency-safe under contention (LG-06); atomicity is exercised by tests but the limitation is acknowledged. & Concurrency-safe code generation through advisory-lock or sequence-based strategy. \\ \hline
+Copilot model coverage & Language-model stages exercised through deterministic test doubles; no curated benchmark for natural-language answer quality. & Curated golden benchmark for the deployed Azure OpenAI model; automated live-model regression. \\ \hline
+User interface & No browser-level end-to-end tests; production login flow absent; UI not containerised; v1 thread-management lane still in use. & Browser-level end-to-end tests (Playwright or Cypress); container packaging; thread management migrated to v2. \\ \hline
+Intelligence parsers & Validated against a single golden reference package and a single workbook; fixture directory gitignored. & Reproducible fixture set covering additional MR packages and workbooks. \\ \hline
+Copilot path coverage & First vertical slice only: Paths~1, 4, and the Path~8 family ship; Paths~2, 3, 5, 6, 7 route to safe Path~8 fallbacks. & Remaining copilot answer paths shipped slice by slice. \\ \hline
+Cross-service integration & Manager-to-intelligence cascade is manual/direct trigger; copilot's intelligence connector not wired. & Autonomous event-bus consumer for the manager-to-intelligence cascade; copilot connector for intelligence artifacts to complete Section~4.5's evidence path. \\ \hline
+Identity and access & Dedicated identity and access management service is a placeholder. & Production IAM/SSO service extracted from the in-service shim. \\ \hline
+Conversation memory & Working memory captured but not injected into language-model invocations. & Working-memory injection into Planner, Compose, and Judge under the trust-boundary discipline; episodic-memory extension across sessions. \\ \hline
+Predictive intelligence & Pillar~4 capabilities (pattern matching, supplier intelligence, win-probability) deferred. & Pillar~4 implementation built on the historical dataset the manager service is beginning to accumulate. \\ \hline
+\end{xltabular}
+\endgroup
+
+\section{Architectural Decisions Register}
+\label{app:adr}
+
+This appendix reproduces the architectural-decisions register summarised in Chapter~4 (Section~4.6). The eight decisions below were the principal commitments made during the project, each with the alternatives considered, the option chosen, the rationale, and the principal consequence accepted. None requires reopening in light of the validation evidence of Chapter~6.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\scriptsize
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{2.8cm}|p{2.8cm}|>{\RaggedRight\arraybackslash}X|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Decision} & \textbf{Alternatives} & \textbf{Chosen} & \textbf{Rationale} & \textbf{Consequence} \\ \hline
+Service decomposition & Monolith, microservices & Microservices & Clear data ownership and independent evolution of layers. & Inter-service communication overhead and contract discipline required. \\ \hline
+Intra-service pattern & Free-form, MVC, BACAB layered & BACAB layered & Consistent structure across backend services, enforced separation of concerns, alignment with host firm conventions. & Higher up-front structure cost; small services may feel over-organised. \\ \hline
+Operational source of truth & Distributed across services, owned by manager & Owned by manager & Single source-of-truth posture; copilot answers remain mediated by the service that owns operational evidence. & Manager service becomes a critical dependency for every other service. \\ \hline
+Reminder ownership & Inside manager service, separate communication scope & Inside manager service & Reminders are tightly coupled to lifecycle artifacts; extraction would require either caching lifecycle state elsewhere or per-call round trips. & Reminders may need to migrate if and when outbound communication capabilities are formalised. \\ \hline
+Conversational design & Generic LLM agent, naive RAG, trust-bound copilot & Trust-bound copilot & Industrial estimation requires authority over operational truth that is not appropriately delegated to a language model. & Higher architectural complexity; more components to maintain than a generic agent would require. \\ \hline
+Policy surface & In-code policy, policy-as-configuration via Path Registry & Policy-as-configuration & Auditable, modifiable as data rather than as code; supports scope expansion without pipeline changes. & Configuration discipline becomes critical; misconfigured registry has architectural impact. \\ \hline
+Plan construction & Multiple constructors per source, single ExecutionPlanFactory & Single ExecutionPlanFactory & Single chokepoint for policy enforcement, protected by anti-drift tests; defense-in-depth foundation. & All entry sources must conform to the factory's input contract; second-source addition is non-trivial. \\ \hline
+Identity and access management & In-service authentication, dedicated IAM service & Built integration point in manager; dedicated IAM service deferred & The IAM scope warrants a dedicated service but the present work prioritises the operational and conversational layers; the manager carries a bearer-token path and identity-resolution connector so the dedicated service can be slotted in when delivered. & Future migration to a dedicated IAM service required; access policy currently scoped to actor-context headers and manager-mediated retrieval, with the user interface relying on a development-mode role selection rather than a production login flow. \\ \hline
+\end{tabularx}
+\caption{Architectural decisions register summary}
+\label{tab:decisions}
+\end{table}

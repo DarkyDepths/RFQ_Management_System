@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rfq_manager_ms — Learning Concepts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface2: #1f2330;
+    --border: rgba(255,255,255,0.06);
+    --text: #e8e8ed;
+    --muted: #8b8fa3;
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.1);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --orange: #f5a623;
+    --orange-dim: rgba(245,166,35,0.1);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.08);
+    --radius: 12px;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.7; padding: 40px 24px 80px; }
+
+  .container { max-width: 820px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .header { text-align: center; margin-bottom: 56px; }
+  .header .tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--green); background: var(--green-dim);
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 16px;
+  }
+  .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 15px; color: var(--muted); max-width: 560px; margin: 0 auto; }
+
+  /* ── CONCEPT CARD ── */
+  .concept {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .concept-num {
+    position: absolute; top: -14px; left: 24px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 14px;
+    border-radius: 8px;
+  }
+  .concept-num.c1 { color: var(--green); background: var(--green-dim); border: 1px solid rgba(52,211,153,0.2); }
+  .concept-num.c2 { color: var(--blue); background: var(--blue-dim); border: 1px solid rgba(96,165,250,0.2); }
+  .concept-num.c3 { color: var(--orange); background: var(--orange-dim); border: 1px solid rgba(245,166,35,0.2); }
+  .concept-num.c4 { color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(167,139,250,0.2); }
+
+  .concept h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .concept .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+
+  .concept h3 {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--muted);
+    margin: 28px 0 12px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .concept h3:first-of-type { border-top: none; padding-top: 0; margin-top: 20px; }
+
+  .concept p, .concept li { font-size: 14.5px; color: var(--muted); line-height: 1.75; }
+  .concept strong { color: var(--text); }
+  .concept ul { padding-left: 20px; margin: 8px 0; }
+  .concept li { margin-bottom: 4px; }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--green);
+    background: var(--green-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; color: var(--text); }
+  .comment { color: #565b70; }
+  .keyword { color: var(--purple); }
+  .string { color: var(--green); }
+  .func { color: var(--blue); }
+  .param { color: var(--orange); }
+
+  /* ── DIAGRAM BOXES ── */
+  .diagram {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+    margin: 18px 0;
+    text-align: center;
+  }
+  .diagram-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* flow diagram */
+  .flow-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; flex-wrap: wrap; margin: 8px 0;
+  }
+  .flow-box {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 10px 18px; border-radius: 8px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    min-width: 100px; text-align: center;
+  }
+  .flow-box.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+  .flow-box.blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .flow-box.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(245,166,35,0.2); }
+  .flow-box.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .flow-box.red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.15); }
+  .flow-box.muted { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .flow-arrow {
+    font-size: 18px; color: var(--muted); margin: 0 8px;
+    font-family: var(--mono);
+  }
+  .flow-arrow-down {
+    display: block; text-align: center;
+    font-size: 18px; color: var(--muted);
+    margin: 6px 0; font-family: var(--mono);
+  }
+
+  /* side-by-side comparison */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin: 14px 0;
+  }
+  .compare-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 16px;
+  }
+  .compare-box.bad { border-color: rgba(248,113,113,0.2); }
+  .compare-box.good { border-color: rgba(52,211,153,0.2); }
+  .compare-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .compare-label.bad { color: var(--red); }
+  .compare-label.good { color: var(--green); }
+
+  /* vertical stack diagram */
+  .stack { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .stack .flow-box { width: 260px; }
+
+  /* highlight box */
+  .highlight {
+    background: var(--surface2);
+    border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+  .highlight p { font-size: 14px; }
+  .highlight.warn { border-left-color: var(--orange); }
+  .highlight.info { border-left-color: var(--blue); }
+
+  /* rule box */
+  .rule {
+    background: linear-gradient(135deg, rgba(52,211,153,0.06), rgba(96,165,250,0.06));
+    border: 1px solid rgba(52,211,153,0.15);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  .rule p { font-size: 14.5px; color: var(--text); font-weight: 600; }
+
+  /* summary table */
+  .summary-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0; font-size: 14px;
+  }
+  .summary-table th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--green); padding: 10px 14px;
+    background: var(--surface2); border-bottom: 1px solid var(--border);
+  }
+  .summary-table td {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    color: var(--muted); vertical-align: top;
+  }
+  .summary-table td:first-child { color: var(--text); font-weight: 600; font-family: var(--mono); font-size: 13px; }
+
+  @media (max-width: 600px) {
+    .compare { grid-template-columns: 1fr; }
+    .flow-row { flex-direction: column; gap: 4px; }
+    .flow-arrow { transform: rotate(90deg); margin: 4px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ══════════════════════════════════════ HEADER ══════════════════════════════════════ -->
+  <div class="header">
+    <div class="tag">rfq_manager_ms — Foundations</div>
+    <h1>4 Concepts Before You Code</h1>
+    <p>Everything you'll write in this project uses these 4 concepts. Nothing else is new — the rest is your business logic organized into BACAB's layers.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════ CONCEPT 1 ══════════════════════════════════════ -->
+  <div class="concept">
+    <div class="concept-num c1">Concept 1</div>
+    <h2>Python Generators &amp; <code>yield</code></h2>
+    <p class="subtitle">Give something, pause, clean up after.</p>
+
+    <h3>The problem</h3>
+    <p>You need to <strong>give a database session</strong> to a route, let the route use it, then <strong>close it when done</strong> — even if the route crashes. <code>return</code> can't do this because the function dies after returning.</p>
+
+    <h3>return vs yield</h3>
+    <div class="compare">
+      <div class="compare-box bad">
+        <div class="compare-label bad">✗ return — function dies</div>
+<pre><code><span class="keyword">def</span> <span class="func">get_session</span>():
+    session = <span class="func">open_session</span>()
+    <span class="keyword">return</span> session
+    <span class="comment"># ← function is DEAD</span>
+    <span class="comment"># nobody closes the session</span></code></pre>
+      </div>
+      <div class="compare-box good">
+        <div class="compare-label good">✓ yield — function pauses</div>
+<pre><code><span class="keyword">def</span> <span class="func">get_session</span>():
+    session = <span class="func">open_session</span>()
+    <span class="keyword">yield</span> session
+    <span class="comment"># ← PAUSED — route works</span>
+    session.<span class="func">close</span>()
+    <span class="comment"># ← RESUMES — cleanup runs</span></code></pre>
+      </div>
+    </div>
+
+    <h3>How it works step by step</h3>
+    <div class="diagram">
+      <div class="diagram-title">Lifecycle of yield</div>
+      <div class="stack">
+        <div class="flow-box green">① open session</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box blue">② yield session → PAUSE</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box muted">③ route uses the session (reads, writes, etc.)</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box blue">④ route finishes → RESUME</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box orange">⑤ close session — cleanup</div>
+      </div>
+    </div>
+
+    <h3>The real version (with crash safety)</h3>
+    <p><code>try/finally</code> ensures cleanup <strong>always runs</strong>, even if the route throws an error.</p>
+<pre><code><span class="keyword">def</span> <span class="func">get_db</span>():
+    session = <span class="func">SessionLocal</span>()
+    <span class="keyword">try</span>:
+        <span class="keyword">yield</span> session          <span class="comment"># pause — request runs</span>
+    <span class="keyword">finally</span>:
+        session.<span class="func">close</span>()        <span class="comment"># ALWAYS runs, success or crash</span></code></pre>
+
+    <div class="rule">
+      <p>yield = "give this, wait, then clean up."</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ CONCEPT 2 ══════════════════════════════════════ -->
+  <div class="concept">
+    <div class="concept-num c2">Concept 2</div>
+    <h2>Pydantic &amp; Data Validation</h2>
+    <p class="subtitle">Describe the shape of data, reject anything that doesn't match.</p>
+
+    <h3>The problem</h3>
+    <p>A user sends JSON to create an RFQ. It could be perfect — or it could be <strong>missing fields, wrong types, or completely garbage</strong>. You need to catch this <strong>before</strong> it reaches your controller or database.</p>
+
+    <div class="compare">
+      <div class="compare-box good">
+        <div class="compare-label good">✓ Valid request</div>
+<pre><code>{
+  <span class="string">"client_name"</span>: <span class="string">"Saudi Aramco"</span>,
+  <span class="string">"project_name"</span>: <span class="string">"Heat Exchanger"</span>,
+  <span class="string">"deadline"</span>: <span class="string">"2026-06-15"</span>,
+  <span class="string">"workflow_id"</span>: <span class="string">"abc-123"</span>
+}</code></pre>
+      </div>
+      <div class="compare-box bad">
+        <div class="compare-label bad">✗ Invalid request</div>
+<pre><code>{
+  <span class="string">"client_name"</span>: <span class="string">""</span>,
+  <span class="string">"deadline"</span>: <span class="string">"not-a-date"</span>
+  <span class="comment">// missing project_name</span>
+  <span class="comment">// missing workflow_id</span>
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>The solution — define the shape</h3>
+    <p>You create a Python class that describes <strong>exactly</strong> what you expect:</p>
+<pre><code><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel
+<span class="keyword">from</span> datetime <span class="keyword">import</span> date
+
+<span class="keyword">class</span> <span class="func">RfqCreateRequest</span>(BaseModel):
+    client_name: str                   <span class="comment"># required string</span>
+    project_name: str                  <span class="comment"># required string</span>
+    deadline: date                     <span class="comment"># required, must be a valid date</span>
+    workflow_id: str                   <span class="comment"># required string</span>
+    priority: str = <span class="string">"Medium"</span>           <span class="comment"># optional — defaults to "Medium"</span>
+    description: str | None = None     <span class="comment"># optional — can be absent</span></code></pre>
+
+    <h3>How FastAPI uses it</h3>
+    <div class="diagram">
+      <div class="diagram-title">Automatic validation flow</div>
+      <div class="flow-row">
+        <div class="flow-box muted">JSON body arrives</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box blue">Pydantic validates</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">Valid? → route runs</div>
+      </div>
+      <div style="margin-top: 10px;">
+        <div class="flow-row">
+          <div class="flow-box muted" style="opacity:0; pointer-events:none;">JSON body arrives</div>
+          <div class="flow-arrow" style="opacity:0;">→</div>
+          <div class="flow-box blue" style="opacity:0; pointer-events:none;">Pydantic validates</div>
+          <div class="flow-arrow">↘</div>
+          <div class="flow-box red">Invalid? → 422 error (route never runs)</div>
+        </div>
+      </div>
+    </div>
+
+<pre><code><span class="comment"># In your route:</span>
+@router.<span class="func">post</span>(<span class="string">"/rfqs"</span>)
+<span class="keyword">def</span> <span class="func">create_rfq</span>(<span class="param">body</span>: RfqCreateRequest):
+    <span class="comment"># If you reach this line, data is ALREADY valid</span>
+    <span class="comment"># body.client_name → string ✓</span>
+    <span class="comment"># body.deadline → date object ✓</span>
+    <span class="comment"># Missing field? → FastAPI sent 422, this never runs</span></code></pre>
+
+    <h3>Where this lives in your project</h3>
+    <p>Pydantic schemas go in <code>translators/</code>. Each resource has <strong>request schemas</strong> (what comes in) and <strong>response schemas</strong> (what goes out). FastAPI uses request schemas to validate input, and response schemas to format output + auto-generate Swagger docs.</p>
+
+    <div class="rule">
+      <p>Pydantic = "define the expected shape, let FastAPI reject the rest."</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ CONCEPT 3 ══════════════════════════════════════ -->
+  <div class="concept">
+    <div class="concept-num c3">Concept 3</div>
+    <h2>SQLAlchemy — Engine, Session, Base</h2>
+    <p class="subtitle">Three things, three jobs. Each one has a different role.</p>
+
+    <h3>The big picture</h3>
+    <div class="diagram">
+      <div class="diagram-title">How Python talks to PostgreSQL</div>
+      <div class="stack">
+        <div class="flow-box purple">FastAPI (your app)</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box blue">Session (one conversation per request)</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box orange">Engine (the connection — created once)</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box green">PostgreSQL (the database)</div>
+      </div>
+    </div>
+
+    <h3>① Engine — the connection</h3>
+    <p>Created <strong>once</strong> when the app starts. It holds the database URL and manages a pool of connections. Think of it as the <strong>highway</strong> — you build it once, every car uses it.</p>
+<pre><code><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> create_engine
+
+engine = <span class="func">create_engine</span>(<span class="string">"postgresql://user:pass@localhost/rfq_db"</span>)</code></pre>
+    <p>You never touch the engine directly after this. It works in the background.</p>
+
+    <h3>② Base — the table registry</h3>
+    <p>Every database table you define <strong>inherits from Base</strong>. This is how SQLAlchemy knows "this Python class = a database table."</p>
+<pre><code><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> declarative_base
+
+Base = <span class="func">declarative_base</span>()
+
+<span class="keyword">class</span> <span class="func">RFQ</span>(Base):                     <span class="comment"># "I am a database table"</span>
+    __tablename__ = <span class="string">"rfq"</span>
+    id = <span class="func">Column</span>(UUID, primary_key=True)
+    client_name = <span class="func">Column</span>(String(200))
+
+<span class="keyword">class</span> <span class="func">Workflow</span>(Base):                <span class="comment"># "I am also a database table"</span>
+    __tablename__ = <span class="string">"workflow"</span>
+    id = <span class="func">Column</span>(UUID, primary_key=True)
+    name = <span class="func">Column</span>(String(100))</code></pre>
+
+    <div class="diagram">
+      <div class="diagram-title">What Alembic sees</div>
+      <div class="flow-row">
+        <div class="flow-box orange">Base</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box muted">"Who are my children?"</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">RFQ, Workflow, RFQ_Stage ...</div>
+      </div>
+    </div>
+    <p>Alembic asks Base for all its children and generates <code>CREATE TABLE</code> SQL for each one. If a model doesn't inherit from Base, Alembic won't see it.</p>
+
+    <h3>③ Session — one conversation per request</h3>
+    <p>The session is where you actually <strong>read and write data</strong>. It collects everything you want to do, then sends it all at once when you <code>commit()</code>.</p>
+<pre><code>session = <span class="func">SessionLocal</span>()               <span class="comment"># start a conversation</span>
+
+rfq = <span class="func">RFQ</span>(client_name=<span class="string">"Aramco"</span>)
+session.<span class="func">add</span>(rfq)                        <span class="comment"># "I want to insert this" (NOT sent yet)</span>
+
+stage1 = <span class="func">RFQStage</span>(rfq_id=rfq.id)
+session.<span class="func">add</span>(stage1)                     <span class="comment"># "Also insert this" (still NOT sent)</span>
+
+session.<span class="func">commit</span>()                        <span class="comment"># NOW send everything — one transaction</span>
+session.<span class="func">close</span>()                         <span class="comment"># conversation over</span></code></pre>
+
+    <div class="highlight warn">
+      <p><strong>Why this matters for transaction safety:</strong> When you create an RFQ and auto-create its 5 stages, you call <code>session.add()</code> for each one but only <code>session.commit()</code> once. If stage 3 fails → <code>session.rollback()</code> undoes everything. No partial state. The RFQ and stages 1–2 are also gone.</p>
+    </div>
+
+    <h3>How they connect</h3>
+    <div class="diagram">
+      <div class="diagram-title">One-time setup vs per-request</div>
+      <div class="stack">
+        <div class="flow-box orange">Engine<br><small style="opacity:0.6;">created once at startup</small></div>
+        <div class="flow-arrow-down">↓ bound to</div>
+        <div class="flow-box blue">SessionLocal<br><small style="opacity:0.6;">factory — knows how to create sessions</small></div>
+        <div class="flow-arrow-down">↓ creates</div>
+        <div class="flow-box green">session<br><small style="opacity:0.6;">one per request — reads/writes/commits</small></div>
+        <div class="flow-arrow-down">↓ uses</div>
+        <div class="flow-box purple">Models (inherit from Base)<br><small style="opacity:0.6;">know what tables and columns exist</small></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <p>Engine = the road. SessionLocal = car factory. Session = one car per request. Base = map of destinations.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ CONCEPT 4 ══════════════════════════════════════ -->
+  <div class="concept">
+    <div class="concept-num c4">Concept 4</div>
+    <h2>Dependency Injection &amp; <code>Depends()</code></h2>
+    <p class="subtitle">Don't create it yourself — let FastAPI provide it.</p>
+
+    <h3>The problem</h3>
+    <p>Without dependency injection, every route creates its own objects:</p>
+<pre><code><span class="comment"># ✗ WITHOUT dependency injection — repeated in every route</span>
+@router.<span class="func">post</span>(<span class="string">"/rfqs"</span>)
+<span class="keyword">def</span> <span class="func">create_rfq</span>(<span class="param">body</span>: RfqCreateRequest):
+    session = <span class="func">SessionLocal</span>()             <span class="comment"># create session myself</span>
+    datasource = <span class="func">RfqDatasource</span>(session)  <span class="comment"># create datasource myself</span>
+    controller = <span class="func">RfqController</span>(datasource)<span class="comment"># create controller myself</span>
+    result = controller.<span class="func">create</span>(body)
+    session.<span class="func">close</span>()
+    <span class="keyword">return</span> result</code></pre>
+    <p>28 endpoints × 3 lines of setup = <strong>84 lines of duplicated wiring</strong>. And if you change how sessions are created, you change it in 28 places.</p>
+
+    <h3>The solution — <code>Depends()</code></h3>
+    <p>You tell FastAPI: <strong>"when a route asks for X, here's how to provide it."</strong></p>
+<pre><code><span class="comment"># ✓ WITH dependency injection — route receives what it needs</span>
+@router.<span class="func">post</span>(<span class="string">"/rfqs"</span>)
+<span class="keyword">def</span> <span class="func">create_rfq</span>(<span class="param">body</span>: RfqCreateRequest, <span class="param">ctrl</span> = <span class="func">Depends</span>(get_rfq_controller)):
+    <span class="keyword">return</span> ctrl.<span class="func">create</span>(body)   <span class="comment"># one line — that's it</span></code></pre>
+    <p><code>Depends(get_rfq_controller)</code> means: "before running this route, call that function and give me what it returns." The route never creates anything itself.</p>
+
+    <h3>How the chain works</h3>
+    <p>Your route needs a controller. The controller needs a datasource. The datasource needs a session. You build this chain with multiple <code>Depends()</code>:</p>
+
+<pre><code><span class="comment"># Datasource depends on session</span>
+<span class="keyword">def</span> <span class="func">get_rfq_datasource</span>(<span class="param">db</span> = <span class="func">Depends</span>(get_db)):
+    <span class="keyword">return</span> <span class="func">RfqDatasource</span>(db)
+
+<span class="comment"># Controller depends on datasource</span>
+<span class="keyword">def</span> <span class="func">get_rfq_controller</span>(<span class="param">ds</span> = <span class="func">Depends</span>(get_rfq_datasource)):
+    <span class="keyword">return</span> <span class="func">RfqController</span>(ds)
+
+<span class="comment"># Route depends on controller</span>
+@router.<span class="func">post</span>(<span class="string">"/rfqs"</span>)
+<span class="keyword">def</span> <span class="func">create_rfq</span>(<span class="param">body</span>: RfqCreateRequest, <span class="param">ctrl</span> = <span class="func">Depends</span>(get_rfq_controller)):
+    <span class="keyword">return</span> ctrl.<span class="func">create</span>(body)</code></pre>
+
+    <div class="diagram">
+      <div class="diagram-title">FastAPI resolves the chain backwards</div>
+      <div class="stack">
+        <div class="flow-box purple">Route needs → controller</div>
+        <div class="flow-arrow-down">↓ calls get_rfq_controller</div>
+        <div class="flow-box blue">Controller needs → datasource</div>
+        <div class="flow-arrow-down">↓ calls get_rfq_datasource</div>
+        <div class="flow-box orange">Datasource needs → session</div>
+        <div class="flow-arrow-down">↓ calls get_db</div>
+        <div class="flow-box green">get_db yields → session</div>
+      </div>
+    </div>
+    <p>FastAPI walks the chain, creates everything bottom-up, and hands the final controller to the route. When the request ends, <code>get_db</code> resumes and closes the session (<strong>Concept 1</strong>).</p>
+
+    <h3>Where this lives in your project</h3>
+    <p>All the <code>get_*_datasource</code> and <code>get_*_controller</code> functions live in <strong><code>app_context.py</code></strong>. That's the single file where the entire dependency chain is defined for all 6 resources. Routes just import what they need:</p>
+<pre><code><span class="comment"># routes/rfq_route.py</span>
+<span class="keyword">from</span> src.app_context <span class="keyword">import</span> get_rfq_controller
+
+@router.<span class="func">post</span>(<span class="string">"/rfqs"</span>)
+<span class="keyword">def</span> <span class="func">create_rfq</span>(<span class="param">body</span>: RfqCreateRequest, <span class="param">ctrl</span> = <span class="func">Depends</span>(get_rfq_controller)):
+    <span class="keyword">return</span> ctrl.<span class="func">create</span>(body)</code></pre>
+
+    <div class="highlight info">
+      <p><strong>Why this matters for transactions:</strong> FastAPI calls <code>get_db()</code> once per request. That same session gets passed to every datasource. So when the RFQ controller calls <code>rfq_datasource.insert()</code> AND <code>rfq_stage_datasource.insert()</code> five times — they all share the same session. One <code>commit()</code>, one transaction, one rollback if anything fails.</p>
+    </div>
+
+    <div class="rule">
+      <p>Depends() = "don't create it yourself, let FastAPI wire it." app_context.py = the wiring diagram.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ SUMMARY ══════════════════════════════════════ -->
+  <div class="concept" style="border-color: rgba(52,211,153,0.15);">
+    <div class="concept-num c1">Summary</div>
+    <h2>The 4 Concepts at a Glance</h2>
+    <p class="subtitle">Everything you'll write uses these. Nothing else is new.</p>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>One sentence</th>
+          <th>Where in your project</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>yield</td>
+          <td>Give something, pause, clean up after</td>
+          <td><code>database.py</code> → get_db()</td>
+        </tr>
+        <tr>
+          <td>Pydantic</td>
+          <td>Describe the shape of data, reject anything that doesn't match</td>
+          <td><code>translators/</code> → request &amp; response schemas</td>
+        </tr>
+        <tr>
+          <td>SQLAlchemy</td>
+          <td>Engine = connection, Session = one conversation, Base = table registry</td>
+          <td><code>database.py</code> + <code>models/</code> + <code>datasources/</code></td>
+        </tr>
+        <tr>
+          <td>Depends()</td>
+          <td>Don't create it yourself, let FastAPI provide it</td>
+          <td><code>app_context.py</code> → wires everything together</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="diagram">
+      <div class="diagram-title">Full request flow — all 4 concepts in action</div>
+      <div class="stack">
+        <div class="flow-box muted">HTTP Request arrives with JSON body</div>
+        <div class="flow-arrow-down">↓ <small style="color:var(--blue);">Pydantic validates the body</small></div>
+        <div class="flow-box purple">Route receives validated body + controller via Depends()</div>
+        <div class="flow-arrow-down">↓ <small style="color:var(--purple);">Depends() resolved the chain</small></div>
+        <div class="flow-box blue">Controller applies business rules</div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-box orange">Datasource runs queries via Session</div>
+        <div class="flow-arrow-down">↓ <small style="color:var(--orange);">Session uses Engine</small></div>
+        <div class="flow-box green">PostgreSQL</div>
+        <div class="flow-arrow-down">↑ <small style="color:var(--green);">yield keeps session alive until done</small></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

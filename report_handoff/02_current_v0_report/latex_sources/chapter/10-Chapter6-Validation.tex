@@ -1,0 +1,161 @@
+\chapter{Validation, Results, and Discussion}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section*{INTRODUCTION}
+\addcontentsline{toc}{section}{INTRODUCTION}
+This chapter validates the implementation of the Itqan platform against the requirements catalogued in Chapter~3 and the architectural commitments established in Chapter~4. It presents the evidence that the platform's claims hold in measured behaviour, discusses the business impact of the implemented capabilities against the audit pain points identified in Chapter~1, and discusses the limits of the present work and the direction in which the platform should evolve.
+
+\section{Validation Strategy and Five Evidence Classes}
+The validation methodology rests on five complementary classes of evidence: \textbf{service-level automated test coverage} (pytest suites per backend service), \textbf{architectural invariant verification} (anti-drift tests protecting the copilot trust-boundary architecture), \textbf{scenario-level evidence} (smoke and pipeline tests through the copilot pipeline including safety paths), \textbf{integration evidence} (cross-service scripts and demonstration walkthroughs), and \textbf{business-impact analysis} (a structured mapping from implemented capabilities to the twelve audit pain points of Chapter~1).
+
+The methodology has explicit limits (manager-only CI, SQLite quality-gate target, deterministic LLM doubles in the automated copilot suite, no browser-level UI E2E); each is revisited in its section and consolidated in Section~6.8. Table~\ref{tab:validation_summary} consolidates the validation evidence per area.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|p{2.4cm}|>{\RaggedRight\arraybackslash}X|p{3.6cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Area} & \textbf{Evidence} & \textbf{Result} & \textbf{Caveat} \\ \hline
+Manager service & 259 pytest tests & All passed & SQLite quality-gate target; no recorded Postman execution. \\ \hline
+Copilot service & 636 pytest tests, complemented by manual live copilot walkthroughs & All automated tests passed & Automated tests use deterministic LLM test doubles; automated live-model regression remains future work. \\ \hline
+Intelligence service & 118 pytest tests & 64 passed, 48 fixture-dependent, 6 skipped & Fixture-dependent tests not reproduced in audited checkout. \\ \hline
+Frontend & 12 source-contract scripts & 11 passed, 1 assertion drift & No browser-level end-to-end testing in current scope. \\ \hline
+Integration & Scenario stack script, smoke demonstration document, seed manifests & Demonstrated manually & No automated full-stack end-to-end runs. \\ \hline
+\end{tabularx}
+\caption{Consolidated summary of validation evidence assembled across the chapter}
+\label{tab:validation_summary}
+\end{table}
+
+\section{Manager Service Validation}
+The manager service's validation rests on a pytest suite of \textbf{259 tests}, all passing against the SQLite quality-gate target (Appendix~\ref{app:test-evidence}). The suite exercises the seven resource families of Chapter~4 (FR-MGR-01--08) across success, validation-failure, not-found, and authorisation paths. The three gates of Chapter~5 are exercised on both acceptance and rejection; atomicity is verified through intermediate-failure tests, with the LG-06 RFQ-code concurrency limitation acknowledged as deferred. Supporting-resource consistency covers subtask soft-delete (FR-MGR-08), append-only notes, file-type discrimination, and the two reminder creation modes. The audit-history surface remains not implemented and is consolidated as a hardening direction in Section~6.8 alongside PostgreSQL execution and recorded Newman runs.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|p{4cm}|p{3cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Validation Activity} & \textbf{Status} & \textbf{Notes} \\ \hline
+Service-level pytest suite & 259 passed, 0 failed & FR-MGR-01--08 coverage; SQLite quality-gate target. \\ \hline
+Stage advancement gates (mandatory-field, blocker, transition-validity) & Implemented and tested & Acceptance and rejection paths exercised; LG-06 concurrency limitation acknowledged. \\ \hline
+Supporting-resource semantics (soft-delete, append-only, file-type, reminders) & Implemented and tested & Subtasks, notes, files, reminders validated against FR-MGR-04--08. \\ \hline
+Hardening directions (PostgreSQL execution, Newman runs, audit-history surface) & Pending & Consolidated in Section~6.8. \\ \hline
+\end{tabularx}
+\caption{Summary of validation evidence for the manager service}
+\label{tab:manager_validation}
+\end{table}
+
+\section{Copilot Service Validation}
+The copilot pytest suite contains \textbf{636 tests}, all passing in under five seconds (Appendix~\ref{app:test-evidence}). It is structured around three complementary categories presented in Table~\ref{tab:copilot_tests}: \textbf{pipeline tests} (216 functions verifying each pipeline stage in isolation), \textbf{smoke tests} (98 functions exercising end-to-end flows), and \textbf{anti-drift tests} (18 functions verifying architectural invariants of the trust-boundary architecture, detailed in Section~6.4). The remaining 304 tests cover datasource behaviour, model contracts, configuration variants, documentation conformance, and controller-level integration. The language-model stages (Planner, Compose, Judge) are exercised through the \texttt{FakeLlmConnector} test double rather than against live Azure OpenAI; live-model answer-quality evaluation is consolidated as future work in Section~6.8.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|p{4.5cm}|p{1.8cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Test Category} & \textbf{Functions} & \textbf{Coverage} \\ \hline
+Pipeline tests & 216 & Per-stage verification of FastIntake, Planner, Validator, Factory, Resolver, Access, Tool Executor, Evidence Check, Context Builder, Compose, Guardrails, Judge, Finalizer, Escalation Gate, Persist, and the Path~4 deterministic renderer. \\ \hline
+Smoke tests & 98 & End-to-end flows: trivial conversational handling, RFQ-grounded answers, safe fallback, ownership enforcement, persistence. \\ \hline
+Anti-drift tests & 18 & A subset of the architectural invariants of the trust-boundary architecture; detailed in Section~6.4. \\ \hline
+Other (datasource, models, config, docs, controllers) & 304 & Supporting tests covering datasource behaviour, model contracts, configuration variants, documentation conformance, and controller-level integration. \\ \hline
+\textbf{Total} & \textbf{636} & \textbf{All passing in the validation runs of the project.} \\ \hline
+\end{tabularx}
+\caption{Breakdown of the copilot service pytest suite by category}
+\label{tab:copilot_tests}
+\end{table}
+
+The methodology does not include a separately-curated golden-query benchmark; the smoke and pipeline tests serve as automated golden scenarios across Path~1, Path~4, and Path~8 flows. Benchmark-dataset evaluation of language-model answer quality is future work.
+
+\section{Trust-Boundary Verification via Anti-Drift and Pipeline Tests}
+The eight trust boundaries of Section~4.4 are verified by a combination of \textbf{anti-drift tests} (CI guards that prevent structural regressions through filesystem and import-level checks) and \textbf{pipeline tests} (per-stage tests that exercise the runtime behaviour of each boundary on representative inputs). Both layers protect the same invariants: anti-drift tests catch structural drift before runtime, pipeline tests catch behavioural regressions at runtime. Their division of labour follows the nature of each boundary --- structural invariants that can be checked by inspecting the codebase belong to anti-drift; runtime invariants that can only be observed when the pipeline executes belong to pipeline tests. Table~\ref{tab:anti_drift_mapping} presents the mapping; individual test filenames are recorded in Appendix~A.4.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\footnotesize
+\begin{tabularx}{\textwidth}{|p{0.5cm}|p{4cm}|p{2cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{\#} & \textbf{Trust Boundary (Section~4.4)} & \textbf{Verified by} & \textbf{Verifying Tests} \\ \hline
+1 & Path classification ownership & Anti-drift & FastIntake anchored-regex; Planner output schema enforcement \\ \hline
+2 & ExecutionPlanFactory-only plan construction & Anti-drift & Factory-only \texttt{TurnExecutionPlan} construction \\ \hline
+3 & Path Registry / tool policy ownership & Anti-drift & Path Registry reader allowlist \\ \hline
+4 & Manager-mediated access control & Pipeline & Access-stage routing through the manager connector (\texttt{test\_path4\_access.py}) \\ \hline
+5 & Field whitelist / prompt-field control & Anti-drift & LLM structured-output enforcement; field-whitelist boundary \\ \hline
+6 & Per-target labelling & Pipeline & Per-target evidence-labelling tests (\texttt{test\_evidence\_check\_path4.py}) \\ \hline
+7 & Guardrails and Judge verification & Anti-drift & No-LLM-SDK in deterministic stages; memory-policy load-bearing; no-v3-references; Batch~10 no-history-injection \\ \hline
+8 & Escalation Gate safe-failure routing & Pipeline & Escalation Gate single-mapping discipline (\texttt{test\_escalation\_gate.py}) \\ \hline
+\end{tabularx}
+\caption{The eight trust boundaries, the test layer that verifies each, and the corresponding test surface}
+\label{tab:anti_drift_mapping}
+\end{table}
+
+The 18 anti-drift tests cover trust boundaries 1, 2, 3, 5, and 7 --- the boundaries whose violation is detectable by static inspection (a misplaced import, a non-anchored regex, an unauthorised plan construction). Trust boundaries 4, 6, and 8 are runtime invariants: their violation is only observable when the pipeline executes against representative inputs, and they are therefore verified by pipeline tests rather than by anti-drift guards. The two layers together embody the single-construction discipline of the ExecutionPlanFactory: the structural property on which the trust-boundary architecture rests is specified in design, protected at the test level, and exercised through the pipeline.
+
+\section{Intelligence Service Validation}
+The intelligence service pytest suite contains \textbf{118 tests}: 64 fixture-independent tests pass against the audited branch, 6 tests are skipped by design, and the remaining 48 are fixture-dependent. The fixture-dependent tests validate the parsers against the golden reference artifacts introduced in Chapter~1 (the SA-AYPP-6-MR-022 MR package and the IF-25144 estimation workbook) and fail with \texttt{FileNotFoundError} when those artifacts are absent from the local fixture directory.
+
+The \texttt{tests/local\_fixtures/} directory is gitignored and absent from the audited checkout; the fixture-dependent gap therefore reflects missing external artifacts rather than parser regressions. The fixture-independent tests covering briefing, intake, and snapshot logic pass on a clean checkout; manager integration is exercised through the manual/direct trigger paths of Section~5.6. Reproducible parser validation against the golden artifacts is a hardening direction.
+
+\section{Frontend and Cross-Service Integration Validation}
+Seven cross-service integration paths govern the platform's behaviour; Table~\ref{tab:integration} summarises their validation status. The frontend is validated through \textbf{twelve source-contract scripts} that exercise the integration boundaries against expected response shapes; eleven pass against the audited branch, and the single failing script reflects assertion drift rather than a runtime regression. Browser-level end-to-end testing through tools such as Playwright or Cypress is not present in the current scope.
+
+The seven cross-service integration paths surveyed by the validation activities are summarised here: UI to manager (demonstration), UI to copilot (demonstration; thread management on the v1 lane, turn submission on v2), UI to intelligence (read-only artifact consumption), copilot to manager (tested via a deterministic connector double, live integration through manual scenario runs), manager to intelligence (manual or direct trigger; autonomous event-driven cascade deferred), intelligence to manager (thin read-only client), and copilot to intelligence (not yet wired, deferred to the Path~5 slice). Appendix~A.7 (Table~\ref{tab:integration}) reproduces this mapping with the validation evidence for each path.
+
+Integration evidence is demonstration-oriented: a scenario stack script, a smoke demonstration document covering the Path~4 narrative, and seed manifests populate the manager service with realistic lifecycle content. Browser end-to-end tests, the autonomous manager-to-intelligence cascade, and live manager-copilot integration are the next layer of hardening.
+
+\section{Business Impact Mapping}
+The validation activities of Sections~6.2 through~6.6 establish that the platform behaves as designed. This section turns to business impact, composing the twelve audit pain points of Section~1.3 with the implementation evidence assembled across the report; each pain point is classified as \textit{addressed}, \textit{partially addressed}, or \textit{not yet addressed}, with the architectural mechanism identified.
+
+Table~\ref{tab:business_impact_summary} presents the impact summary by status; Appendix~A.8 (Table~\ref{tab:business_impact}) reproduces the full twelve-point mapping with implementing mechanisms.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{tabularx}{\textwidth}{|p{2.5cm}|p{2.2cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Status} & \textbf{Pain Points} & \textbf{Implementing Mechanism (summary)} \\ \hline
+Addressed (2) & PP-01, PP-08 & Shared lifecycle representation with stage tracking and artifact attachment; workflow-driven stage instantiation with the transition-validity gate. \\ \hline
+Partially addressed (7) & PP-02, PP-03, PP-05, PP-06, PP-07, PP-11, PP-12 & Reminder infrastructure (outbound channels deferred); pipeline / win-rate / per-client analytics (margin and estimation-accuracy reserved for future sources); stage-level blocker gate surfacing infeasibility earlier; deterministic workbook parsing complementing the workbook (which remains the authoritative pricing instrument); append-only notes and stage artifacts capturing decisions; by-client analytics as quantitative basis for prioritisation; workbook parsing surfacing referenced standards and anomalies. \\ \hline
+Not yet addressed (3) & PP-04, PP-09, PP-10 & Pillar~4 predictive layer deferred (covers PP-04 reuse and PP-09 supplier risk); ERP integration recognised but outside current scope (PP-10). \\ \hline
+\end{tabularx}
+\caption{Business impact summary by status; full mapping in Appendix~A.8.}
+\label{tab:business_impact_summary}
+\end{table}
+
+The platform delivers a \textbf{2/7/3 split}: PP-01 and PP-08 are addressed by the manager service's lifecycle representation and workflow-driven stage progression; seven are partially addressed; three remain not yet addressed within the four-pillar future scope (PP-04 and PP-09 in Pillar~4, PP-10 in a future ERP integration). Partial addressing is the consequence of the strategic pivot of Section~1.5, not a weakness.
+
+\section{Limitations and Future Work}
+The validation evidence assembled in this chapter is the strongest argument for the work's claims, but every project has limits. This section consolidates the present limits and the corresponding planned mitigations. Table~\ref{tab:limitations_future} pairs each limitation with its planned future-work item, organised by area.
+
+Table~\ref{tab:limitations_summary} presents the limitations summary clustered by area; Appendix~A.9 (Table~\ref{tab:limitations_future}) reproduces the full register with planned mitigations item by item.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{tabularx}{\textwidth}{|p{2.7cm}|>{\RaggedRight\arraybackslash}X|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{lightgray}
+\textbf{Cluster} & \textbf{Current limitations} & \textbf{Planned mitigation summary} \\ \hline
+Validation gaps & CI workflow only on manager; manager pytest against SQLite (not PostgreSQL); no recorded Newman execution; intelligence parsers fixture-dependent; no browser-level end-to-end tests; no curated golden benchmark for natural-language answer quality (highest-priority hardening item). & Extend CI across copilot, intelligence, and frontend; add PostgreSQL execution mode; record Newman runs; ship reproducible parser fixture set; introduce Playwright or Cypress E2E tests; build a curated golden benchmark for live-model regression. \\ \hline
+Architecture deferrals & Dedicated IAM service deferred; working memory captured but not injected into Planner/Compose/Judge; copilot's intelligence connector specified but not wired; copilot path coverage limited to Paths~1, 4, and the Path~8 family. & Extract IAM from the in-service shim; inject working memory under the trust-boundary discipline (with optional episodic extension); wire the copilot-to-intelligence connector for Path~5 and related slices; ship remaining answer paths slice by slice. \\ \hline
+Implementation hardening & RFQ code generation not yet concurrency-safe under contention (LG-06); cross-service correlation-ID propagation incomplete; UI not containerised; manager-to-intelligence cascade still uses manual/direct trigger. & Advisory-lock or sequence-based code generation; structured logging with correlation propagation across services; UI container packaging; autonomous event-bus consumer for the manager-to-intelligence cascade. \\ \hline
+\end{tabularx}
+\caption{Limitations summary clustered by area; full register in Appendix~A.9.}
+\label{tab:limitations_summary}
+\end{table}
+
+The absence of a curated golden benchmark for natural-language answer quality is the most consequential validation gap and the highest-priority hardening item. Each planned mitigation extends the platform without reopening its architectural commitments.
+
+\section*{CONCLUSION}
+\addcontentsline{toc}{section}{CONCLUSION}
+This chapter has validated the Itqan platform against Chapter~3's requirements and Chapter~4's architectural commitments: service-level pytest coverage, anti-drift and pipeline tests as the trust-boundary verification surface, intelligence and frontend evidence with explicit caveats, and a 2/7/3 business-impact split. The strategic pivot from BOQ automation to RFQ lifecycle intelligence has produced a platform whose foundations are sound, whose innovation is verifiable, and whose direction is established.

@@ -1,0 +1,21 @@
+% @Author: Mouna REKIK
+% @Date:   2024-10-11 / 12:30
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \chapter*{Conclusion générale \\ et perspectives}
+\newpage
+\phantomsection
+\addcontentsline{toc}{chapter}{CONCLUSION GÉNÉRALE}
+\begin{spacing}{0.8}
+\end{spacing}
+\begin{center}
+    \LARGE \bfseries Conclusion générale et perspectives 
+\end{center}
+\vspace{30pt}
+\adjustmtc
+\thispagestyle{MyStyle}
+{\fontsize{24}{24}\selectfont\textbf{A}}u terme de ce projet de fin d'études, nous avons réalisé avec succès la conception, le développement et la mise en place d'une plateforme complète pour la génération et la gestion d'assistants IA personnalisés afin d'offrir aux administrateurs un outil intuitif pour créer, configurer et déployer des chatbots adaptables aux besoins spécifiques des utilisateurs finaux, via une interface conversationnelle enrichie par des règles, des actions sur mesure et une base de connaissances dynamique. L'architecture microservices déployée sur Microsoft Azure, combinée à une approche hybride agentique-RAG, a permis d'atteindre notre objectif. \par
+% une scalabilité optimale, avec une réduction significative des hallucinations et une amélioration de la précision des réponses, comme démontré par les évaluations réalisées.\par
+Parmi mes contributions principales, j'ai mené un prototypage intensif pour explorer les outils existants en matière de RAG et d'orchestration agentique, tels que LangChain, LlamaIndex et LangGraph. Ces expérimentations, effectuées via des comparaisons empiriques sur des datasets hétérogènes, ont permis d'évaluer les performances relatives (temps de parsing, pertinence du rappel, consommation de tokens) et de justifier les choix technologiques finaux, favorisant une intégration fluide des modèles OpenAI (comme GPT-4o-mini et GPT-5-mini) dans les nœuds agentiques. \par
+% J'ai également conçu les interfaces utilisateur en Vue.js, en m'assurant d'une ergonomie centrée sur l'utilisateur, et orchestré les flux multi-agents pour une coordination séquentielle robuste, incluant des améliorations comme l'Agent Rectif et l'Agent Rerank. Ces efforts ont non seulement validé la faisabilité technique mais aussi accéléré l'itération vers une solution modulaire et déployable.
+Malgré ces avancées, des limites persistent, telles que la non-détermination des LLMs, nécessitant une supervision humaine pour une fiabilité maximale, et l'absence d'intégration complète des URLs dynamiques ou d'actions avancées comme l'envoi d'e-mails. Néanmoins, la plateforme démontre une maturité suffisante pour un usage pilote, avec une performance remarquable en termes de personnalisation et d'interaction fluide.\par
+Pour les perspectives futures, plusieurs axes d'amélioration pourraient étendre l'impact de cette solution. Tout d'abord, l'implémentation des modes de création avancés (génération assistée par formulaire ou assistants préconfigurés pour des secteurs comme le marketing ou le service client) renforcerait l'accessibilité pour les non-développeurs. De plus, l'extension des actions agentiques à des connecteurs tiers (WhatsApp, Slack) et à des tâches automatisées (envoi d'e-mails, appels API étendus) élargirait les cas d'usage professionnels. Une intégration plus poussée de sources dynamiques, comme des URLs en temps réel ou des bases de données externes, optimiserait la base de connaissances pour des réponses toujours actualisées. Ces évolutions positionneraient la plateforme comme un outil incontournable pour l'automatisation conversationnelle en entreprise.

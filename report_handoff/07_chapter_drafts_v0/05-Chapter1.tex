@@ -1,0 +1,190 @@
+\chapter{General Context and Business Problem}
+\begin{spacing}{1.2}
+\minitoc
+\thispagestyle{MyStyle}
+\end{spacing}
+\newpage
+
+\section{INTRODUCTION}
+A request for quotation (RFQ) in industrial manufacturing is rarely a simple commercial document. It is the entry point of a long, multi-departmental process that mobilizes engineering, production, quality, and procurement expertise over weeks or months, and whose outcome can determine whether a project is won, lost, or accepted under unfavorable terms. The challenge addressed by this work is not the production of quotations themselves, but the structural fragility of the process that surrounds them.
+
+This chapter establishes the context that motivates Itqan, the platform proposed and developed in this project. It begins by introducing the host organization, \hostCompany, and the industrial client, \clientCompany, situating the work within its operational and academic context. It then describes the request for quotation process as it exists in industrial manufacturing, with attention to the artifacts and standards that distinguish this domain from generic commercial estimation. The chapter continues with the audit findings that revealed the structural pain points of the current process, and recounts the strategic pivot from automating the Bill of Quantities to building a platform for RFQ lifecycle intelligence. It closes by introducing the Itqan vision and the four-pillar target architecture, and by giving a brief overview of the project methodology that is developed in detail in the following chapter.
+
+\section{Host Organization and Industrial Context}
+This work was conducted as a final-year engineering internship at \hostCompany, a Tunisia-based consulting firm specializing in cloud architecture, microservices, artificial intelligence, and data engineering. Headquartered in Sfax, the firm operates as a small but specialized team that combines strategic advisory with hands-on technical delivery, positioning itself as a partner for organizations undertaking digital and analytical transformation. The internship took place within this team and was organized around a single client engagement that became the practical anchor of the present project.
+
+The client is \clientCompany, a major industrial conglomerate based in Dammam, Kingdom of Saudi Arabia. The Al Bassam Group is one of the older private conglomerates in the Kingdom, with origins in petroleum equipment trading and present-day activities spanning industrial manufacturing, inspection and testing, and a range of related services. Within this group, the engagement focused on Gulf Heavy Industries Co., commonly referred to as GHI, a wholly owned subsidiary established in 1984 and recognized as one of the largest specialized heavy steel fabrication companies in the Middle East. GHI operates two manufacturing facilities in Jubail Industrial City and produces pressure vessels, heat exchangers, and related heavy industrial equipment for customers in the oil and gas, petrochemical, and energy sectors, with Saudi Aramco among its principal clients.
+
+The engagement with the Al Bassam Group was a new commercial relationship for \hostCompany, secured through a presales and negotiation phase that began in November and culminated in a five-day on-site audit conducted between Jubail and Dammam. The audit followed a top-down structure that started at the group level, with sessions involving the chairman, the chief executive, and human resources at the Dammam headquarters, before shifting to the operational level at the GHI manufacturing facility. There, the audit team engaged primarily with the estimation department and its full set of roles, with the general manager of GHI, and with selected finance and engineering staff whose work intersects the estimation process. The active development phase of the project began at the start of the following January, after the audit findings had been consolidated and a refined scope agreed upon.
+
+Industrial estimation in this context differs in several important ways from generic commercial estimation. The artifacts that drive a quotation are heavy in domain expertise: pressure vessel and heat exchanger fabrication is governed by a layered set of standards, requires the involvement of multiple engineering disciplines before a price can be defended, and exposes the manufacturer to long lead times and significant contractual liabilities once a bid is accepted. These characteristics make the surrounding process, rather than the calculation of the price itself, the primary source of operational risk. Understanding this distinction was essential to framing the project, and is developed further in the next section.
+
+\section{The RFQ Process in Industrial Manufacturing}
+A Request for Quotation, abbreviated RFQ, is the formal mechanism by which an industrial buyer asks a manufacturer to price a defined scope of work. In the context of pressure vessel and heat exchanger fabrication, the RFQ is rarely a simple price request: it arrives as a multi-document package whose interpretation, costing, and approval mobilize several departments over weeks or months, and whose accuracy carries significant contractual and financial consequences once a bid is submitted. This section presents the RFQ as a domain object, the artifacts that surround it, and the end-to-end estimation workflow as observed at GHI during the on-site audit.
+
+\subsection*{The RFQ Package and Its Surrounding Artifacts}
+When an RFQ is received at GHI, it is rarely a single document. The most consequential RFQs from major clients arrive as a structured package built around a Material Requisition, abbreviated MR, which carries the canonical reference number used throughout the project. A representative MR package observed during the audit, identified by the reference \texttt{SA-AYPP-6-MR-022}, contained around fifty-five business files organized in sixteen numbered sections covering scope of supply, bill of materials, restricted vendor lists, technical specifications, drawings, applicable standards, and quality assurance and inspection requirements.
+
+Three artifacts inside the package drive most of the estimation work. The Bill of Materials, abbreviated BOM, is a spreadsheet listing every line item to be fabricated, with tag numbers, design codes such as \textit{ASME Section VIII Division 1}, services such as \textit{collection vessel}, dimensions, materials, and quantities. The Restricted Vendor List, abbreviated RVL, enumerates the vendors authorized by the client to supply specific materials, and constrains procurement decisions later in the lifecycle. The third class of artifact is the body of applicable standards, organized at GHI under named families: SAMSS for materials, SAES for engineering specifications, SAEP for engineering procedures, and SA-175 forms for compliance. International standards such as those issued by the American Society of Mechanical Engineers (ASME) and the Tubular Exchanger Manufacturers Association (TEMA) define the codified rules for pressure vessel and heat exchanger fabrication and are referenced throughout the package.
+
+\subsection*{The Estimation Workbook}
+Once the RFQ package has been received and triaged, the estimation team produces a quotation by building an estimation workbook. The workbook is a single Microsoft Excel file structured around a fixed template of thirty-six interconnected sheets. It captures every cost driver involved in fabricating the scope: material breakdown, direct and indirect labour and man-hours, fabrication and design hours, consumables, surface preparation and paint, non-destructive testing, post-weld heat treatment, ASME and U-Stamp certification costs, transportation, insurance, financial charges, contingency, and overheads. Several sheets aggregate these inputs into a Bid Summary and a Top Sheet that present the bid to internal approvers and, after revision, to the client. Each line is expressed simultaneously in Saudi Riyals, US Dollars, percentage share, and cost per ton, reflecting the multi-currency and weight-driven nature of heavy steel fabrication.
+
+The workbook is filled almost entirely by senior estimators whose expertise is not codified in any external document. The same template is used for every RFQ; what differs is the judgment encoded into its cells. This characteristic is central to understanding both the audit findings and the strategic pivot presented in the following sections.
+
+\subsection*{The End-to-End Estimation Workflow}
+The RFQ lifecycle as observed at GHI follows six broad phases. The first phase is intake and triage: the RFQ arrives by direct email from the client or through the SAP Ariba procurement portal, and the department manager performs a brief feasibility check before deciding whether to register the RFQ in the bidding list. Approximately ninety percent of received RFQs pass this initial filter. The second phase is registration and classification: the RFQ is assigned a unique reference number and classified as either Internal Bid or Internal Fabrication, a distinction that determines downstream workflow. The third phase is design: depending on whether existing design data is reusable, the engineering team either reuses prior designs or produces a basic design from scratch, after which the detailed BOM is consolidated. The fourth phase is cost estimation: the workbook is filled across its thirty-six sheets, drawing on material pricing, labour estimates, and standards-driven cost components. The fifth phase is the fabrication decision, where the team determines whether the work will be executed internally or subcontracted. The sixth and final phase is submission and follow-up: the bid is approved internally, transmitted to the client, and tracked through one of three terminal outcomes (won, lost, pending) with manual follow-up in the third case. Figure~\ref{fig:rfq_process} presents the full lifecycle as observed during the audit.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_1_1_rfq_process.png}{%
+            \includegraphics[width=14cm]{images/fig_1_1_rfq_process.png}%
+        }{%
+            \begin{minipage}[c][6cm][c]{14cm}
+                \centering
+                \textit{[Figure 1.1 placeholder: current RFQ process flow at GHI, six phases, department lanes]}
+            \end{minipage}%
+        }
+    }
+    \caption{Current RFQ process flow at GHI, organized in six phases across the departments involved}
+    \label{fig:rfq_process}
+\end{figure}
+
+This workflow involves four to five distinct departments at GHI: Estimation as the central coordinator, Engineering for design feasibility, Production for fabrication input, Quality Control for inspection requirements, and Procurement for material and vendor decisions. The fragility introduced by this multi-departmental coordination, together with the multi-week timeline of each RFQ, is precisely what motivated the audit and is the subject of the next section.
+
+\section{Audit Findings and Current Process Limitations}
+The audit conducted at GHI was not merely a meeting series. It was a deliberate fact-finding exercise designed to surface the structural and operational limitations of the existing RFQ process before any technical proposal was formulated. This section presents the audit methodology, the pain points it identified grouped by structural family, and a complete reference of the twelve documented pain points.
+
+\subsection*{Audit Methodology}
+The audit was conducted over five days in the second half of November, alternating between the Al Bassam Group headquarters in Dammam and the GHI manufacturing facility in Jubail Industrial City. The sessions at the Dammam headquarters engaged senior leadership of the group, including the chairman, the chief executive, and the human resources function, in order to establish strategic context and align on the scope of the engagement. The sessions at the GHI facility shifted to the operational level: in addition to the General Manager of GHI, the audit team engaged the entire estimation department across all of its roles, alongside selected representatives from the engineering and finance departments whose responsibilities intersect the estimation process.
+
+The methodology combined three complementary inputs: structured interviews focused on responsibilities, daily workflows, and recurring frustrations; direct observation of the process artifacts in use, including the estimation workbook and the documents that surround a typical RFQ; and a review of past projects whose outcomes illustrated where the process tended to break. Findings derived directly from on-site observation are referred to as audit findings, and findings that emerged later during the analytical review of the workbook structure and workflow logic are referred to as analytical findings. Both categories are presented together below because they describe the same operational reality from complementary angles. Figure~\ref{fig:rfq_pain_points} visualizes how each family of pain points manifests across the lifecycle phases of Figure~\ref{fig:rfq_process}.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_1_2_pain_points.png}{%
+            \includegraphics[width=14cm]{images/fig_1_2_pain_points.png}%
+        }{%
+            \begin{minipage}[c][6cm][c]{14cm}
+                \centering
+                \textit{[Figure 1.2 placeholder: pain points mapped to RFQ lifecycle phases with cost and delay annotations]}
+            \end{minipage}%
+        }
+    }
+    \caption{Pain points and operational consequences mapped to the RFQ lifecycle phases}
+    \label{fig:rfq_pain_points}
+\end{figure}
+
+\subsection*{Pain Points Grouped by Family}
+Read structurally, the twelve pain points cluster into five families that share a common underlying weakness. The first family, \textbf{coordination and communication}, captures the absence of cross-departmental status tracking (PP-01) and the manual nature of all client interaction (PP-02): both manifest as information that fails to reach the right person at the right time. The second family, \textbf{visibility and reporting}, captures the absence of any executive-level view of the pipeline (PP-03) and the intuition-based prioritization of bids (PP-11): leadership cannot answer basic questions about the state or quality of the estimation portfolio. The third family, \textbf{historical learning}, captures the systematic non-reuse of past RFQs (PP-04) and the loss of feasibility expertise in undocumented gut-checks (PP-07): institutional memory does not feed forward into future work. The fourth family, \textbf{feasibility and supplier risk}, captures the late discovery of project-killing blockers (PP-05) and the unmanaged supplier exposure introduced by client-mandated vendor lists (PP-09): risk surfaces too late to act on it. The fifth family, \textbf{tooling fragility}, captures the structural brittleness of the estimation workbook as a single point of failure (PP-06), the underutilization of the deployed ERP system (PP-10), the absence of classification-driven workflow enforcement (PP-08), and the late recognition of compliance-driven cost implications (PP-12): the supporting tools do not enforce the discipline that the process needs.
+
+\subsection*{Reference: The Twelve Documented Pain Points}
+Table~\ref{tab:pain_points} provides the complete reference of the twelve pain points, with the family to which each belongs, a short title, and a concise statement of the operational consequence. This table is referenced again in Chapter 5, where each Itqan capability is mapped back to the pain points it addresses.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{1.2cm}|p{2.6cm}|p{3.3cm}|p{6.5cm}|}
+\hline
+\rowcolor{lightgray}
+\textbf{ID} & \textbf{Family} & \textbf{Title} & \textbf{Consequence} \\ \hline
+PP-01 & Coordination & Inter-departmental communication breakdown & Information failures cause lost projects across silos. \\ \hline
+PP-02 & Coordination & Manual client follow-up & Missed deadlines and lost projects from manual tracking. \\ \hline
+PP-03 & Visibility & Zero executive visibility & Leadership has no real-time view of the estimation pipeline. \\ \hline
+PP-04 & Historical learning & No reuse of past RFQs & Each RFQ treated as a fresh exercise; institutional memory wasted. \\ \hline
+PP-05 & Feasibility risk & Late discovery of infeasibility & Project-killing blockers found after significant work invested. \\ \hline
+PP-06 & Tooling fragility & Workbook as single point of failure & Critical financial model with no version control or concurrent edit. \\ \hline
+PP-07 & Historical learning & Undocumented feasibility expertise & Manager go/no-go reasoning lost; cannot transfer or analyze. \\ \hline
+PP-08 & Tooling fragility & Classification not enforcing workflow & IB/IF classification not driving downstream notifications or gates. \\ \hline
+PP-09 & Feasibility risk & Unmanaged supplier risk & No tracking of supplier reliability, lead times, or pricing trends. \\ \hline
+PP-10 & Tooling fragility & Underutilized ERP system & Odoo deployed but not integrated with estimation workflow. \\ \hline
+PP-11 & Visibility & Intuition-based bid prioritization & Focused-bid decisions made without win-probability analysis. \\ \hline
+PP-12 & Tooling fragility & Standards not driving early cost implications & ASME/TEMA/FATI implications recognized too late in estimation. \\ \hline
+\end{tabular}
+\caption{The twelve documented pain points, grouped by structural family}
+\label{tab:pain_points}
+\end{table}
+
+\subsection*{From Symptoms to Diagnosis}
+These twelve pain points are not independent problems to be solved one at a time. Read together, they describe a single underlying condition: the absence of a structured, observable, and traceable representation of the RFQ lifecycle that the entire organization can act on. The estimation expertise embodied in the workbook is mature, the standards are well known, and the staff are competent. The standards are well known, and the staff are competent. What is missing is the connective tissue that turns a sequence of expert acts into a coordinated process. This diagnosis is the foundation for the strategic reframing presented in the next section.
+
+\section{From BOQ Automation to Lifecycle Intelligence: A Strategic Pivot}
+The original technical request from GHI, transmitted to \hostCompany\ before the audit, was specific and ambitious: to design and implement an artificial intelligence system capable of automating the production of the Bill of Quantities (BOQ) and, by extension, the cost estimation that the workbook produces. The premise was that recent advances in large language models and structured data extraction had reached a maturity sufficient to encode estimation expertise into a generative system. The audit conducted in November and the analytical review that followed examined this premise rigorously and concluded that, as stated, it was not feasible. This section explains the basis of that conclusion and presents the reframing that became the foundation of the project.
+
+\subsection*{Why BOQ Automation Was Not the Right Target}
+Three independent observations led to the conclusion that BOQ automation could not be delivered as a credible system within the scope of this project, or indeed as a credible system at all without a substantially different starting point.
+
+The first observation concerns the nature of the expertise embedded in the workbook. Each of the thirty-six sheets is filled by senior estimators who hold many years of experience in pressure vessel and heat exchanger fabrication. The values they enter reflect implicit reasoning about material behavior under specific operating conditions, supplier reliability in the current market, the expected difficulty of fabrication for a given geometry, and the contractual posture appropriate for a particular client. This reasoning is not documented anywhere outside the estimators' minds. It is also not extractable from the workbook itself: the workbook is the output of estimation, not its specification.
+
+The second observation concerns the absence of a usable historical dataset. A serious attempt at automating cost estimation would require thousands of historical RFQs labeled with their final outcomes, paired with the reasoning that produced their prices. GHI maintains many years of past workbooks, but these are stored as individual Excel files without structured metadata, without outcome labels, and without the contextual notes that would make them suitable as training data. The historical record, as it exists today, can serve as reference material for human estimators but cannot serve as ground truth for a learning system.
+
+The third observation concerns the asymmetric cost of error. In a quotation for a multi-million Saudi Riyal project, an underestimated price commits GHI to a contractual loss that may exceed the entire project margin, while an overestimated price loses the bid to a competitor. There is no acceptable failure mode for an automated system in this regime, and no plausible path from a current state of zero structured historical data to a model whose error bars would be tolerable. Even an advisory system, deployed without authority over the final price, would face high resistance from estimators whose accountability remains unchanged whether or not the system is consulted.
+
+\subsection*{The Reframing}
+Rather than weakening the original goal into a partial BOQ assistant whose value would be marginal and whose risk would not be, the audit findings suggested a different orientation. The pain points presented in Section 1.4 are not pain points of price calculation. They are pain points of coordination across departments, of visibility for leadership, of historical learning lost between projects, of late discovery of infeasibility, of fragile tooling, and of communication tracked only in scattered email threads. The estimation workbook itself, despite its fragility as a single point of failure, is not the bottleneck of the process. The bottleneck is everything around it.
+
+The reframing was therefore stated explicitly: rather than attempt to automate the part of the process that depends on irreducible human expertise, build a platform that strengthens every other part of the process and that respects the expertise it cannot replace. Such a platform would track the full lifecycle of an RFQ across departments, give leadership the visibility it lacks, capture and structure the feasibility decisions and outcomes that are currently lost, surface infeasibility risks earlier, and provide a conversational interface for the people who interact with these artifacts daily. The price calculation would remain where it belongs, in the hands of senior estimators using a tool they understand. The platform would surround that core, not replace it.
+
+\subsection*{From Reframing to Project Definition}
+This pivot is consequential beyond the immediate project. It changes the kind of system being built, the kind of evidence required to validate it, and the kind of value it delivers to the client. A BOQ automator would be a closed-loop generative system whose worth is measured against estimator output. A lifecycle intelligence platform is an open-loop coordination system whose worth is measured against the duration, traceability, and decision quality of the RFQ process as a whole. The two systems have almost nothing in common architecturally, evaluatively, or commercially.
+
+The remainder of this chapter introduces the platform that resulted from this reframing, which has been given the working name Itqan, and presents the four-pillar vision and the methodology that structured its development.
+
+\section{The Itqan Vision: An RFQ Lifecycle Intelligence Platform}
+The reframing presented in the previous section called for a platform that surrounds the estimation workbook rather than replaces it. This section introduces that platform under its working name, Itqan, presents the four-pillar target architecture that defines its long-term scope, and clearly separates what has been implemented in the present work from what remains as future development.
+
+\subsection*{Project Identity}
+The name \textit{Itqan} is drawn from the Arabic word \textit{itqān}, which denotes mastery, precision, and the act of doing work properly and to completion. The choice reflects the spirit of the project: in an industrial estimation context where errors carry significant contractual consequences, the goal of the platform is not to accelerate the process at the expense of rigor, but to bring discipline, traceability, and structured intelligence to a workflow that has historically relied on individual diligence to compensate for the absence of system-level support. Itqan is therefore positioned as an instrument of process discipline, not an instrument of automation in the pejorative sense.
+
+\subsection*{The Four-Pillar Target Architecture}
+The diagnostic in Section 1.4 identified twelve pain points spanning communication, visibility, decision support, knowledge retention, and tooling. Read structurally, these pain points cluster into four areas of concern, and the target architecture of Itqan is organized around the same four areas. Each pillar addresses a coherent group of pain points and corresponds to a distinct technical capability within the platform. Figure~\ref{fig:itqan_pillars} presents the four-pillar architecture and the cross-cutting copilot layer.
+
+\begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{5pt}
+    \setlength{\fboxrule}{0.5pt}
+    \fbox{
+        \IfFileExists{images/fig_1_3_itqan_pillars.png}{%
+            \includegraphics[width=14cm]{images/fig_1_3_itqan_pillars.png}%
+        }{%
+            \begin{minipage}[c][6cm][c]{14cm}
+                \centering
+                \textit{[Figure 1.3 placeholder: Itqan four-pillar target architecture with cross-cutting copilot layer]}
+            \end{minipage}%
+        }
+    }
+    \caption{The four-pillar target architecture of Itqan and its cross-cutting conversational layer}
+    \label{fig:itqan_pillars}
+\end{figure}
+
+The first pillar, \textbf{Workflow and Tracking}, provides the operational backbone of the platform. It maintains a structured representation of every RFQ across its full lifecycle, tracks the progress of each stage across the departments involved, captures the artifacts and decisions accumulated along the way, and gives every role its appropriate view of the system. This pillar directly addresses PP-01, PP-05, PP-06, PP-08, and contributes to PP-07.
+
+The second pillar, \textbf{Communication Automation}, addresses the manual nature of client interaction that has historically caused missed deadlines and lost projects. Its target capabilities include the unified monitoring of inbound channels (direct email and the SAP Ariba portal), assisted drafting of follow-up correspondence with human-in-the-loop approval before any outbound action, deadline tracking with escalation alerts, and a complete communication audit trail tied to each RFQ. This pillar addresses PP-02 directly.
+
+The third pillar, \textbf{Executive Intelligence and Business Intelligence}, gives leadership the real-time visibility into the estimation pipeline that is currently absent. Its target capabilities include key performance indicator dashboards covering pipeline value, win rate, client profitability, and department bottlenecks, along with analytical views that support strategic decisions about which clients and project types deserve focused effort. This pillar addresses PP-03 and PP-11.
+
+The fourth pillar, \textbf{Historical Learning and Prediction}, is the longest-horizon pillar of the platform. It targets the systematic exploitation of past RFQs to inform future ones: pattern matching against similar historical projects, preliminary cost-range guidance derived from comparable bids, supplier intelligence built from the cumulative procurement history, and, in the longer term, win-probability estimation conditioned on client and project characteristics. This pillar addresses PP-04, PP-09, PP-10, PP-12, and reinforces PP-07.
+
+\subsection*{The Cross-Cutting Intelligence Layer}
+The four pillars define the functional surface of the platform, but they do not by themselves describe how a user reaches the information the platform contains. Itqan therefore includes a conversational layer, the RFQ Copilot, that allows authorized users to query the platform in natural language, with strict guarantees about the evidence on which its answers are grounded. The copilot does not own any pillar of its own; it navigates and explains the data that the pillars produce. The architecture and innovation contributions of the copilot are presented in detail in Chapter 3.
+
+\subsection*{Scope of the Present Work}
+The four-pillar architecture defines the long-term scope of the platform, not the scope delivered by the present work. A clear separation between the implemented scope and the future scope is essential to the honest presentation of this project.
+
+Within the scope of the present work, the first pillar is substantially implemented through the operational backbone service \texttt{rfq\_manager\_ms}, which provides RFQ registration and tracking, workflow-driven stage progression, supporting resources for subtasks, notes, files, and reminders, and the analytical endpoints that feed dashboards. The conversational layer is implemented through \texttt{rfq\_copilot\_ms}, which represents the principal innovation contribution of the project and is presented in depth in subsequent chapters. The remaining capabilities of the four pillars are present at varying levels of maturity: parts of the second and third pillars are exercised by the user interface and the manager service in demonstration form, while the fourth pillar is represented by a foundation of document parsing capabilities in the intelligence service, with the predictive components left as future work.
+
+The next chapter formalizes the requirements that frame the implemented scope, the methodology that structured its development, and the project management practices that supported it.
+
+\section{Project Methodology Overview}
+The methodology adopted for the development of Itqan is Scrumban, a hybrid of Scrum and Kanban that retains the iterative cadence and demo-oriented discipline of Scrum while substituting Kanban-style work-in-progress limits for the rigidity of fixed-length sprints. This choice fits the realities of a solo project better than pure Scrum: the work-in-progress discipline of Kanban keeps the developer from spreading attention thinly across several platform microservices, while the sprint cadence preserves the demo and review rhythm that anchors stakeholder communication. The Scrumban board used throughout the project follows a six-state workflow that culminates in a \textit{Documented} terminal state, treating documentation as part of the definition of done rather than as an afterthought.
+
+Chapter 2 presents the requirements, methodology, project management practices, and supporting disciplines (architectural decision tracking and risk management) in full.
+
+\section{CONCLUSION}
+This chapter has established the context that motivates Itqan. It introduced \hostCompany\ as the host of this end-of-studies project and \clientCompany\ as the industrial client whose RFQ process became its subject. It described the request for quotation lifecycle as it operates in industrial pressure vessel and heat exchanger manufacturing, with the artifacts and standards that distinguish this domain from generic commercial estimation. It presented the audit findings that surfaced twelve recurrent pain points across communication, visibility, decision support, knowledge retention, and tooling. It recounted the strategic pivot from an initial request for BOQ automation toward a platform for RFQ lifecycle intelligence, and explained the basis on which that reframing was made. It introduced the Itqan platform under its working name, presented the four-pillar target architecture that defines its long-term scope, and gave a brief overview of the methodology that structured its development. The next chapter formalizes the requirements, methodology, and project management practices that disciplined the work.

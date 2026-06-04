@@ -1,0 +1,51 @@
+% @Author: Mouna REKIK
+% @Date:   2024-10-11 / 12:30
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \chapter*{INTRODUCTION GÉNÉRALE}
+% \markboth{\MakeUppercase{INTRODUCTION GÉNÉRALE}}{}
+%\addstarredchapter{INTRODUCTION GÉNÉRALES}
+\newpage
+\phantomsection  % sets a correct hyperlink anchor
+\addcontentsline{toc}{chapter}{INTRODUCTION GÉNÉRALE}
+\begin{spacing}{0.8}
+\end{spacing}
+\begin{center}
+    \LARGE \bfseries Introduction générale 
+\end{center}
+\vspace{30pt}
+\adjustmtc
+\thispagestyle{MyStyle}
+
+{\fontsize{24}{24}\selectfont\textbf{D}}ans un monde où la transformation numérique redéfinit les interactions entre les entreprises et leurs utilisateurs, l’intelligence artificielle émerge comme un levier stratégique pour optimiser l’efficacité opérationnelle et enrichir l’expérience client. Les systèmes conversationnels intelligents, tels que les chatbots, jouent un rôle clé en automatisant les interactions, en fournissant des réponses contextualisées et en s’adaptant aux besoins spécifiques des utilisateurs. Face à la complexité croissante des données à traiter et à la nécessité d’offrir des solutions flexibles et accessibles, les entreprises recherchent des plateformes capables de gérer des assistants virtuels personnalisés, tout en garantissant une intégration fluide avec des sources d’information variées et une configuration intuitive pour des utilisateurs non techniques.
+
+Dans ce contexte, l’automatisation de la création, de la gestion et de l’interaction avec des chatbots représente une opportunité majeure. Elle permet non seulement de réduire les interventions manuelles, mais aussi d’accélérer le déploiement de solutions adaptées à des cas d’usage divers, tout en maintenant une haute précision dans les réponses fournies. En intégrant des technologies avancées comme la génération augmentée par la recherche (RAG) et les approches agentiques, il devient possible de concevoir des systèmes modulaires capables d’exploiter des bases de connaissances dynamiques, de prioriser des règles métiers prédéfinies et d’exécuter des actions personnalisées, telles que des appels d’API ou des recherches web, en temps réel. Ces capacités répondent aux exigences des entreprises modernes, qui cherchent à allier la performance, la scalabilité et l'accessibilité.
+
+C’est dans ce cadre que s’inscrit notre projet de fin d’études, réalisé au sein de BACAB Consulting, une startup spécialisée dans les technologies émergentes telles que le cloud computing et l’intelligence artificielle. L’objectif principal est de concevoir et de mettre en œuvre une plateforme complète permettant la gestion de chatbots personnalisés, accessible aux administrateurs via une interface intuitive et capable de s’adapter aux besoins spécifiques des utilisateurs finaux. Cette solution repose sur une architecture microservices déployée sur Microsoft Azure, intégrant des services cloud tels qu’Azure OpenAI Service, Azure Blob Storage et Azure SQL Database, pour garantir la fiabilité et la performance. Le projet vise à répondre aux attentes d’un environnement dynamique, tout en offrant une expérience utilisateur fluide et des réponses précises, contextualisées et sans hallucinations.
+
+Ce rapport résume l’ensemble du travail réalisé et se structure en trois chapitres principaux, chacun abordant une étape clé du projet :
+\begin{itemize}
+    \item \textbf{Chapitre 1} : Ce chapitre introduit le cadre du projet, en présentant l’organisme d’accueil, BACAB Consulting, et les objectifs globaux. Il analyse les solutions existantes de gestion de chatbots, identifie leurs limites, pose la problématique centrale et puis il détaille les concepts fondamentaux.
+    \item \textbf{Chapitre 2} : Ce chapitre explore les choix architecturaux et technologiques ayant guidé la conception de la plateforme. Il décrit l’architecture microservices, les services Azure utilisés, et l’évolution vers une approche multi-agents pour optimiser la précision des réponses. Une comparaison des frameworks RAG et des modèles de langage justifie les décisions prises, en alignement avec les besoins de personnalisation et de scalabilité.
+    \item \textbf{Chapitre 3} : Ce chapitre détaille la mise en œuvre concrète de la plateforme. Il illustre le fonctionnement à travers des scénarios d’utilisation, des captures d’écran et des traces d’exécution, tout en évaluant les performances et les améliorations apportées.
+\end{itemize}
+
+Enfin, une conclusion générale synthétise les contributions du projet et ouvre des perspectives pour son évolution future, notamment l’intégration de nouvelles fonctionnalités et l’extension à des cas d’usage variés.
+
+% {\fontsize{24}{24}\selectfont\textbf{L}}es agents conversationnels, ou «chatbots», occupent aujourd’hui un rôle majeur dans la vie quotidienne des internautes et professionnels connectés. Autrefois limités à répondre à des questions simples, ils sont désormais capables de satisfaire des besoins complexes dans des domaines variés tels que le support technique, la formation, le marketing, l’assistance interne, etc.\par
+% En effet, pour répondre aux exigences croissantes des utilisateurs, il ne suffit plus qu’un agent génère du texte: il doit aussi pouvoir se référencer à une base de connaissances actualisée, réaliser des actions spécifiques (appel d’outils, requêtes externes) et s’adapter aux cas d'utilisation spécifiques à chaque organisation.\par
+% Dans le cadre de ce projet de fin d’études, nous développons une plateforme de génération de chatbots personnalisés. Cette solution s’adresse à un administrateur en charge de la création et de la supervision d'assistants destinés à des utilisateurs finaux. Elle propose trois modules principaux:
+% \begin{itemize}[label=$\bullet$]
+%     \item Espace Base de connaissances: un module simple pour importer, organiser et maintenir à jour la documentation (les fichiers) qui constitueront le socle de connaissances exploité par l’agent.
+%     \item Gestion des actions personnalisées: une interface dédiée pour configurer des outils et services externes que l’agent pourra appeler de manière autonome pour enrichir ses réponses ou déclencher des processus automatisés.
+%     \item Scénarios et exemples de dialogue: un environnement pour simuler des séquences de questions-réponses, permettant de guider et de calibrer le comportement du chatbot avant son déploiement.
+% \end{itemize}
+
+% Grâce à cette approche modulable, chaque chatbot généré offre une expérience sur mesure: des résultats précis et contextualisés, l’accès dynamique à des ressources externes et la capacité à évoluer avec les nouveaux contenus mis à disposition.\par
+
+% Ce rapport présente l’ensemble du travail réalisé dans le cadre du projet, en partant de l’analyse des besoins jusqu’à l’évaluation finale des résultats. Il se manifeste selon la structure suivante :
+% \begin{itemize}
+%     \item Chapitre 1 : Contexte et problématique – Présentation du domaine des agents conversationnels et spécification des besoins.
+%     \item Chapitre 2 : …
+%     \item Chapitre 3 : …
+%     \item Chapitre 4 : …
+% \end{itemize}

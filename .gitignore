@@ -4,3 +4,5 @@
 
 # Local archive/backup artifacts
 *.zip
+presentation_deck
+.claude

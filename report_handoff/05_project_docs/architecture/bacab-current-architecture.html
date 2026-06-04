@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BACAB Current Architecture — Explained Simply</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0f14;
+    --surface: #141820;
+    --surface-2: #1a1f2b;
+    --border: #252b3a;
+    --text: #e2e6f0;
+    --muted: #7a8499;
+    --blue: #4c9aff;
+    --blue-bg: rgba(76,154,255,0.08);
+    --blue-border: rgba(76,154,255,0.18);
+    --green: #3ecf8e;
+    --green-bg: rgba(62,207,142,0.08);
+    --amber: #f5a623;
+    --amber-bg: rgba(245,166,35,0.08);
+    --purple: #9d8aff;
+    --purple-bg: rgba(157,138,255,0.08);
+    --red: #e74c5e;
+    --pink: #ff6b9d;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 40px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-2); padding: 2px 7px; border-radius: 4px; }
+
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header .tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--blue); background: var(--blue-bg);
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
+  }
+  .header h1 { font-size: clamp(26px,4vw,38px); font-weight: 700; margin-bottom: 10px; }
+  .header p { color: var(--muted); font-size: 15px; max-width: 600px; margin: 0 auto; }
+
+  section { margin-bottom: 60px; }
+  .sec-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--blue); letter-spacing: 1px; margin-bottom: 6px; }
+  .sec-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .sec-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* ===== PIECES GRID ===== */
+  .pieces-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width:640px){ .pieces-grid{grid-template-columns:1fr;} }
+
+  .piece {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .piece::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .piece.p-setup::before { background: var(--amber); }
+  .piece.p-chatbot::before { background: var(--blue); }
+  .piece.p-rag::before { background: var(--green); }
+  .piece.p-db::before { background: var(--purple); }
+
+  .piece-icon { font-size: 26px; margin-bottom: 10px; }
+  .piece h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .piece .piece-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 10px; border-radius: 4px; display: inline-block; padding: 2px 8px; }
+  .p-setup .piece-name { color: var(--amber); background: var(--amber-bg); }
+  .p-chatbot .piece-name { color: var(--blue); background: var(--blue-bg); }
+  .p-rag .piece-name { color: var(--green); background: var(--green-bg); }
+  .p-db .piece-name { color: var(--purple); background: var(--purple-bg); }
+  .piece p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ===== ANALOGY BOX ===== */
+  .analogy {
+    background: linear-gradient(135deg, rgba(76,154,255,0.05), rgba(157,138,255,0.05));
+    border: 1px solid var(--blue-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 24px;
+  }
+  .analogy h4 { font-size: 15px; color: var(--blue); margin-bottom: 10px; }
+  .analogy p { font-size: 14px; color: var(--muted); }
+  .analogy .highlight { color: var(--text); font-weight: 600; }
+
+  /* ===== SCENARIO WALKTHROUGH ===== */
+  .scenario-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .scenario-box h4 {
+    font-size: 14px; font-weight: 600; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scenario-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .label-setup { background: var(--amber-bg); color: var(--amber); }
+  .label-runtime { background: var(--blue-bg); color: var(--blue); }
+
+  .steps { list-style: none; padding: 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: flex-start;
+  }
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    min-width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .scenario-box.setup-scenario .step-num { background: var(--amber-bg); color: var(--amber); }
+  .scenario-box.runtime-scenario .step-num { background: var(--blue-bg); color: var(--blue); }
+
+  .step-content { flex: 1; }
+  .step-actor {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 3px;
+  }
+  .actor-admin { color: var(--amber); }
+  .actor-setup { color: var(--amber); }
+  .actor-user { color: var(--pink); }
+  .actor-chatbot { color: var(--blue); }
+  .actor-llm { color: var(--green); }
+  .actor-db { color: var(--purple); }
+
+  .step-text { font-size: 13px; color: var(--muted); }
+  .step-text strong { color: var(--text); font-weight: 500; }
+
+  .step-detail {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--surface-2);
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--muted);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  /* ===== FLOW DIAGRAM ===== */
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    margin: 28px 0;
+  }
+  .flow-title {
+    text-align: center;
+    font-size: 13px; font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+
+  .flow-cols {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .flow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-box {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 120px;
+    line-height: 1.4;
+  }
+  .flow-box.admin { background: var(--amber-bg); border: 1px solid rgba(245,166,35,0.2); color: var(--amber); }
+  .flow-box.setup { background: var(--amber-bg); border: 1px solid rgba(245,166,35,0.15); color: var(--amber); }
+  .flow-box.db { background: var(--purple-bg); border: 1px solid rgba(157,138,255,0.2); color: var(--purple); }
+  .flow-box.user { background: rgba(255,107,157,0.08); border: 1px solid rgba(255,107,157,0.2); color: var(--pink); }
+  .flow-box.chatbot { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
+  .flow-box.llm { background: var(--green-bg); border: 1px solid rgba(62,207,142,0.2); color: var(--green); }
+  .flow-box.rag { background: var(--green-bg); border: 1px solid rgba(62,207,142,0.15); color: var(--green); }
+
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+  }
+  .flow-arrow-down {
+    color: var(--muted);
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .flow-box small { display: block; font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+  /* ===== DATABASE TABLE ===== */
+  .db-table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+  .db-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .db-table th {
+    text-align: left;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--purple);
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .db-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--muted);
+  }
+  .db-table tr:last-child td { border-bottom: none; }
+  .db-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text); }
+
+  /* ===== KEY INSIGHT ===== */
+  .insight {
+    background: linear-gradient(135deg, rgba(231,76,94,0.06), rgba(245,166,35,0.06));
+    border: 1px solid rgba(231,76,94,0.15);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 32px;
+  }
+  .insight h4 { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--red); }
+  .insight p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .insight strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tag">Understanding BACAB's Current System</div>
+  <h1>How Their Chatbot Architecture Works</h1>
+  <p>A simple breakdown of the existing chatbot_ms + setup_ms pattern used in the real estate project, explained step by step.</p>
+</div>
+
+<!-- ===== SECTION 1: THE 4 PIECES ===== -->
+<section>
+  <div class="sec-num">01</div>
+  <div class="sec-title">The Four Pieces</div>
+  <div class="sec-sub">The system has 4 main components, each running as its own container on Azure</div>
+
+  <div class="pieces-grid">
+    <div class="piece p-setup">
+      <div class="piece-icon">⚙️</div>
+      <div class="piece-name">setup_ms</div>
+      <h3>The Chatbot Factory</h3>
+      <p>This is where an admin <strong>creates</strong> chatbot instances. Each chatbot gets: an ID, a system prompt, and a list of tools it can use. Think of it as a "template creator" — it defines what a chatbot knows and can do, then saves it all to the database.</p>
+    </div>
+
+    <div class="piece p-chatbot">
+      <div class="piece-icon">🤖</div>
+      <div class="piece-name">chatbot_ms (api)</div>
+      <h3>The Conversation Engine</h3>
+      <p>This is the main service. When a user sends a message, this service loads the chatbot's config from the database (prompt + tools + history), bundles everything together, and sends it to Azure OpenAI. It then returns the response to the user. Endpoints: <code>/ask</code>, <code>/history</code>, etc.</p>
+    </div>
+
+    <div class="piece p-rag">
+      <div class="piece-icon">📚</div>
+      <div class="piece-name">RAG + VDB</div>
+      <h3>The Knowledge Layer</h3>
+      <p>Documents are stored in Azure Blob Storage, chunked, embedded, and stored in a Vector Database. When the chatbot needs context (e.g., property details, documents), the RAG pipeline retrieves relevant chunks and feeds them into the conversation.</p>
+    </div>
+
+    <div class="piece p-db">
+      <div class="piece-icon">🗄️</div>
+      <div class="piece-name">Azure SQL Server</div>
+      <h3>The Memory</h3>
+      <p>Stores everything persistent: chatbot IDs, their prompts, their parameters, conversation histories, and tool configurations. Both setup_ms and chatbot_ms read/write here.</p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <h4>💡 Simple Analogy: Think of it Like a Restaurant</h4>
+    <p>
+      <span class="highlight">setup_ms</span> = The manager who creates the menu (defines what each chatbot can do).<br>
+      <span class="highlight">Database</span> = The recipe book (stores prompts, tools, conversation history).<br>
+      <span class="highlight">chatbot_ms</span> = The waiter who takes orders, goes to the kitchen, and brings back food.<br>
+      <span class="highlight">Azure OpenAI</span> = The chef who actually cooks (the LLM that reasons and responds).<br>
+      <span class="highlight">RAG/VDB</span> = The pantry (stored knowledge the chef pulls ingredients from).<br><br>
+      The waiter (chatbot_ms) doesn't cook — he just carries things back and forth. But the <strong>chef (LLM) decides everything</strong>: what ingredients to use, how to combine them, what tools to call. The waiter just facilitates.
+    </p>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: WHAT'S IN THE DATABASE ===== -->
+<section>
+  <div class="sec-num">02</div>
+  <div class="sec-title">What's Stored in the Database</div>
+  <div class="sec-sub">Each chatbot instance is a row with its own configuration</div>
+
+  <div class="db-table-wrap">
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Example (Real Estate Bot)</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">chatbot_id</td>
+          <td class="mono">"bot_realestate_01"</td>
+          <td>Unique identifier for this chatbot instance</td>
+        </tr>
+        <tr>
+          <td class="mono">prompt</td>
+          <td><span style="color:var(--text);">"You are a real estate assistant. Help users find properties based on their criteria. You have access to the property database..."</span></td>
+          <td>The full system prompt — personality, instructions, context</td>
+        </tr>
+        <tr>
+          <td class="mono">params</td>
+          <td class="mono">{ temperature: 0.7, model: "gpt-4" }</td>
+          <td>LLM settings and any extra configuration</td>
+        </tr>
+        <tr>
+          <td class="mono">tools</td>
+          <td class="mono">[search_property, get_price, schedule_visit, ...]</td>
+          <td>List of tools/functions the LLM can call</td>
+        </tr>
+        <tr>
+          <td class="mono">conversations</td>
+          <td><span style="color:var(--text);">[ {id: "conv_123", messages: [...]} ]</span></td>
+          <td>Full history of all conversations under this chatbot</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="analogy">
+    <h4>💡 Why Multiple Chatbots?</h4>
+    <p>
+      In the real estate project, they might have: one chatbot for <span class="highlight">property search</span> (prompt about finding apartments, tools for search/filter), another for <span class="highlight">admin tasks</span> (prompt about managing listings, tools for CRUD operations), another for <span class="highlight">client support</span> (different prompt, different tools). Same engine, different configurations. The admin creates each one through <code>setup_ms</code>.
+    </p>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: SCENARIO A — ADMIN CREATES A CHATBOT ===== -->
+<section>
+  <div class="sec-num">03</div>
+  <div class="sec-title">Scenario A: Admin Creates a New Chatbot</div>
+  <div class="sec-sub">The setup phase — happens once per chatbot type</div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="flow-diagram">
+    <div class="flow-title">SETUP FLOW</div>
+    <div class="flow-cols">
+      <div class="flow-col">
+        <div class="flow-box admin">👤 Admin</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box setup">⚙️ setup_ms<small>/create_chatbot</small></div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box db">🗄️ Database<small>saves config</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario-box setup-scenario">
+    <h4><span class="scenario-label label-setup">SETUP PHASE</span> Step by Step</h4>
+    <ul class="steps">
+      <li class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-actor actor-admin">Admin</div>
+          <div class="step-text">Calls <code>POST /create_chatbot</code> on setup_ms with configuration:</div>
+          <div class="step-detail">{
+  "name": "Property Search Assistant",
+  "prompt": "You are a real estate assistant...",
+  "params": { "model": "gpt-4", "temperature": 0.7 },
+  "tools": ["search_properties", "get_price_history", "schedule_visit"]
+}</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-actor actor-setup">setup_ms</div>
+          <div class="step-text">Generates a <strong>chatbot_id</strong>, saves everything to the database — prompt, params, tools list. The chatbot now exists as a configured entity.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-actor actor-db">Database</div>
+          <div class="step-text">Now holds a complete chatbot definition. When chatbot_ms needs to serve this chatbot, it reads from here.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: SCENARIO B — USER ASKS A QUESTION ===== -->
+<section>
+  <div class="sec-num">04</div>
+  <div class="sec-title">Scenario B: User Sends a Message</div>
+  <div class="sec-sub">The runtime phase — happens on every user interaction</div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="flow-diagram">
+    <div class="flow-title">RUNTIME FLOW — What happens when a user sends "Find me a 3-bedroom near downtown"</div>
+    <div class="flow-cols" style="flex-wrap: wrap; justify-content: center; gap: 12px;">
+      <div class="flow-col">
+        <div class="flow-box user">👤 User<small>"Find me a 3BR..."</small></div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box chatbot">🤖 chatbot_ms<small>/conversation/{id}/ask</small></div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box db">🗄️ DB<small>load prompt + tools + history</small></div>
+      </div>
+    </div>
+    <div class="flow-arrow-down" style="text-align:center; padding: 8px 0;">↓ bundles everything</div>
+    <div class="flow-cols" style="justify-content: center; gap: 12px;">
+      <div class="flow-col">
+        <div class="flow-box llm">🧠 Azure OpenAI<small>receives: prompt + history + tools + user msg</small></div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box rag" style="min-width: 140px;">🔧 Tool Calls<small>search_properties(...)<br>get_price_history(...)</small></div>
+      </div>
+    </div>
+    <div class="flow-arrow-down" style="text-align:center; padding: 8px 0;">↓ final answer</div>
+    <div class="flow-cols" style="justify-content: center;">
+      <div class="flow-col">
+        <div class="flow-box chatbot">🤖 chatbot_ms<small>returns JSON response</small></div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-col">
+        <div class="flow-box user">👤 User<small>sees the answer</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario-box runtime-scenario">
+    <h4><span class="scenario-label label-runtime">RUNTIME</span> Step by Step</h4>
+    <ul class="steps">
+      <li class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-actor actor-user">User</div>
+          <div class="step-text">Sends a message: <strong>"Find me a 3-bedroom apartment near downtown under $2000/month"</strong></div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-actor actor-chatbot">chatbot_ms</div>
+          <div class="step-text">Receives the message at <code>/conversation/{id}/ask</code>. Looks up in the database: <strong>which chatbot does this conversation belong to?</strong> Loads that chatbot's system prompt, tools, and params.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-actor actor-chatbot">chatbot_ms</div>
+          <div class="step-text">Also loads the <strong>conversation history</strong> from the database (all previous messages in this conversation).</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-actor actor-chatbot">chatbot_ms</div>
+          <div class="step-text"><strong>Bundles everything</strong> into one Azure OpenAI API call:</div>
+          <div class="step-detail">→ System Prompt: "You are a real estate assistant..."
+→ Conversation History: [prev messages...]
+→ Tools: [search_properties, get_price, ...]
+→ New User Message: "Find me a 3-bedroom..."
+
+All sent together to Azure OpenAI.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-actor actor-llm">Azure OpenAI (the LLM)</div>
+          <div class="step-text">The LLM <strong>decides on its own</strong> what to do. It sees the tools available and thinks: "I should call <code>search_properties</code> with bedrooms=3, location=downtown, max_price=2000." It makes the tool call.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-actor actor-chatbot">chatbot_ms</div>
+          <div class="step-text">Executes the tool call (hits the database or external API), gets results back (list of properties), and <strong>sends the results back to the LLM</strong>.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <div class="step-actor actor-llm">Azure OpenAI</div>
+          <div class="step-text">Reads the property results and <strong>formulates a natural language response</strong>: "I found 3 properties matching your criteria: ..."</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-num">8</div>
+        <div class="step-content">
+          <div class="step-actor actor-chatbot">chatbot_ms</div>
+          <div class="step-text"><strong>Saves</strong> the new messages (user + assistant) to the conversation history in the database. Returns the response as JSON to the frontend.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: THE KEY INSIGHT ===== -->
+<section>
+  <div class="sec-num">05</div>
+  <div class="sec-title">The Key Insight</div>
+  <div class="sec-sub">Now that you understand the system — here's what matters</div>
+
+  <div class="insight">
+    <h4>Who's Actually Making the Decisions?</h4>
+    <p>
+      In this architecture, <code>chatbot_ms</code> is essentially a <strong>delivery service</strong> — it carries messages back and forth between the user and the LLM. The real question is: <strong>who decides what to do with the user's request?</strong>
+      <br><br>
+      The answer: <strong>the LLM decides everything</strong>. It reads the prompt, sees the tools, and autonomously chooses which tools to call, in what order, and how to interpret the results. There is no code in chatbot_ms that says "if the user asks about prices, do X then Y then Z." The LLM figures that out on its own every time.
+      <br><br>
+      This is the <strong>LLM-as-orchestrator</strong> pattern. It works beautifully when:
+      <br>— Queries are open-ended and conversational<br>
+      — There's no single "right answer"<br>
+      — Mistakes are low-cost (wrong apartment suggestion → user just scrolls past)
+      <br><br>
+      The question for GHI is: <strong>is this the right pattern when a wrong cost estimate means real financial loss?</strong>
+    </p>
+  </div>
+</section>
+
+<div style="text-align:center; padding: 24px; border-top: 1px solid var(--border); margin-top: 40px; font-size: 12px; color: var(--muted);">
+  BACAB Current Architecture — Explained for Internal Understanding
+</div>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+\babel@toc {english}{}\relax 
+\babel@toc {english}{}\relax 
+\thispagestyle {MyStyle}
+\contentsline {chapter}{LIST OF FIGURES}{vii}{chapter*.4}%
+\contentsline {chapter}{LIST OF TABLES}{viii}{chapter*.5}%
+\contentsline {chapter}{LIST OF ABBREVIATIONS}{ix}{chapter*.6}%
+\contentsline {chapter}{GENERAL INTRODUCTION}{xii}{chapter*.7}%
+\contentsline {chapter}{\numberline {1}General Context and Business Problem}{2}{chapter.1}%
+\contentsline {section}{INTRODUCTION}{3}{section*.8}%
+\contentsline {section}{\numberline {1.1}Host Organization and Industrial Context}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}The Estimation Workflow at GHI}{4}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}The RFQ Package and Estimation Workbook}{4}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}The End-to-End Estimation Workflow}{4}{subsection.1.2.2}%
+\contentsline {section}{\numberline {1.3}Documented Operational Constraints}{5}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Audit Methodology}{5}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Reference: The Twelve Documented Constraints}{6}{subsection.1.3.2}%
+\contentsline {section}{\numberline {1.4}Audit Findings and the Rejection of BOQ Automation}{7}{section.1.4}%
+\contentsline {section}{\numberline {1.5}The Strategic Pivot to RFQ Lifecycle Intelligence}{8}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Project Identity and Four-Pillar Vision}{8}{section.1.6}%
+\contentsline {subsection}{\numberline {1.6.1}Project Identity}{8}{subsection.1.6.1}%
+\contentsline {subsection}{\numberline {1.6.2}The Four-Pillar Target Architecture}{9}{subsection.1.6.2}%
+\contentsline {subsection}{\numberline {1.6.3}The Cross-Cutting Intelligence Layer}{9}{subsection.1.6.3}%
+\contentsline {subsection}{\numberline {1.6.4}Scope of the Present Work}{10}{subsection.1.6.4}%
+\contentsline {section}{CONCLUSION}{10}{subsection.1.6.4}%
+\contentsline {chapter}{\numberline {2}State of the Art}{11}{chapter.2}%
+\contentsline {section}{INTRODUCTION}{12}{section*.12}%
+\contentsline {section}{\numberline {2.1}Industrial RFQ Systems and the Lifecycle Visibility Gap}{12}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Microservices Architecture and Project-Specific Layering}{13}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Conversational AI Patterns for Evidence-Grounded Systems}{13}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Grounding, Hallucination, and Safety Constraints}{14}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Deterministic Document Intelligence for Engineering Artifacts}{15}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Positioning of the Proposed Platform}{16}{section.2.6}%
+\contentsline {section}{CONCLUSION}{17}{section.2.6}%
+\contentsline {chapter}{\numberline {3}Requirements, Methodology, and Project Management}{18}{chapter.3}%
+\contentsline {section}{INTRODUCTION}{19}{section*.13}%
+\contentsline {section}{\numberline {3.1}Stakeholders, Actors, and Access Assumptions}{19}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Project Stakeholders}{19}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}System Actors}{19}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Permission Model and IAM Integration}{21}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Functional Requirements}{22}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Product Backlog}{23}{subsection.3.2.1}%
+\contentsline {section}{\numberline {3.3}Non-Functional Requirements}{23}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Use Cases and Activity Diagrams}{25}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}System-Level Use Cases}{25}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Activity Diagram: Advance RFQ Stage}{26}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Conversational Flow with the Copilot}{27}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}Methodology}{27}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Scrumban as the Iteration Framework}{28}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Architectural Decision Records}{29}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Project Control Center}{29}{subsection.3.5.3}%
+\contentsline {section}{CONCLUSION}{30}{subsection.3.5.3}%
+\contentsline {chapter}{\numberline {4}Conceptual and Technical Architecture}{31}{chapter.4}%
+\contentsline {section}{INTRODUCTION}{32}{section*.19}%
+\contentsline {section}{\numberline {4.1}Global Architecture and Four-Pillar Layering}{32}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}The Four Architectural Layers and the Cross-Cutting Copilot}{32}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}The Four Pillars as an Architectural Map}{33}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Microservices Inventory and BACAB Pattern}{34}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Service Inventory}{34}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}The BACAB Layered Pattern}{35}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Inter-Service Communication}{36}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Manager Service: Domain Model and Lifecycle}{37}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Mission and Domain Model}{37}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Workflow and Stage Progression}{38}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}Copilot Service: Trust-Boundary Architecture}{39}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Design Philosophy}{39}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Positioning Against Alternative Conversational AI Patterns}{40}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}The Eight Trust Boundaries}{40}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Two Classification Sources, One Plan Factory}{42}{subsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.4.5}The Path Registry as Policy-as-Configuration}{43}{subsection.4.4.5}%
+\contentsline {subsection}{\numberline {4.4.6}The Pipeline and the Five Evidence Sources}{43}{subsection.4.4.6}%
+\contentsline {subsection}{\numberline {4.4.7}Why This Architecture Represents the Project's Primary Innovation}{43}{subsection.4.4.7}%
+\contentsline {section}{\numberline {4.5}Evidence Boundary}{44}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Platform Integration and ADR Summary}{44}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Platform Integration}{44}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Architectural Decisions}{45}{subsection.4.6.2}%
+\contentsline {section}{CONCLUSION}{45}{subsection.4.6.2}%
+\contentsline {chapter}{\numberline {5}Implementation}{46}{chapter.5}%
+\contentsline {section}{INTRODUCTION}{47}{section*.27}%
+\contentsline {section}{\numberline {5.1}Development Environment and Toolchain}{47}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}BACAB Discipline Across the Backend Services}{49}{subsection.5.1.1}%
+\contentsline {section}{\numberline {5.2}Manager Service Implementation}{49}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}BACAB Topology within the Manager Service}{50}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Relational Schema and Stage Progression}{50}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Subtasks, Notes, Files, and Reminders}{51}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Analytics and Telemetry Endpoints}{52}{subsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.2.5}Observability and Audit-History Implementation}{52}{subsection.5.2.5}%
+\contentsline {section}{\numberline {5.3}Copilot Service Implementation}{53}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Turn Processing Pipeline and Vertical Slicing}{53}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Path Registry and Single-Construction Invariance}{54}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Memory, Guardrails, and the Escalation Gate}{55}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Intelligence Service Implementation}{55}{section.5.4}%
+\contentsline {section}{\numberline {5.5}User Interface Integration}{56}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Cross-Service Integration Status}{57}{section.5.6}%
+\contentsline {section}{CONCLUSION}{57}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Validation, Results, and Discussion}{58}{chapter.6}%
+\contentsline {section}{INTRODUCTION}{59}{section*.32}%
+\contentsline {section}{\numberline {6.1}Validation Strategy and Five Evidence Classes}{59}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Manager Service Validation}{60}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Copilot Service Validation}{61}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Trust-Boundary Verification via Anti-Drift Constraints}{62}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Intelligence Service Validation}{63}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Frontend and Cross-Service Integration Validation}{64}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Business Impact Mapping}{64}{section.6.7}%
+\contentsline {section}{\numberline {6.8}Limitations and Future Work}{65}{section.6.8}%
+\contentsline {section}{CONCLUSION}{66}{table.caption.38}%
+\contentsline {chapter}{GENERAL CONCLUSION}{67}{chapter*.39}%
+\contentsline {chapter}{BIBLIOGRAPHY}{68}{chapter*.39}%
+\contentsline {chapter}{APPENDICES}{72}{chapter*.41}%
+\contentsline {section}{\numberline {A.1}Detailed Use Case Descriptions}{72}{section.Alph0.1}%
+\contentsline {subsection}{\numberline {A.1.1}UC-01, Register RFQ}{72}{subsection.Alph0.1.1}%
+\contentsline {subsection}{\numberline {A.1.2}UC-02, Advance RFQ Stage}{72}{subsection.Alph0.1.2}%
+\contentsline {subsection}{\numberline {A.1.3}UC-03, Manage Stage Artifacts}{73}{subsection.Alph0.1.3}%
+\contentsline {subsection}{\numberline {A.1.4}UC-04, Configure Reminders}{73}{subsection.Alph0.1.4}%
+\contentsline {subsection}{\numberline {A.1.5}UC-05, Consult Pipeline Analytics}{73}{subsection.Alph0.1.5}%
+\contentsline {subsection}{\numberline {A.1.6}UC-06, Query Copilot in Portfolio Mode}{73}{subsection.Alph0.1.6}%
+\contentsline {subsection}{\numberline {A.1.7}UC-07, Query Copilot in RFQ-Bound Mode}{74}{subsection.Alph0.1.7}%
+\contentsline {subsection}{\numberline {A.1.8}UC-08, Manage Workflow Templates}{74}{subsection.Alph0.1.8}%
+\contentsline {section}{\numberline {A.2}Product Backlog}{74}{section.Alph0.2}%
+\contentsline {section}{\numberline {A.3}Path Registry Structure}{75}{section.Alph0.3}%
+\contentsline {section}{\numberline {A.4}Anti-Drift Tests and Test Invocation Evidence}{76}{section.Alph0.4}%
+\contentsline {subsection}{\numberline {A.4.1}Anti-Drift Test Files (Copilot Service)}{76}{subsection.Alph0.4.1}%
+\contentsline {subsection}{\numberline {A.4.2}Test Invocations and Pass Counts}{77}{subsection.Alph0.4.2}%
+\contentsline {subsection}{\numberline {A.4.3}Frontend Source-Contract Scripts}{77}{subsection.Alph0.4.3}%
+\contentsline {section}{\numberline {A.5}Golden Scenario Test Set}{77}{section.Alph0.5}%
+\contentsline {section}{\numberline {A.6}Postman Validation Structure}{77}{section.Alph0.6}%
+\contentsline {section}{\numberline {A.7}Integration Paths}{78}{section.Alph0.7}%
+\contentsline {section}{\numberline {A.8}Business Impact Mapping}{78}{section.Alph0.8}%
+\contentsline {section}{\numberline {A.9}Limitations Register}{79}{section.Alph0.9}%
+\contentsline {section}{\numberline {A.10}Architectural Decisions Register}{80}{section.Alph0.10}%
