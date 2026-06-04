@@ -1,0 +1,289 @@
+# Itqān — DESIGN.md
+### Visual system · v0.4 · frozen · **light-first · datashow-legible**
+
+> **Changelog v0.1 → v0.2:** Deck migrated to **light mode as the primary (and only) register for the GHI defense build** — a lit classroom + projector crushes dark slides. Primitive changed from **hexagon → squircle tile** (the "hybrid": squircle shape, but palette / type / composition / framing retained). Depth now comes from **shadow, not glow**. Added: legibility-scrim rule, isometric stacked-tile component, 4-slide opening-sequence spec, and a 21st.dev usage guardrail. Dark tokens are retained only for a possible future productized theme — **not used in the defense deck.**
+
+> **Status:** Concept + tokens frozen. Components are built *against* this file — nothing improvised. Concept ("why") on top; machine-precise tokens ("what") at the bottom. If a slide and this file disagree, **this file wins.**
+>
+> **Name note:** "Itqān" is a working placeholder; the wordmark is swappable without touching this system.
+
+---
+
+## 0 · How to use this file
+1. Read §1 to understand the *story* every frame serves.
+2. Build the component library (§6) against the tokens (§2–§5).
+3. Obey §7 (Motion), §9 (Production) as **hard constraints**.
+4. Check §10 (Anti-patterns) before shipping any frame.
+5. §12 is the copy-paste token block for Claude Code.
+
+Build order (phase gate): tokens → components → 5-slide prototype → one full section → full deck. Never "generate the whole deck."
+
+---
+
+## 1 · Concept
+
+**Direction:** *Industrial Intelligence.*
+
+**Thesis in one image:** scattered RFQ artifacts orbiting a single controlled core. The manual RFQ world (workbooks, MR packages, BOQs, deadlines, vendor lists) is chaotic and risk-prone; Itqān resolves it into one controlled lifecycle, and a Copilot that only ever answers *from* that lifecycle, with sources.
+
+**Narrative arc:** scattered artifacts → controlled lifecycle → bounded, cited intelligence.
+
+**Mood:** premium · technical · calm · controlled · warm — *not* cyber, *not* crypto, *not* startup-hype, *not* sci-fi.
+
+**Register:** bright, editorial, confident — the marble / Pebl / Stripe / Google-I/O light language. **Depth is created with soft shadow, luminous gradient, and generous negative space — never with glow.** Glow was a dark-mode device and is retired.
+
+**Why this works (rules, not luck):**
+- **Centered luminous core with artifacts orbiting it** — the whole thesis in one composition. Reuse this gravity metaphor wherever "many things resolve into one controlled thing."
+- **Teal is a co-star, not a whisper** — teal atmosphere gives depth and *is* the semantic "validated/controlled" colour, so atmosphere and meaning reinforce each other.
+- **The squircle tile is a system primitive** — it carries into artifacts, the agenda, the lifecycle rail, the microservice map, and the Copilot evidence nodes. One shape, everywhere.
+- **Corner ticks + sparing brackets** are the framing grammar — the calm, non-sci-fi alternative to a HUD.
+
+**Reference lineage (orientation, not copying):** ZBS Capital → structural composition (central core, orbiting artifacts, framing, dual warm+teal atmosphere). Google I/O → the squircle primitive, isometric stacked-tile list, scattered-fragments-on-white opener, big-centred-phrase hook. Stripe / Pebl / marble → light editorial clarity. ChainGPT → *only* monospace chrome for the Copilot section; never its mascot or density.
+
+---
+
+## 2 · Color
+
+### Philosophy
+One warm **identity** hue (amber) + one teal **co-star** + a tight **semantic** set. Risk is always a *separate red* so amber never doubles as a warning. Max **three** working colours per diagram (amber + teal + one of red/steel) plus neutrals.
+
+### Identity — Amber
+| Token | Hex | Use |
+|---|---|---|
+| `--amber-50` | `#f9e8cf` | tints, orb gradients |
+| `--amber-200` | `#f2c781` | orb gradients, soft fills |
+| `--amber-500` | `#e8a04c` | identity fills, squircle accents |
+| `--amber-700` | `#bf7a28` | borders, brackets on light |
+| `--amber-on-light` | `#a06a18` | **amber as readable text on light** (CTA, highlight word) |
+| `--amber-900` | `#6e4410` | deepest amber text |
+
+### Co-star — Teal
+| Token | Hex | Use |
+|---|---|---|
+| `--teal-200` | `#7fd9c9` | orb gradients, light accents |
+| `--teal-500` | `#35d0ba` | background washes, validated state |
+| `--teal-700` | `#1f9682` | tile borders, accents on light |
+| `--teal-900` | `#0e4d43` | **teal as readable text on light** (eyebrow, labels) |
+
+### Neutrals — Light (PRIMARY)
+| Token | Hex |
+|---|---|
+| `--l-bg` (base) | `#f6f1e8` |
+| `--l-surface` (tiles/cards) | `#fffdf8` |
+| `--l-ink` (primary text) | `#1c1813` |
+| `--l-muted` (secondary text) | `#6b6256` |
+| `--l-hair` | `rgba(28,24,19,.14)` |
+| `--l-hair-strong` (ticks) | `rgba(28,24,19,.22)` |
+
+### Neutrals — Dark (RETAINED, not used in defense deck)
+`--ink:#050807` · `--surface:#121a18` · `--paper:#f5f7f5` · `--muted:#9aa6a0` · `--dim:#5f6a64` · `--hair:rgba(243,245,243,.10)`
+
+### Semantic set — *diagrams only*
+| Meaning | Light token |
+|---|---|
+| active / grounded / intelligence | amber `#a06a18` (text) · `#e8a04c` (fill) |
+| validated / controlled / bounded | teal `#0e4d43` (text) · `#1f9682` (fill) |
+| **risk / unverified / protected-exit** | red `#c0392b` |
+| structure / inert node / plumbing | steel `#5a625e` |
+
+### Color rules
+- **No glow on light** — ever. Emphasis = shadow, weight, colour, scale.
+- One element may *read as the warm focal point* per frame (the Copilot tile); achieve it with amber fill + soft shadow, not glow.
+- Teal carries atmosphere *and* "validated" meaning — keep consistent so the audience learns the code.
+- Amber never means danger. Risk is red.
+
+---
+
+## 3 · Typography
+| Role | Family | Notes |
+|---|---|---|
+| Display / hook | **Space Grotesk** 600/700 | centred big statements; `-0.01em` |
+| Body / sub | **Inter** 400/500 | explanatory text, captions |
+| Chrome / labels / data | **IBM Plex Mono** 400/500 | section labels, source chips, tile tags |
+
+(The serif-display option, Fraunces, remains dropped — the geometric sans hook tested strongest. Reversible at low cost as a deliberate exception.)
+
+### Type scale (slide-relative `vw`, px ref @1920w) — **REVISED for datashow legibility (v0.4)**
+> **This is a projector/datashow talk in a difficult-light room. Every word must be clearly legible from the back row. NO small text anywhere — chrome, labels, captions, and tags included.** The scale below is raised across the board and carries a **hard minimum floor**.
+
+| Token | vw | ~px @1920 | Floor (never below) | Use |
+|---|---|---|---|---|
+| `--t-hook` | 4.0vw | 77 | 48px | opening hook |
+| `--t-h2` | 3.2vw | 61 | 40px | section-opener headline |
+| `--t-h3` | 2.0vw | 38 | 30px | agenda section titles, sub-headers |
+| `--t-sub` | 1.35vw | 26 | 22px | sub / body / explanatory text |
+| `--t-kicker` | 1.05vw | 20 | 18px | eyebrow / thematic label (mono) |
+| `--t-chrome` | 1.0vw | 19 | 17px | nav, section label, slider (mono) |
+| `--t-caption` | 0.95vw | 18 | 16px | captions, chips, tile tags (mono) — **the absolute smallest text allowed** |
+
+**Legibility floor rule:** `--t-caption` (≈16–18px) is the smallest text permitted on any slide. Nothing — no footnote, no tag, no chip, no source line — goes below it. If content forces text below the floor, the content is too dense: cut it or split the slide. There is no `--t-micro` anymore (deleted; it was sub-floor).
+
+**Full-frame rule:** use the whole slide. Generous margins are for breathing room, not empty waste — headlines and key visuals should occupy the frame confidently, not sit small and centred in a sea of background. Bigger is safer in this room.
+
+Mono chrome: `.16–.32em` uppercase (slightly tightened tracking since sizes are larger). Display: `-0.01em`. Body: normal.
+
+---
+
+## 4 · Space & layout
+- **Frame:** 16:9, built at 1920×1080 reference, scaled via `vw`.
+- **Safe margin:** `4.5%`; chrome in the top `4%`.
+- **Composition modes:** *Centred hero* (opening, hook, pivot, reveal, close) · *Split section* (content left, visual/diagram right) · *Centred phrase* (single big sentence, Google-I/O style).
+- **Negative space is mandatory.** When in doubt, remove an element.
+- **Radii:** squircle tile `22–26%` of its size (soft superellipse feel) · cards `14px` · chips `6px` · corner ticks square.
+
+---
+
+## 5 · Chrome & navigation grammar
+- **Corner ticks** — 1px L-marks in each frame corner, `--l-hair-strong`, ~20px. Used on every frame.
+- **Brackets** — `[ ]` corner pieces (1.5px, `--amber-700`) used **sparingly**: CTA, and occasionally one artifact cluster. Identity accent, not decoration.
+- **Top-left section label** — `[ 02 — The Platform ]`, mono, index `--amber-on-light`, name `--l-muted`.
+- **Top-right subsection slider** — short segmented track; current segment `--amber-500`, rest `--l-hair`. No glow — use weight/fill.
+- **Bottom meta** — centred mono: `GHI · Albassam Group  •  RFQ Lifecycle Intelligence`, teal-700 dot separator.
+
+---
+
+## 6 · Component library (build these)
+
+1. **Squircle tile** *(primitive)* — rounded-square, `--l-surface` fill, soft drop-shadow `0 9px 18px rgba(28,24,19,.13)`, optional 1.5px teal/amber edge. Holds an icon or a mono glyph+tag. Variants: **teal** (default artifact/node), **amber** (the active/Copilot one), **steel** (inert/structure). Replaces the hexagon everywhere.
+2. **Chapter index** *(agenda)* — seven horizontal rows on light: small mono thematic label above a large display section title, squircle icon left, large faint number right. Clean and scannable. **This is the agenda** (the isometric stack was rejected for it). Hierarchy: title dominates, label is the cue. See §11.
+2b. **Isometric stacked-tile list** *(diagrams only — service-layer stack, NOT the agenda)* — squircle tiles at a shallow iso angle, stacked with offset + soft shadows, label to the right (Google-I/O pattern). Reserved for the service-layer/microservice stack where item count is small.
+3. **Luminous gradient core** — cluster of light orbs (white→amber, white→teal radial gradients) with inner highlight + soft coloured shadow; gives 3D form while staying light enough for text to sit over it. **Pre-rendered PNG/MP4 or single Spline embed** in production — not live WebGL.
+4. **Scatter field** *(opening atmosphere)* — 6–8 squircle artifacts + image fragments floating on light, gentle stagger float; resolves toward centre on the gravity-collapse (see §7).
+5. **Legibility scrim** *(mandatory under text-over-visual)* — soft radial pool of `--l-bg` at ~85% centre → 0% edge, sat behind any headline that overlaps the core/scatter. Guarantees contrast on a weak projector. **Required, not optional.**
+6. **Lifecycle rail** — intake → review → estimation → follow-up → submission → outcome; squircle stage nodes connect one-by-one (motion = explanation).
+7. **Service-layer stack / microservice map** — iso stacked tiles; steel structure nodes, amber/teal for active/validated.
+8. **Copilot path diagram** — contextual entry → path selection → evidence retrieval → verified answer / **protected exit** (red branch). Trust-boundary visual; ChainGPT-style mono chrome allowed *here only*.
+9. **Demo browser frame** — browser-chrome window holding an **embedded MP4** of the real UI; soft shadow, amber edge, caption below.
+10. **Bracket CTA** — text + 4 amber brackets, no glow.
+
+---
+
+## 7 · Motion
+**Prime directive: motion explains the system; it never decorates.**
+
+**Signature motion — the gravity collapse:** opening scatter field drifts, then all fragments *resolve inward and collapse toward the centre*, becoming the hook phrase. Chaos → control, literally. This is the single most important animation in the deck.
+
+**Allowed:** gravity collapse · section label moving to top-left · subsection slider advancing · lifecycle stages connecting sequentially · iso layers stacking · Copilot path tracing question→evidence→answer · protected-exit branch revealing · demo frame appearing · gentle idle float on scattered tiles.
+
+**Forbidden:** animating bullet lists · animating validation/limits slides · per-icon entrances · decorative loops · any motion without meaning · **glow pulses** (no glow in light mode).
+
+**Tokens:** ease `cubic-bezier(.2,.7,.2,1)` · rise-in `.9s`, stagger `.15–.20s` · idle float `7s` · always honour `prefers-reduced-motion`.
+
+---
+
+## 8 · Mode policy (light-first)
+- **Light is the deck.** Every defense slide is light. The earlier dark/light hybrid is **superseded** for this deployment — the room decides, and the room is lit.
+- Dark tokens (§2) survive only for a possible future productized dark theme; do not use them in the defense build.
+
+---
+
+## 9 · Production constraints (hard rules)
+- **Stack:** Reveal.js + vanilla CSS + **GSAP**. No React/Vue/framework in the deck. **.pptx fallback** exported for academic submission.
+- **21st.dev guardrail:** 21st.dev is an *inspiration/technique* source only. Any effect you like is **reimplemented in vanilla CSS/GSAP against these tokens** — **never** imported as a React/Framer/Tailwind component. Keep one screenshot/link per desired effect as a "match this" target in the build brief.
+- **Shaders / heavy GPU effects:** do **not** run live on the critical path. If a shader-like background is wanted, approximate in CSS gradients or **pre-render to MP4**.
+- **"3D":** pre-rendered PNG/MP4 or one Spline embed — never many live WebGL frames.
+- **Demos:** embedded MP4 inside the browser frame — never a live app dependency in the talk.
+- **Perf gate:** rehearse the full deck on the actual presentation hardware; if any frame drops frames, downgrade its motion.
+
+---
+
+## 10 · Anti-patterns (do not ship)
+- **Glow on light slides** (the #1 light-mode mistake — looks weak/amateur).
+- Dark slides in the lit defense room.
+- Importing React/Framer/Tailwind components (incl. from 21st.dev) into the Reveal deck.
+- Live shaders / heavy WebGL on the critical path.
+- Crypto / gaming / hacker-dashboard look; any mascot or "abstract assistant object" (no exceptions).
+- Amber used for risk (risk is red).
+- Palette sprawl beyond 3 working colours + neutrals in a diagram.
+- Mixing primitives (hexagon *and* squircle) — squircle only now.
+- Text over a busy visual with no legibility scrim.
+- Animated bullets, validation, or limits.
+- Generic blue SaaS gradient.
+
+---
+
+## 11 · Opening sequence (4 slides) — spec  *(frozen)*
+1. **Formal title** *(academic requirement)* — plain, light: "Itqān: An RFQ Lifecycle Intelligence Platform with a Bounded AI Copilot", name, jury, supervisors, university, host company, date. Minimal styling; corner ticks + wordmark only. No cinematic effect yet.
+2. **Scattered RFQ world** — scatter field of RFQ squircle artifacts + fragments floating on light: XLS, MR, BOQ, intake, deadlines, departments, emails, dashboards, decisions, Copilot signal. Almost no words. Builds the *feeling* of scattered lifecycle complexity.
+3. **Gravity collapse → hook** — the scattered world resolves inward to a controlled centre and reveals the **locked hook phrase** (verbatim, on screen):
+   > **The real RFQ risk is losing control before the quotation is ready.**
+   The longer explanation is delivered **orally**, not on the slide. Slide stays short, powerful, memorable.
+4. **Agenda** — the seven-step index (below).
+
+Rule: the cinematic opening *prepares* the jury emotionally; it does not replace the agenda.
+
+### Agenda — frozen
+- Framing: **"steps"**, not "chapters" (this is a presentation journey, not a report).
+- Headline: *"From scattered RFQs to controlled intelligence — in seven steps."*
+- Top-right label: **`AGENDA · 07 STEPS`**
+- Layout (locked): light-first · clean index · seven horizontal rows · **small thematic label above + large real section title** · large faint right-side number · subtle amber emphasis on step 05 only · **no isometric stack** (rejected as decorative/harder to scan).
+
+**Hierarchy rule (do not invert):** the small mono label is the *narrative cue*; the large display title is the *actual agenda item* and must dominate.
+
+| # | Small label (mono, amber) | Big title (display, ink) — the agenda item |
+|---|---|---|
+| 01 | THE DIAGNOSIS | General Context & Audit Findings |
+| 02 | THE PIVOT | Strategic Direction |
+| 03 | THE BACKBONE | Operational Backbone |
+| 04 | THE EVIDENCE | Intelligence Layer |
+| 05 | THE BOUNDARY | RFQ Copilot Layer |
+| 06 | THE EXPERIENCE | Platform Experience |
+| 07 | THE PROOF | Validation & Perspectives |
+
+Subsections never appear on the agenda — they surface in the per-section top-right subsection slider (§5).
+
+---
+
+## 12 · Open / deferred
+- Final brand name + wordmark (Itqān = placeholder).
+- Final pre-rendered luminous-core asset (render style).
+- Specific 21st.dev effects to reimplement (chosen during build brief).
+- Whether any one headline takes serif (Fraunces) as a deliberate exception.
+
+---
+
+## 13 · Token quick-reference (copy into Claude Code)
+
+```css
+:root{
+  /* identity — amber */
+  --amber-50:#f9e8cf; --amber-200:#f2c781; --amber-500:#e8a04c;
+  --amber-700:#bf7a28; --amber-on-light:#a06a18; --amber-900:#6e4410;
+  /* co-star — teal */
+  --teal-200:#7fd9c9; --teal-500:#35d0ba; --teal-700:#1f9682; --teal-900:#0e4d43;
+  /* neutrals — light (primary) */
+  --l-bg:#f6f1e8; --l-surface:#fffdf8; --l-ink:#1c1813; --l-muted:#6b6256;
+  --l-hair:rgba(28,24,19,.14); --l-hair-strong:rgba(28,24,19,.22);
+  /* semantic (diagrams, light) */
+  --sem-active:#a06a18; --sem-active-fill:#e8a04c;
+  --sem-valid:#0e4d43;  --sem-valid-fill:#1f9682;
+  --sem-risk:#c0392b;   --sem-struct:#5a625e;
+  /* type */
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  /* type — datashow-legible scale (v0.4), with px floors via clamp() */
+  --t-hook:clamp(48px,4.0vw,90px); --t-h2:clamp(40px,3.2vw,72px);
+  --t-h3:clamp(30px,2.0vw,46px); --t-sub:clamp(22px,1.35vw,30px);
+  --t-kicker:clamp(18px,1.05vw,24px); --t-chrome:clamp(17px,1.0vw,22px);
+  --t-caption:clamp(16px,.95vw,20px); /* smallest allowed — no text below this */
+  /* space & shape */
+  --margin:4.5%; --r-squircle:24%; --r-card:14px; --r-chip:6px;
+  /* shadow (replaces glow) */
+  --sh-tile:0 9px 18px rgba(28,24,19,.13);
+  --sh-orb-amber:0 26px 64px rgba(191,122,40,.18);
+  --sh-orb-teal:0 26px 64px rgba(31,150,130,.18);
+  --scrim:radial-gradient(ellipse 60% 52% at 50% 50%, rgba(249,246,239,.86) 0%, rgba(249,246,239,.5) 46%, rgba(249,246,239,0) 74%);
+  /* motion */
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --d-rise:.9s; --d-stagger:.18s; --d-float:7s;
+}
+```
+
+---
+
+> **Changelog v0.2 → v0.3:** Locked the **seven-step agenda** (steps, not chapters) with thematic labels (THE DIAGNOSIS / THE PIVOT / THE BACKBONE / THE EVIDENCE / THE BOUNDARY / THE EXPERIENCE / THE PROOF), the **label-above-title hierarchy rule** (title dominates, never inverted), the **verbatim short hook**, and the **clean chapter-index agenda** (isometric stack rejected for the agenda, reserved for the service-layer diagram). Light-first reaffirmed as the official system.
+
+---
+
+> **Changelog v0.3 → v0.4:** Type scale **raised across the board** for datashow/projector legibility in a difficult-light room, with a **hard minimum floor** (`--t-caption` ≈16–18px is the smallest text permitted anywhere; `--t-micro` deleted). Token block now uses `clamp()` so every size has a px floor regardless of viewport. Added the **full-frame rule** (use the whole slide confidently). Hook locked as the **single recurring anchor**, stated 3× as an arc: problem (open) → shown solved (architecture→Copilot transition) → resolved (close). The "scattered → structured → controlled" line is the descriptive spine (agenda headline), no longer a competing slogan. Old standalone blueprint dropped (not carried into the deck folder).

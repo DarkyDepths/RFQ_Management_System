@@ -1,0 +1,148 @@
+/* ============================================================================
+   tokens.css — Itqān defense deck · visual tokens
+   ----------------------------------------------------------------------------
+   Source of truth: DESIGN.md v0.5 §13 (the copy-paste token block).
+
+   Type scale is in STAGE PX on the 1920×1080 canvas — NOT vw/clamp. Reveal
+   scales the whole stage as one unit, so stage-px proportions survive the
+   scale transform and the legibility floor stays honest on a smaller
+   projector. (v0.4 used clamp(px, vw, px) — that broke under Reveal because
+   vw is viewport-relative, not stage-relative, and the clamp floor was then
+   scaled down again by Reveal's transform.)
+
+   v0.5 change: floor raised from 16–18px to **20px**, set by on-screen
+   eye-test in the actual lit defense room. `--t-caption` IS the floor — no
+   text on any slide goes below it. `--t-floor` separate token retired
+   (caption == floor now). All upper tiers nudged up to keep proportion.
+
+   Everything else (colours, space, shape, shadow, scrim, motion) is §13
+   verbatim. Light-first; dark tokens retained for a future productized theme
+   but unused in this defense build (DESIGN.md §8).
+   ============================================================================ */
+
+/* Fonts: jsDelivr fontsource (NOT fonts.googleapis.com — Google Fonts is
+   blocked from this machine; fontsource serves the same families self-hosted
+   on jsDelivr, which we have proven is reachable. Family names match Google
+   Fonts exactly. Still a CDN dependency — Phase E will vendor these locally
+   as woff2 to remove all network dependency before the defense.) */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.1.1/500.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.1.1/600.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.1.1/700.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.1/400.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.1/500.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.1.1/400.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.1.1/500.css');
+
+:root {
+  /* ------------------------------------------------------------------------
+     Identity — amber
+     ------------------------------------------------------------------------ */
+  --amber-50:       #f9e8cf;
+  --amber-200:      #f2c781;
+  --amber-500:      #e8a04c;
+  --amber-700:      #bf7a28;
+  --amber-on-light: #a06a18;  /* amber as readable text on light */
+  --amber-900:      #6e4410;
+
+  /* ------------------------------------------------------------------------
+     Co-star — warm forest-green (re-tuned twice to pair with amber)
+     ------------------------------------------------------------------------
+     v0.5 originals were cyan-teal (hue ~169°), which clashed with amber's
+     warmth. First retune: warm sage (hue ~148°). Closer but still cool-
+     leaning. Final tune: forest-green (hue ~120°) anchored on #3C6E3D — the
+     exact mid-tone from the reference palette that pairs naturally with the
+     amber side of the gradient. Variable names kept stable so every
+     component inherits the swap with no markup changes.
+   */
+  --teal-200: #c5dac6;  /* pale forest       — orb gradients, light accents */
+  --teal-500: #5d8a5e;  /* forest            — background washes, validated state */
+  --teal-700: #3c6e3d;  /* deep forest       — tile borders, accents on light (ref hex) */
+  --teal-900: #1c4823;  /* deepest pine      — readable text on light (eyebrow, labels) */
+
+  /* ------------------------------------------------------------------------
+     Neutrals — light (PRIMARY for the defense deck)
+     ------------------------------------------------------------------------ */
+  --l-bg:          #f6f1e8;
+  --l-surface:     #fffdf8;
+  --l-ink:         #1c1813;
+  --l-muted:       #6b6256;
+  --l-hair:        rgba(28, 24, 19, .14);
+  --l-hair-strong: rgba(28, 24, 19, .22);
+
+  /* Neutrals — dark (retained per DESIGN.md §2; NOT USED in this deck) */
+  --d-ink:     #050807;
+  --d-surface: #121a18;
+  --d-paper:   #f5f7f5;
+  --d-muted:   #9aa6a0;
+  --d-dim:     #5f6a64;
+  --d-hair:    rgba(243, 245, 243, .10);
+
+  /* ------------------------------------------------------------------------
+     Semantic (diagrams only, light)
+     ------------------------------------------------------------------------ */
+  --sem-active:      #a06a18;  /* active / grounded / intelligence — text */
+  --sem-active-fill: #e8a04c;  /* active fill */
+  --sem-valid:       #0e4d43;  /* validated / controlled / bounded — text */
+  --sem-valid-fill:  #1f9682;  /* validated fill */
+  --sem-risk:        #c0392b;  /* risk / unverified / protected-exit (RED — never amber) */
+  --sem-struct:      #5a625e;  /* structure / inert node / plumbing */
+
+  /* ------------------------------------------------------------------------
+     Typography — families
+     ------------------------------------------------------------------------ */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter',         system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  /* ------------------------------------------------------------------------
+     Typography — stage px scale on the 1920×1080 Reveal canvas (v0.5)
+     (see header: NO vw / NO clamp; floor raised to 20 by eye-test in the room)
+     ------------------------------------------------------------------------ */
+  --t-hook:    90px;   /* opening hook (display 600/700, -0.01em) */
+  --t-h2:      64px;   /* section-opener headline */
+  --t-h3:      40px;   /* agenda titles, sub-headers */
+  --t-sub:     28px;   /* body / explanatory text */
+  --t-kicker:  24px;   /* eyebrow / thematic label (mono, .22em uppercase) */
+  --t-chrome:  22px;   /* nav, section label, slider (mono) */
+  --t-caption: 20px;   /* captions, chips, tile tags (mono) — IS THE FLOOR */
+
+  /* tracking adjustments (DESIGN.md §3) */
+  --tracking-mono-tight: .16em;
+  --tracking-mono-wide:  .32em;
+  --tracking-display:    -0.01em;
+
+  /* ------------------------------------------------------------------------
+     Space & shape
+     ------------------------------------------------------------------------ */
+  --margin:     4.5%;   /* safe margin (top/bottom = % of 1080, left/right = % of 1920) */
+  --r-squircle: 24%;    /* squircle tile radius (22–26% of size — DESIGN.md §6) */
+  --r-card:     14px;
+  --r-chip:     6px;
+  --tick-size:  20px;   /* corner-tick L-mark side length on canvas */
+
+  /* ------------------------------------------------------------------------
+     Shadow (REPLACES glow — no glow on light, ever; DESIGN.md §2, §10)
+     ------------------------------------------------------------------------ */
+  --sh-tile:      0 9px 18px rgba(28, 24, 19, .13);
+  --sh-orb-amber: 0 26px 64px rgba(191, 122, 40, .18);
+  --sh-orb-teal:  0 26px 64px rgba(31, 150, 130, .18);
+
+  /* ------------------------------------------------------------------------
+     Legibility scrim — mandatory under any text overlapping a visual
+     (DESIGN.md §6 component 5)
+     ------------------------------------------------------------------------ */
+  --scrim: radial-gradient(
+    ellipse 60% 52% at 50% 50%,
+    rgba(249, 246, 239, .86) 0%,
+    rgba(249, 246, 239, .50) 46%,
+    rgba(249, 246, 239, 0)   74%
+  );
+
+  /* ------------------------------------------------------------------------
+     Motion (DESIGN.md §7)
+     ------------------------------------------------------------------------ */
+  --ease:      cubic-bezier(.2, .7, .2, 1);
+  --d-rise:    .9s;    /* rise-in */
+  --d-stagger: .18s;   /* per-element stagger */
+  --d-float:   7s;     /* idle float on scattered tiles */
+}

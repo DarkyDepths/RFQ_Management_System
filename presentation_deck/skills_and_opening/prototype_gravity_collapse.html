@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Itqān — Gravity-collapse hook · slides 2→3 (DESIGN.md v0.3)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+  :root{
+    --amber-200:#f2c781; --amber-500:#e8a04c; --amber-700:#bf7a28; --amber-on-light:#a06a18;
+    --teal-200:#7fd9c9; --teal-500:#35d0ba; --teal-700:#1f9682; --teal-900:#0e4d43;
+    --l-bg:#f6f1e8; --l-surface:#fffdf8; --l-ink:#1c1813; --l-muted:#6b6256;
+    --l-hair:rgba(28,24,19,.12); --l-hair-strong:rgba(28,24,19,.22);
+    --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#1a1714;font-family:var(--font-body);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;gap:16px}
+
+  .controls{display:flex;gap:10px;align-items:center;font-family:var(--font-mono);font-size:12px;color:#cdc7ba;letter-spacing:.08em}
+  .controls button{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#1c1813;background:#e8a04c;border:0;border-radius:7px;padding:8px 14px;cursor:pointer}
+  .controls button.alt{background:transparent;color:#cdc7ba;border:1px solid rgba(255,255,255,.2)}
+  .controls .lbl{opacity:.7}
+
+  .stage{position:relative;width:min(94vw,calc(86vh*16/9));height:min(86vh,calc(94vw*9/16));overflow:hidden;border-radius:14px;
+    background:
+      radial-gradient(50% 52% at 100% 0%, rgba(232,160,76,.16) 0%, transparent 56%),
+      radial-gradient(54% 58% at 0% 100%, rgba(53,208,186,.15) 0%, transparent 60%),
+      linear-gradient(135deg,#f9f6ef 0%,#f3efe6 52%,#f6f1e8 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.022;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .tick{position:absolute;width:20px;height:20px;border-color:var(--l-hair-strong);border-style:solid;border-width:0;z-index:8}
+  .tick.tl{top:20px;left:20px;border-top-width:1px;border-left-width:1px}
+  .tick.tr{top:20px;right:20px;border-top-width:1px;border-right-width:1px}
+  .tick.bl{bottom:20px;left:20px;border-bottom-width:1px;border-left-width:1px}
+  .tick.br{bottom:20px;right:20px;border-bottom-width:1px;border-right-width:1px}
+
+  .nav{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:3.2% 4.5% 0;z-index:8}
+  .brand{font-family:var(--font-display);font-weight:600;font-size:1.15vw;color:var(--l-ink)}
+  .brand .ar{color:var(--amber-on-light)}
+  .navmeta{font-family:var(--font-mono);font-size:.72vw;letter-spacing:.22em;text-transform:uppercase;color:var(--l-muted);transition:opacity .6s}
+
+  /* scatter squircle artifacts */
+  .sq{position:absolute;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2em;
+    width:6.0vw;height:6.0vw;border-radius:24%;background:var(--l-surface);
+    box-shadow:0 10px 22px rgba(28,24,19,.13);border:1px solid rgba(31,150,130,.16);
+    transition:transform 1.5s var(--ease), opacity 1.0s var(--ease)}
+  .sq .gly{font-family:var(--font-mono);font-size:1.15vw;color:var(--teal-700);font-weight:500}
+  .sq .lab{font-family:var(--font-mono);font-size:.52vw;letter-spacing:.08em;color:var(--teal-900);text-transform:uppercase}
+  .sq.amber{border-color:rgba(191,122,40,.28)}
+  .sq.amber .gly{color:var(--amber-on-light)} .sq.amber .lab{color:var(--amber-700)}
+
+  /* idle float in scattered state */
+  @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(0,-9px)}}
+
+  /* hook text — hidden in scatter, revealed on collapse */
+  .hook{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%);width:66%;text-align:center;z-index:6;
+    opacity:0;transition:opacity .9s var(--ease) .5s, transform .9s var(--ease) .5s}
+  .hook::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150%;height:200%;z-index:-1;
+    background:radial-gradient(ellipse 58% 50% at 50% 50%, rgba(249,246,239,.92) 0%, rgba(249,246,239,.55) 46%, rgba(249,246,239,0) 74%)}
+  .eyebrow{font-family:var(--font-mono);font-size:.78vw;letter-spacing:.4em;text-transform:uppercase;color:var(--teal-900);margin-bottom:1.4em}
+  .hook h1{font-family:var(--font-display);font-weight:600;font-size:3.4vw;line-height:1.07;color:var(--l-ink);letter-spacing:-.01em}
+  .hook h1 .g{color:var(--amber-on-light)}
+
+  /* central anchor dot (the controlled centre) */
+  .centre{position:absolute;left:50%;top:50%;width:1.2vw;height:1.2vw;border-radius:26%;background:var(--amber-500);
+    transform:translate(-50%,-50%) scale(0);opacity:0;z-index:5;box-shadow:0 8px 20px rgba(191,122,40,.3);
+    transition:transform .8s var(--ease), opacity .6s var(--ease)}
+
+  .meta{position:absolute;bottom:3.4%;left:0;right:0;display:flex;justify-content:center;gap:1em;align-items:center;z-index:8;
+    font-family:var(--font-mono);font-size:.6vw;letter-spacing:.24em;text-transform:uppercase;color:var(--l-muted)}
+  .meta .dot{width:4px;height:4px;border-radius:50%;background:var(--teal-700)}
+
+  /* ===== COLLAPSED STATE ===== */
+  .stage.collapsed .sq{opacity:0}
+  .stage.collapsed .sq{animation:none !important}
+  .stage.collapsed .hook{opacity:1;transform:translate(-50%,-50%)}
+  .stage.collapsed .centre{opacity:0;transform:translate(-50%,-50%) scale(0)}
+  .stage.collapsed .navmeta{opacity:.25}
+  /* each squircle collapses toward centre — translate to middle + shrink */
+  .stage.collapsed .s1{transform:translate(var(--cx1),var(--cy1)) scale(.2)}
+  .stage.collapsed .s2{transform:translate(var(--cx2),var(--cy2)) scale(.2)}
+  .stage.collapsed .s3{transform:translate(var(--cx3),var(--cy3)) scale(.2)}
+  .stage.collapsed .s4{transform:translate(var(--cx4),var(--cy4)) scale(.2)}
+  .stage.collapsed .s5{transform:translate(var(--cx5),var(--cy5)) scale(.2)}
+  .stage.collapsed .s6{transform:translate(var(--cx6),var(--cy6)) scale(.2)}
+  .stage.collapsed .s7{transform:translate(var(--cx7),var(--cy7)) scale(.2)}
+  .stage.collapsed .s8{transform:translate(var(--cx8),var(--cy8)) scale(.2)}
+</style>
+</head>
+<body>
+  <div class="controls">
+    <span class="lbl">State:</span>
+    <button id="toScatter" class="alt">2 · Scattered</button>
+    <button id="toCollapse">3 · Collapse → hook</button>
+    <span class="lbl" id="state">showing: scattered</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+    <div class="nav">
+      <div class="brand">Itq<span class="ar">ā</span>n</div>
+      <div class="navmeta">The scattered RFQ world</div>
+    </div>
+
+    <div class="centre"></div>
+
+    <!-- scattered artifacts; --cx/--cy = vector toward centre for each -->
+    <div class="sq s1" style="left:11%;top:24%; --cx1:30vw; --cy1:14vw; animation:drift 7s var(--ease) infinite"><span class="gly">XLS</span><span class="lab">IF-25144</span></div>
+    <div class="sq s2" style="left:25%;top:62%; --cx2:16vw; --cy2:-12vw; animation:drift 7.6s var(--ease) .8s infinite"><span class="gly">MR</span><span class="lab">AYPP-6</span></div>
+    <div class="sq s3" style="left:42%;top:14%; --cx3:5vw; --cy3:18vw; animation:drift 6.6s var(--ease) 1.4s infinite"><span class="gly">BOQ</span><span class="lab">items</span></div>
+    <div class="sq s4" style="left:78%;top:22%; --cx4:-24vw; --cy4:13vw; animation:drift 7.2s var(--ease) .4s infinite"><span class="gly">@</span><span class="lab">intake</span></div>
+    <div class="sq s5" style="left:84%;top:58%; --cx5:-28vw; --cy5:-10vw; animation:drift 6.9s var(--ease) 1.1s infinite"><span class="gly">◷</span><span class="lab">deadline</span></div>
+    <div class="sq s6" style="left:64%;top:72%; --cx6:-15vw; --cy6:-22vw; animation:drift 7.4s var(--ease) 1.9s infinite"><span class="gly">RVL</span><span class="lab">vendors</span></div>
+    <div class="sq s7" style="left:6%;top:52%; --cx7:34vw; --cy7:-3vw; animation:drift 7.1s var(--ease) 2.3s infinite"><span class="gly">▦</span><span class="lab">dept</span></div>
+    <div class="sq amber s8" style="left:48%;top:80%; --cx8:1vw; --cy8:-30vw; animation:drift 6.8s var(--ease) .6s infinite"><span class="gly">✦</span><span class="lab">Copilot</span></div>
+
+    <div class="hook">
+      <div class="eyebrow">Industrial Intelligence</div>
+      <h1>The real RFQ risk is losing <span class="g">control</span><br>before the quotation is ready.</h1>
+    </div>
+
+    <div class="meta"><span>GHI · Albassam Group</span><span class="dot"></span><span>RFQ Lifecycle Intelligence</span></div>
+    <div class="grain"></div>
+  </div>
+
+  <script>
+    const stage=document.getElementById('stage'), st=document.getElementById('state');
+    const nm=stage.querySelector('.navmeta');
+    document.getElementById('toCollapse').onclick=()=>{stage.classList.add('collapsed');st.textContent='showing: collapsed + hook';nm.textContent='The controlled centre';};
+    document.getElementById('toScatter').onclick=()=>{stage.classList.remove('collapsed');st.textContent='showing: scattered';nm.textContent='The scattered RFQ world';};
+  </script>
+</body>
+</html>

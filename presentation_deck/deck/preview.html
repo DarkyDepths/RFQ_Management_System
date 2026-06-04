@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Itqān · Preview — single component at projector scale</title>
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    /* preview-only chrome — single full-viewport stage, no gallery */
+    body.preview { margin: 0; background: var(--l-bg); overflow: hidden; }
+    .preview-card {
+      position: fixed;
+      inset: 0;
+      container-type: inline-size;
+      overflow: hidden;
+      background: var(--l-bg);
+    }
+    .preview-card > .stage {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: top left;
+      /* Container-relative scale: 1920 canvas-px → 100% of card width.
+         scale() needs a unitless number, so we divide length/length: cqw/1920px.
+         At a 1280×720 viewport: cqw = 1280, scale = 0.667 (projector sim). */
+      transform: scale(calc(100cqw / 1920px));
+      background: var(--l-bg);
+    }
+    .preview-scene { display: none; position: absolute; inset: 0; }
+    .preview-scene.active { display: block; }
+  </style>
+</head>
+
+<body class="preview">
+
+<div class="preview-card">
+  <div class="stage">
+
+    <!-- ──────────────────────────────────────────────────────────
+         scene: agenda
+         ────────────────────────────────────────────────────────── -->
+    <div class="preview-scene" data-scene="agenda">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+
+      <div class="section-label">
+        <span class="bracket">[</span>
+        <span class="name">Agenda</span>
+        <span class="bracket">]</span>
+      </div>
+      <div class="section-meta-top amber">AGENDA · 07 STEPS</div>
+
+      <div class="slide-content below-chrome">
+        <div class="agenda-block">
+          <div class="agenda-eyebrow">The plan</div>
+          <h2 class="agenda-headline">
+            From scattered RFQs to <span class="accent">controlled</span>
+            intelligence — in seven steps.
+          </h2>
+
+          <ol class="chapter-index">
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">⌕</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Diagnosis</span>
+                <span class="chapter-title">General Context &amp; Audit Findings</span>
+              </div>
+              <span class="chapter-num">01</span>
+            </li>
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">⇄</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Pivot</span>
+                <span class="chapter-title">Strategic Direction</span>
+              </div>
+              <span class="chapter-num">02</span>
+            </li>
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">≣</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Backbone</span>
+                <span class="chapter-title">Operational Backbone</span>
+              </div>
+              <span class="chapter-num">03</span>
+            </li>
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">◆</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Evidence</span>
+                <span class="chapter-title">Intelligence Layer</span>
+              </div>
+              <span class="chapter-num">04</span>
+            </li>
+            <li class="chapter-row active">
+              <div class="chapter-icon squircle-tile amber"><span class="glyph">✦</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Boundary</span>
+                <span class="chapter-title">RFQ Copilot Layer</span>
+              </div>
+              <span class="chapter-num">05</span>
+            </li>
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">▦</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Experience</span>
+                <span class="chapter-title">Platform Experience</span>
+              </div>
+              <span class="chapter-num">06</span>
+            </li>
+            <li class="chapter-row">
+              <div class="chapter-icon squircle-tile teal"><span class="glyph">✓</span></div>
+              <div class="chapter-text">
+                <span class="chapter-label">The Proof</span>
+                <span class="chapter-title">Validation &amp; Perspectives</span>
+              </div>
+              <span class="chapter-num">07</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="meta">
+        <span>GHI · Albassam Group</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>RFQ Lifecycle Intelligence</span>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         scene: scrim — hook over luminous core
+         ────────────────────────────────────────────────────────── -->
+    <div class="preview-scene" data-scene="scrim">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+
+      <div class="brand">Itq<span class="ar">ā</span>n</div>
+
+      <div class="stage-center">
+        <div class="luminous-core lg">
+          <div class="sphere s1"></div>
+          <div class="sphere s2"></div>
+          <div class="sphere s3"></div>
+          <div class="sphere s4"></div>
+        </div>
+      </div>
+
+      <div class="scrim-scene">
+        <div class="scrim-pool"></div>
+        <h2 class="scrim-headline">
+          The real RFQ risk is losing <span class="accent">control</span><br>
+          before the quotation is ready.
+        </h2>
+      </div>
+
+      <div class="meta">
+        <span>GHI · Albassam Group</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>RFQ Lifecycle Intelligence</span>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         scene: lifecycle rail
+         ────────────────────────────────────────────────────────── -->
+    <div class="preview-scene" data-scene="lifecycle">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+
+      <div class="section-meta-top">Lifecycle rail · 06 stages</div>
+
+      <div class="slide-content center-band">
+        <div class="lifecycle-rail">
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">@</span><span class="tile-tag">Intake</span></div></div>
+          <div class="rail-link"></div>
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">⌕</span><span class="tile-tag">Review</span></div></div>
+          <div class="rail-link"></div>
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">∑</span><span class="tile-tag">Estimation</span></div></div>
+          <div class="rail-link"></div>
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">⟳</span><span class="tile-tag">Follow-up</span></div></div>
+          <div class="rail-link"></div>
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">↗</span><span class="tile-tag">Submission</span></div></div>
+          <div class="rail-link"></div>
+          <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">✓</span><span class="tile-tag">Outcome</span></div></div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <span>GHI · Albassam Group</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>RFQ Lifecycle Intelligence</span>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         scene: copilot path
+         ────────────────────────────────────────────────────────── -->
+    <div class="preview-scene" data-scene="copilot">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+
+      <div class="section-meta-top">Copilot · trust boundary</div>
+
+      <div class="slide-content below-chrome-deep">
+        <div class="copilot-path">
+          <div class="path-node node-1">
+            <span class="node-label">Contextual Entry</span>
+            <div class="squircle-tile teal"><span class="glyph">?</span><span class="tile-tag">Question</span></div>
+          </div>
+          <div class="path-arrow arrow-1"></div>
+          <div class="path-node node-2 active">
+            <span class="node-label">Path Selection</span>
+            <div class="squircle-tile amber"><span class="glyph">⊢</span><span class="tile-tag">Interpret</span></div>
+          </div>
+          <div class="path-arrow arrow-2"></div>
+          <div class="path-node node-3">
+            <span class="node-label">Evidence</span>
+            <div class="squircle-tile teal"><span class="glyph">◆</span><span class="tile-tag">Ground</span></div>
+          </div>
+          <div class="path-arrow arrow-3"></div>
+          <div class="path-node node-4 verified">
+            <span class="node-label">Verified Answer</span>
+            <div class="squircle-tile verified"><span class="glyph">✓</span><span class="tile-tag">Cited</span></div>
+          </div>
+
+          <div class="path-branch">
+            <span class="branch-label">Protected Exit</span>
+            <div class="squircle-tile risk"><span class="glyph">⊘</span><span class="tile-tag">Refuse</span></div>
+          </div>
+        </div>
+
+        <p class="path-caption">
+          <b>LLM understands language · the platform controls truth.</b>
+          When evidence is missing, the bounded path exits red — the Copilot
+          refuses rather than fabricates.
+        </p>
+      </div>
+
+      <div class="meta">
+        <span>GHI · Albassam Group</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>RFQ Lifecycle Intelligence</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Show the scene named in ?c=… (default: agenda).
+  const c = new URLSearchParams(location.search).get('c') || 'agenda';
+  const scene = document.querySelector(`.preview-scene[data-scene="${c}"]`);
+  if (scene) {
+    scene.classList.add('active');
+    document.title = `Itqān · preview — ${c}`;
+  } else {
+    document.body.innerHTML = `<pre style="padding:32px;font-family:var(--font-mono);">unknown scene: ${c}\nvalid: agenda · scrim · lifecycle · copilot</pre>`;
+  }
+</script>
+
+</body>
+</html>

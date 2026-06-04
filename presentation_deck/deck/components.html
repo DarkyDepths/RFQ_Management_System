@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Itqān · Phase B — Component library</title>
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/gallery.css">
+</head>
+
+<body class="gallery">
+
+<div class="gallery-shell">
+
+  <!-- ============================================================
+       Sticky TOC (left rail)
+       ============================================================ -->
+  <nav class="gallery-nav" aria-label="Component library — table of contents">
+    <div class="nav-eyebrow">Phase B · v0.5</div>
+    <h1>Itq<span class="ar">ā</span>n<br>Component library</h1>
+    <ol>
+      <li><a href="#chrome">      <span class="num">§5</span>    Frame chrome</a></li>
+      <li><a href="#squircle">    <span class="num">§6.1</span>  Squircle tile</a></li>
+      <li><a href="#bracket-cta"> <span class="num">§6.10</span> Bracket CTA</a></li>
+      <li><a href="#agenda">      <span class="num">§6.2</span>  Chapter-index (agenda)</a></li>
+      <li><a href="#scatter">     <span class="num">§6.4</span>  Scatter field</a></li>
+      <li><a href="#core">        <span class="num">§6.3</span>  Luminous core</a></li>
+      <li><a href="#scrim">       <span class="num">§6.5</span>  Legibility scrim</a></li>
+      <li><a href="#lifecycle">   <span class="num">§6.6</span>  Lifecycle rail</a></li>
+      <li><a href="#iso-stack">   <span class="num">§6.7</span>  Service-layer iso stack</a></li>
+      <li><a href="#copilot-path"><span class="num">§6.8</span>  Copilot path diagram</a></li>
+      <li><a href="#demo-frame">  <span class="num">§6.9</span>  Demo browser frame</a></li>
+    </ol>
+  </nav>
+
+  <main class="gallery-main">
+
+    <header class="gallery-header">
+      <div class="eyebrow">Component library · DESIGN.md v0.5 · phase B gate</div>
+      <h2>Eleven components, one primitive, no glow.</h2>
+      <p>
+        Every exhibit renders inside a 1920×1080 stage that's container-query-scaled
+        to fit its card — the same dimensions and proportions slides will use in
+        Phase&nbsp;C onwards. Inline styles are forbidden in slide markup; layout
+        lives in <code>base.css</code> slots (<code>.slide-content.*</code>,
+        <code>.section-meta-top</code>, <code>.slider-slot</code>) and in
+        <code>components.css</code> composition blocks
+        (<code>.section-opener-hero</code>, <code>.agenda-block</code>,
+        <code>.iso-stack-block</code>, <code>.path-caption</code>). Idle motion
+        (scatter drift, core breathe) is wired here; narrative motion is deferred.
+      </p>
+    </header>
+
+    <!-- ──────────────────────────────────────────────────────────
+         §5 · Frame chrome — section opener
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="chrome">
+      <div class="section-head">
+        <span class="section-num">§5</span>
+        <h3>Frame chrome — section-opener with subsection slider</h3>
+        <span class="section-meta">base.css</span>
+      </div>
+      <p class="section-notes">
+        Every slide is framed by four <b>corner ticks</b> and a <b>bottom meta</b>
+        line. Sections add a <b>top-left section label</b> with amber index, and a
+        <b>top-right subsection slider</b> showing position within the section.
+        When the slider sits in the top-right, the brand uses <code>.with-slider</code>
+        to clear room. Sample below: opening of Step 05 · <i>The Boundary</i>,
+        currently on subsection 2 of 4.
+      </p>
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-label">
+            <span class="bracket">[</span>
+            <span class="index">05</span>
+            <span>—</span>
+            <span class="name">The Boundary</span>
+            <span class="bracket">]</span>
+          </div>
+
+          <div class="brand with-slider">Itq<span class="ar">ā</span>n</div>
+
+          <div class="slider-slot">
+            <div class="subsection-slider">
+              <span class="slider-label"><span class="current">Path-Based Architecture</span></span>
+              <div class="slider-track">
+                <span class="seg done"></span>
+                <span class="seg current"></span>
+                <span class="seg"></span>
+                <span class="seg"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-content center-band">
+            <div class="section-opener-hero">
+              <div class="eyebrow">RFQ Copilot Layer</div>
+              <h2 class="hero-headline">
+                The LLM understands language.
+                <span class="accent">The platform controls truth.</span>
+              </h2>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.1 · Squircle tile — primitive
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="squircle">
+      <div class="section-head">
+        <span class="section-num">§6.1</span>
+        <h3>Squircle tile — the system primitive</h3>
+        <span class="section-meta">replaces the hexagon, everywhere</span>
+      </div>
+      <p class="section-notes">
+        Three variants: <b>teal</b> (default), <b>amber</b> (active / Copilot —
+        one per frame at most), <b>steel</b> (inert / structural). Plus the
+        semantic-set variants <b>verified</b> (teal-bordered) and <b>risk</b>
+        (red-bordered) used by the Copilot path. Four sizes:
+        <code>.sq-sm</code>, <code>.sq-md</code>, default, <code>.sq-lg</code>.
+      </p>
+
+      <div class="stage-card element">
+        <div class="squircle-tile teal">
+          <span class="glyph">XLS</span>
+          <span class="tile-tag">IF-25144</span>
+        </div>
+        <div class="squircle-tile amber">
+          <span class="glyph">✦</span>
+          <span class="tile-tag">Copilot</span>
+        </div>
+        <div class="squircle-tile steel">
+          <span class="glyph">▦</span>
+          <span class="tile-tag">Service</span>
+        </div>
+        <div class="squircle-tile verified">
+          <span class="glyph">✓</span>
+          <span class="tile-tag">Cited</span>
+        </div>
+        <div class="squircle-tile risk">
+          <span class="glyph">⊘</span>
+          <span class="tile-tag">Refuse</span>
+        </div>
+        <span class="element-caption">variants · teal · amber · steel · verified · risk</span>
+      </div>
+
+      <div class="stage-card element">
+        <div class="squircle-tile teal sq-sm"><span class="glyph">⌕</span><span class="tile-tag">sm</span></div>
+        <div class="squircle-tile teal sq-md"><span class="glyph">⌕</span><span class="tile-tag">md</span></div>
+        <div class="squircle-tile teal"      ><span class="glyph">⌕</span><span class="tile-tag">default</span></div>
+        <div class="squircle-tile teal sq-lg"><span class="glyph">⌕</span><span class="tile-tag">lg</span></div>
+        <span class="element-caption">sizes · 96×104 / 140×152 / 200×220 / 288×312 (all tags at the 20px floor)</span>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.10 · Bracket CTA
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="bracket-cta">
+      <div class="section-head">
+        <span class="section-num">§6.10</span>
+        <h3>Bracket CTA — text + four amber corner marks</h3>
+        <span class="section-meta">identity accent, used sparingly</span>
+      </div>
+      <p class="section-notes">
+        The brackets are the framing grammar of the system — calm, non-sci-fi
+        alternative to a HUD. Reserved for actual call-to-action moments
+        (the hook close, the demo invitation). <b>No glow.</b>
+      </p>
+
+      <div class="stage-card element">
+        <a class="bracket-cta">
+          <span class="br tl"></span><span class="br tr"></span>
+          <span class="br bl"></span><span class="br br"></span>
+          See how Itqān holds control
+        </a>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.2 · Chapter-index — the agenda
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="agenda">
+      <div class="section-head">
+        <span class="section-num">§6.2</span>
+        <h3>Chapter-index — the seven-step agenda</h3>
+        <span class="section-meta">label above title · title dominates · never inverted</span>
+      </div>
+      <p class="section-notes">
+        Seven horizontal rows on light. Small mono <b>thematic label</b> sits
+        ABOVE the large display <b>section title</b> — the label is the
+        narrative cue, the title is the agenda item. Subtle amber emphasis on
+        step 05 only. The isometric stack was rejected for this; it lives on
+        §6.7 for the service-layer diagram.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-label">
+            <span class="bracket">[</span>
+            <span class="name">Agenda</span>
+            <span class="bracket">]</span>
+          </div>
+          <div class="section-meta-top amber">AGENDA · 07 STEPS</div>
+
+          <div class="slide-content below-chrome">
+            <div class="agenda-block">
+              <div class="agenda-eyebrow">The plan</div>
+              <h2 class="agenda-headline">
+                From scattered RFQs to <span class="accent">controlled</span>
+                intelligence — in seven steps.
+              </h2>
+
+              <ol class="chapter-index">
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">⌕</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Diagnosis</span>
+                    <span class="chapter-title">General Context &amp; Audit Findings</span>
+                  </div>
+                  <span class="chapter-num">01</span>
+                </li>
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">⇄</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Pivot</span>
+                    <span class="chapter-title">Strategic Direction</span>
+                  </div>
+                  <span class="chapter-num">02</span>
+                </li>
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">≣</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Backbone</span>
+                    <span class="chapter-title">Operational Backbone</span>
+                  </div>
+                  <span class="chapter-num">03</span>
+                </li>
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">◆</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Evidence</span>
+                    <span class="chapter-title">Intelligence Layer</span>
+                  </div>
+                  <span class="chapter-num">04</span>
+                </li>
+                <li class="chapter-row active">
+                  <div class="chapter-icon squircle-tile amber"><span class="glyph">✦</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Boundary</span>
+                    <span class="chapter-title">RFQ Copilot Layer</span>
+                  </div>
+                  <span class="chapter-num">05</span>
+                </li>
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">▦</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Experience</span>
+                    <span class="chapter-title">Platform Experience</span>
+                  </div>
+                  <span class="chapter-num">06</span>
+                </li>
+                <li class="chapter-row">
+                  <div class="chapter-icon squircle-tile teal"><span class="glyph">✓</span></div>
+                  <div class="chapter-text">
+                    <span class="chapter-label">The Proof</span>
+                    <span class="chapter-title">Validation &amp; Perspectives</span>
+                  </div>
+                  <span class="chapter-num">07</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.4 · Scatter field
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="scatter">
+      <div class="section-head">
+        <span class="section-num">§6.4</span>
+        <h3>Scatter field — opening atmosphere</h3>
+        <span class="section-meta">8 artifacts · gentle stagger float</span>
+      </div>
+      <p class="section-notes">
+        Eight squircle artifacts plus a single amber Copilot tile float on
+        light with a 7s stagger drift.
+        <span class="tag motion">trigger motion deferred</span>
+        Phase C wires the gravity collapse (slide 0.3) that resolves the whole
+        field inward and reveals the hook phrase.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-meta-top">The scattered RFQ world</div>
+
+          <div class="scatter-field">
+            <div class="squircle-tile teal  scatter-1"><span class="glyph">XLS</span><span class="tile-tag">IF-25144</span></div>
+            <div class="squircle-tile teal  scatter-2"><span class="glyph">MR</span> <span class="tile-tag">AYPP-6</span></div>
+            <div class="squircle-tile teal  scatter-3"><span class="glyph">BOQ</span><span class="tile-tag">items</span></div>
+            <div class="squircle-tile teal  scatter-4"><span class="glyph">@</span>  <span class="tile-tag">intake</span></div>
+            <div class="squircle-tile teal  scatter-5"><span class="glyph">◷</span>  <span class="tile-tag">deadline</span></div>
+            <div class="squircle-tile teal  scatter-6"><span class="glyph">RVL</span><span class="tile-tag">vendors</span></div>
+            <div class="squircle-tile teal  scatter-7"><span class="glyph">▦</span>  <span class="tile-tag">dept</span></div>
+            <div class="squircle-tile amber scatter-8"><span class="glyph">✦</span>  <span class="tile-tag">Copilot</span></div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.3 · Luminous gradient core (placeholder)
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="core">
+      <div class="section-head">
+        <span class="section-num">§6.3</span>
+        <h3>Luminous gradient core</h3>
+        <span class="section-meta">placeholder · pre-render before Phase E</span>
+      </div>
+      <p class="section-notes">
+        Cluster of light orbs (white→amber, white→teal radial gradients) with
+        inner highlight and soft coloured shadow. Idle "breathe" pulse on the
+        ambient halo. <span class="tag placeholder">placeholder · live CSS</span>
+        DESIGN.md §9 mandates a single pre-rendered PNG/MP4 (or one Spline embed)
+        in production — many live gradients are off-limits on the critical path.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="stage-center">
+            <div class="luminous-core">
+              <div class="sphere s1"></div>
+              <div class="sphere s2"></div>
+              <div class="sphere s3"></div>
+              <div class="sphere s4"></div>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.5 · Legibility scrim
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="scrim">
+      <div class="section-head">
+        <span class="section-num">§6.5</span>
+        <h3>Legibility scrim — mandatory under text-over-visual</h3>
+        <span class="section-meta">--scrim radial · 86% → 0%</span>
+      </div>
+      <p class="section-notes">
+        A soft radial pool of <code>--l-bg</code> at ~86% centre fading to 0% at
+        the edge. Sits between the visual (orbs / scatter) and the headline,
+        guaranteeing contrast on a weak projector. <b>Required, not optional.</b>
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="brand">Itq<span class="ar">ā</span>n</div>
+
+          <div class="stage-center">
+            <div class="luminous-core lg">
+              <div class="sphere s1"></div>
+              <div class="sphere s2"></div>
+              <div class="sphere s3"></div>
+              <div class="sphere s4"></div>
+            </div>
+          </div>
+
+          <div class="scrim-scene">
+            <div class="scrim-pool"></div>
+            <h2 class="scrim-headline">
+              The real RFQ risk is losing <span class="accent">control</span><br>
+              before the quotation is ready.
+            </h2>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.6 · Lifecycle rail
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="lifecycle">
+      <div class="section-head">
+        <span class="section-num">§6.6</span>
+        <h3>Lifecycle rail — intake → … → outcome</h3>
+        <span class="section-meta">six stages · sequential connect on the slide</span>
+      </div>
+      <p class="section-notes">
+        Six squircle stage nodes connected by chevron-tipped hairlines.
+        <span class="tag motion">trigger motion deferred</span>
+        Phase D (Step 03 · The Backbone) wires the sequential connect — each
+        link draws in as the speaker walks the lifecycle.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-meta-top">Lifecycle rail · 06 stages</div>
+
+          <div class="slide-content center-band">
+            <div class="lifecycle-rail">
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">@</span><span class="tile-tag">Intake</span></div></div>
+              <div class="rail-link"></div>
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">⌕</span><span class="tile-tag">Review</span></div></div>
+              <div class="rail-link"></div>
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">∑</span><span class="tile-tag">Estimation</span></div></div>
+              <div class="rail-link"></div>
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">⟳</span><span class="tile-tag">Follow-up</span></div></div>
+              <div class="rail-link"></div>
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">↗</span><span class="tile-tag">Submission</span></div></div>
+              <div class="rail-link"></div>
+              <div class="rail-node"><div class="squircle-tile teal"><span class="glyph">✓</span><span class="tile-tag">Outcome</span></div></div>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.7 · Service-layer iso stack (DIAGRAMS ONLY)
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="iso-stack">
+      <div class="section-head">
+        <span class="section-num">§6.7</span>
+        <h3>Service-layer iso stack — microservice map</h3>
+        <span class="section-meta">DIAGRAMS only · NOT the agenda</span>
+      </div>
+      <p class="section-notes">
+        Stacked squircle tiles with progressive offset, suggesting depth without
+        a real 3D transform. Steel = structure; amber/teal = active/validated.
+        Layer positions (<code>.layer-1</code>…<code>.layer-4</code>) and the
+        side-by-side block layout (<code>.iso-stack-block</code> +
+        <code>.iso-stack-labels</code>) all live in CSS.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-meta-top">Platform · 04 microservices</div>
+
+          <div class="slide-content below-chrome-mid">
+            <div class="iso-stack-block">
+              <div class="iso-stack service-stack">
+                <div class="iso-row layer-1">
+                  <div class="iso-tile">
+                    <div class="squircle-tile steel">
+                      <span class="glyph">≣</span>
+                      <span class="tile-tag">manager_ms</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="iso-row layer-2">
+                  <div class="iso-tile">
+                    <div class="squircle-tile steel">
+                      <span class="glyph">◆</span>
+                      <span class="tile-tag">intelligence</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="iso-row layer-3">
+                  <div class="iso-tile">
+                    <div class="squircle-tile amber">
+                      <span class="glyph">✦</span>
+                      <span class="tile-tag">copilot_ms</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="iso-row layer-4">
+                  <div class="iso-tile">
+                    <div class="squircle-tile steel">
+                      <span class="glyph">▦</span>
+                      <span class="tile-tag">ui_ms</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="iso-stack-labels">
+                <div class="label-row">
+                  <span class="name">rfq_ui_ms</span>
+                  <span class="sub">Role-based experience</span>
+                </div>
+                <div class="label-row">
+                  <span class="name active">rfq_copilot_ms</span>
+                  <span class="sub">Bounded AI · cited answers</span>
+                </div>
+                <div class="label-row">
+                  <span class="name">rfq_intelligence_ms</span>
+                  <span class="sub">Structured evidence</span>
+                </div>
+                <div class="label-row">
+                  <span class="name">rfq_manager_ms</span>
+                  <span class="sub">Operational backbone</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.8 · Copilot path diagram (trust boundary + red exit)
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="copilot-path">
+      <div class="section-head">
+        <span class="section-num">§6.8</span>
+        <h3>Copilot path diagram — trust boundary with red protected exit</h3>
+        <span class="section-meta">mono ChainGPT-style chrome ALLOWED here only</span>
+      </div>
+      <p class="section-notes">
+        Contextual entry → path selection → evidence retrieval → verified answer,
+        with the
+        <b style="color:var(--sem-risk)">red protected-exit branch</b>
+        dropping vertically from the Evidence node (the trust fork). Grid
+        placement is explicit via <code>.node-1</code> … <code>.node-4</code>
+        and <code>.arrow-1</code> … <code>.arrow-3</code>; the branch sits in
+        grid row 2 under node-3. All tags at the 20px floor — no overrides.
+        <span class="tag motion">trigger motion deferred</span>
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-meta-top">Copilot · trust boundary</div>
+
+          <div class="slide-content below-chrome-deep">
+            <div class="copilot-path">
+              <div class="path-node node-1">
+                <span class="node-label">Contextual Entry</span>
+                <div class="squircle-tile teal"><span class="glyph">?</span><span class="tile-tag">Question</span></div>
+              </div>
+              <div class="path-arrow arrow-1"></div>
+              <div class="path-node node-2 active">
+                <span class="node-label">Path Selection</span>
+                <div class="squircle-tile amber"><span class="glyph">⊢</span><span class="tile-tag">Interpret</span></div>
+              </div>
+              <div class="path-arrow arrow-2"></div>
+              <div class="path-node node-3">
+                <span class="node-label">Evidence</span>
+                <div class="squircle-tile teal"><span class="glyph">◆</span><span class="tile-tag">Ground</span></div>
+              </div>
+              <div class="path-arrow arrow-3"></div>
+              <div class="path-node node-4 verified">
+                <span class="node-label">Verified Answer</span>
+                <div class="squircle-tile verified"><span class="glyph">✓</span><span class="tile-tag">Cited</span></div>
+              </div>
+
+              <div class="path-branch">
+                <span class="branch-label">Protected Exit</span>
+                <div class="squircle-tile risk"><span class="glyph">⊘</span><span class="tile-tag">Refuse</span></div>
+              </div>
+            </div>
+
+            <p class="path-caption">
+              <b>LLM understands language · the platform controls truth.</b>
+              When evidence is missing, the bounded path exits red — the Copilot
+              refuses rather than fabricates.
+            </p>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ──────────────────────────────────────────────────────────
+         §6.9 · Demo browser frame
+         ────────────────────────────────────────────────────────── -->
+    <section class="component-section" id="demo-frame">
+      <div class="section-head">
+        <span class="section-num">§6.9</span>
+        <h3>Demo browser frame — embedded MP4 holder</h3>
+        <span class="section-meta">amber edge · soft shadow · no live app</span>
+      </div>
+      <p class="section-notes">
+        Browser-chrome window with traffic-light dots, a mono URL label, and
+        an amber 1.5px edge. The recorded 5-minute MP4 plays inside.
+        <b>Never a live app dependency in the talk</b> — DESIGN.md §9.
+      </p>
+
+      <div class="stage-card">
+        <div class="stage">
+          <span class="tick tl"></span><span class="tick tr"></span>
+          <span class="tick bl"></span><span class="tick br"></span>
+
+          <div class="section-meta-top">Demo · 05 min recorded</div>
+
+          <div class="slide-content demo-frame-slot">
+            <div class="demo-frame">
+              <div class="demo-window">
+                <div class="demo-chrome">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span class="demo-url">itqan · rfq_ui_ms · SA-AYPP-6-MR-022</span>
+                </div>
+                <div class="demo-body">
+                  <span class="placeholder">DEMO VIDEO · MP4 EMBED</span>
+                </div>
+              </div>
+              <p class="demo-caption">Recorded · sandwich: success → safety → success</p>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>GHI · Albassam Group</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>RFQ Lifecycle Intelligence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         Footer
+         ============================================================ -->
+    <footer class="gallery-footer">
+      <span>Itqān PFE defense · Phase B · component library · DESIGN.md v0.5</span>
+      <span>gate: review then proceed to Phase C <span class="dot"></span> opening + 5-slide proto</span>
+    </footer>
+
+  </main>
+
+</div>
+
+</body>
+</html>

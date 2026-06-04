@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Itqān PFE Defense — Presentation Blueprint v2.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+  :root{
+    --amber-500:#e8a04c; --amber-700:#bf7a28; --amber-on-light:#a06a18;
+    --teal-700:#1f9682; --teal-900:#0e4d43;
+    --l-bg:#f6f1e8; --l-surface:#fffdf8; --l-ink:#1c1813; --l-muted:#6b6256;
+    --l-hair:rgba(28,24,19,.12); --l-hair-strong:rgba(28,24,19,.20);
+    --fd:'Space Grotesk',sans-serif; --fb:'Inter',sans-serif; --fm:'IBM Plex Mono',monospace;
+    /* per-step colors */
+    --s1:#6b7b95; --s2:#bf7a28; --s3:#1f9682; --s4:#7b6b95; --s5:#4a8567; --s6:#5b7a8d; --s7:#8a8a8a;
+    --open:#c2a26a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--l-bg);color:var(--l-ink);font-family:var(--fb);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .container{max-width:1240px;margin:0 auto;padding:3rem 2rem 4rem}
+  header.top{border-bottom:1px solid var(--l-hair);padding-bottom:1.8rem;margin-bottom:2.4rem}
+  .eyebrow{font-family:var(--fm);font-size:.8rem;text-transform:uppercase;letter-spacing:.28em;color:var(--amber-on-light);margin-bottom:.9rem}
+  h1.title{font-family:var(--fd);font-weight:600;font-size:1.9rem;letter-spacing:-.01em;line-height:1.15}
+  h1.title .ar{color:var(--amber-on-light)}
+  .subtitle{color:var(--l-muted);margin-top:.7rem;font-size:1rem}
+  .facts{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.3rem}
+  .fact{font-family:var(--fm);font-size:.78rem;letter-spacing:.04em;background:var(--l-surface);border:1px solid var(--l-hair);border-radius:6px;padding:.4rem .7rem;color:var(--l-muted)}
+  .fact b{color:var(--l-ink);font-weight:500}
+
+  h2.sec{font-family:var(--fd);font-weight:600;font-size:1.25rem;margin:2.6rem 0 1rem;display:flex;align-items:baseline;gap:.7rem}
+  h2.sec .n{font-family:var(--fm);font-size:.8rem;color:var(--amber-on-light);letter-spacing:.1em}
+  .lead{color:var(--l-muted);font-size:.95rem;margin-bottom:1.2rem;max-width:80ch}
+
+  /* hook callout */
+  .hook{background:linear-gradient(135deg,#fff8ee,#fdeed7);border:1px solid rgba(191,122,40,.3);border-left:4px solid var(--amber-500);border-radius:10px;padding:1.2rem 1.4rem;margin:1.2rem 0}
+  .hook .lab{font-family:var(--fm);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber-on-light);margin-bottom:.5rem}
+  .hook .q{font-family:var(--fd);font-weight:600;font-size:1.45rem;line-height:1.2;color:var(--l-ink)}
+  .hook .q .g{color:var(--amber-on-light)}
+  .hook .anchors{margin-top:.9rem;font-size:.85rem;color:var(--l-muted)}
+  .hook .anchors b{color:var(--l-ink)}
+
+  /* timeline bar */
+  .timeline{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--l-hair);margin:1rem 0 .4rem;height:46px}
+  .timeline .seg{display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:.72rem;color:#fff;font-weight:500;text-align:center;padding:0 .3rem}
+  .tl-scale{display:flex;justify-content:space-between;font-family:var(--fm);font-size:.7rem;color:var(--l-muted);margin-bottom:1.6rem}
+
+  /* step cards */
+  .grid{display:flex;flex-direction:column;gap:.7rem}
+  .step{background:var(--l-surface);border:1px solid var(--l-hair);border-radius:10px;padding:1.1rem 1.3rem;border-left:4px solid var(--accent,#ccc)}
+  .step .hd{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.5rem}
+  .step .lab{font-family:var(--fm);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+  .step .ttl{font-family:var(--fd);font-weight:600;font-size:1.15rem}
+  .step .time{margin-left:auto;font-family:var(--fm);font-size:.78rem;color:var(--l-muted);background:var(--l-bg);padding:.25rem .6rem;border-radius:5px}
+  .step .role{color:var(--l-muted);font-size:.9rem;margin-bottom:.6rem}
+  .step .subs{display:flex;flex-wrap:wrap;gap:.4rem}
+  .step .sub{font-family:var(--fm);font-size:.74rem;background:var(--l-bg);border:1px solid var(--l-hair);border-radius:5px;padding:.3rem .6rem;color:var(--l-ink)}
+  .step .pts{margin:.6rem 0 0;padding-left:1.1rem}
+  .step .pts li{font-size:.88rem;margin:.25rem 0;color:var(--l-ink)}
+  .step .demo{display:inline-block;margin-top:.6rem;font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-900);background:rgba(31,150,130,.1);border:1px solid rgba(31,150,130,.3);border-radius:5px;padding:.3rem .6rem}
+
+  .openblock{background:linear-gradient(135deg,#fbf6ec,#f6efe2);border:1px dashed rgba(191,122,40,.4);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:.7rem}
+  .openblock .lab{font-family:var(--fm);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber-on-light);margin-bottom:.7rem}
+  .openrow{display:flex;gap:.8rem;align-items:baseline;padding:.4rem 0;border-top:1px solid rgba(28,24,19,.07)}
+  .openrow:first-of-type{border-top:0}
+  .openrow .k{font-family:var(--fm);font-size:.78rem;color:var(--amber-on-light);min-width:2.4rem}
+  .openrow .t{font-family:var(--fd);font-weight:500;font-size:1rem;min-width:15rem}
+  .openrow .d{color:var(--l-muted);font-size:.88rem}
+
+  .note{background:#fff;border:1px solid var(--l-hair);border-radius:10px;padding:1rem 1.2rem;margin:.8rem 0;font-size:.9rem;color:var(--l-muted)}
+  .note b{color:var(--l-ink)}
+  footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--l-hair);font-family:var(--fm);font-size:.78rem;color:var(--l-muted)}
+  .pill{display:inline-block;font-family:var(--fm);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .55rem;border-radius:5px;background:rgba(74,133,103,.12);color:#356b52;border:1px solid rgba(74,133,103,.3)}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="top">
+    <div class="eyebrow">Presentation Blueprint · v2.0 · narrative + timing contract</div>
+    <h1 class="title">Itq<span class="ar">ā</span>n: An RFQ Lifecycle Intelligence Platform with a Bounded AI Copilot</h1>
+    <div class="subtitle">PFE Defense — narrative, timing, and slide skeleton. Pairs with DESIGN.md (visual contract) and BUILD_BRIEF.md.</div>
+    <div class="facts">
+      <span class="fact"><b>20 min</b> main presentation</span>
+      <span class="fact"><b>+ separate</b> Q&amp;A (not in the 20)</span>
+      <span class="fact"><b>Recorded 5-min</b> demo, inside the 20</span>
+      <span class="fact">English slides</span>
+      <span class="fact">3 actors: <b>Estimation Manager · Estimator · Executive</b></span>
+      <span class="fact">Itqān = brand · <b>rfq_*_ms</b> = services</span>
+    </div>
+  </header>
+
+  <!-- THE RECURRING HOOK -->
+  <h2 class="sec"><span class="n">RED THREAD</span> The recurring hook — anchored 3×</h2>
+  <div class="hook">
+    <div class="lab">Stated verbatim on the hook slide · echoed twice more</div>
+    <div class="q">The real RFQ risk is losing <span class="g">control</span> before the quotation is ready.</div>
+    <div class="anchors">
+      Anchored as an arc — not just repeated:<br>
+      <b>1 · Open (0.3)</b> stated as the problem &nbsp;→&nbsp; <b>2 · Backbone→Copilot transition</b> shown being solved (the platform holds control) &nbsp;→&nbsp; <b>3 · Close (07)</b> landed as resolved ("Itqān keeps control").<br>
+      Descriptive spine (organises the journey, not a competing slogan): <i>"from scattered RFQs → to controlled intelligence"</i> — also the agenda headline.
+    </div>
+  </div>
+
+  <!-- LEVEL 1 -->
+  <h2 class="sec"><span class="n">LEVEL 1</span> High-level flow — 20 minutes at a glance</h2>
+  <p class="lead">Opening sequence (0.1–0.4) primes and routes the jury, then seven content steps. The recorded demo sits inside Step 05. Times include a small transition buffer.</p>
+  <div class="timeline">
+    <div class="seg" style="background:var(--open);flex:2.0">Opening 2:00</div>
+    <div class="seg" style="background:var(--s1);flex:3.0">01 Diagnosis 3:00</div>
+    <div class="seg" style="background:var(--s2);flex:1.3">02 Pivot 1:15</div>
+    <div class="seg" style="background:var(--s3);flex:2.0">03 Backbone 2:00</div>
+    <div class="seg" style="background:var(--s4);flex:1.3">04 Evidence 1:15</div>
+    <div class="seg" style="background:var(--s5);flex:6.5">05 Copilot + Demo 6:30</div>
+    <div class="seg" style="background:var(--s6);flex:1.7">06 Experience 1:45</div>
+    <div class="seg" style="background:var(--s7);flex:2.0">07 Proof 2:00</div>
+  </div>
+  <div class="tl-scale"><span>0:00</span><span>5:00</span><span>10:00</span><span>15:00</span><span>20:00</span></div>
+
+  <!-- OPENING SEQUENCE -->
+  <h2 class="sec"><span class="n">OPENING</span> Sequence 0.1 – 0.4 (before the agenda)</h2>
+  <p class="lead">Academic credibility first, emotion second, thesis third, structure fourth. Keynote energy without losing defense discipline.</p>
+  <div class="openblock">
+    <div class="lab">Opening · ~2:00 total</div>
+    <div class="openrow"><span class="k">0.1</span><span class="t">Formal Title Slide</span><span class="d">Academic opening: full title, student, jury, supervisors, university, host company, date. Clean, no cinematic effect yet.</span></div>
+    <div class="openrow"><span class="k">0.2</span><span class="t">Animated Scattered RFQ World</span><span class="d">Keynote animation: RFQ files, emails, Excel, deadlines, departments, dashboards, AI fragments floating/moving. The feeling of scattered lifecycle complexity. Almost no words.</span></div>
+    <div class="openrow"><span class="k">0.3</span><span class="t">Big Hook Phrase</span><span class="d">Gravity-collapse: the scattered world resolves to a controlled centre and the hook lands. Spoken explanation is longer; the slide stays short. <b>Anchor #1.</b></span></div>
+    <div class="openrow"><span class="k">0.4</span><span class="t">Agenda — seven steps</span><span class="d">"From scattered RFQs to controlled intelligence — in seven steps." Chapter-index layout. Label `AGENDA · 07 STEPS`.</span></div>
+  </div>
+
+  <!-- LEVEL 2 — seven steps -->
+  <h2 class="sec"><span class="n">LEVEL 2</span> The seven steps — objectives, subsections, key points</h2>
+  <div class="grid">
+
+    <div class="step" style="--accent:var(--s1)">
+      <div class="hd"><span class="lab">The Diagnosis</span><span class="ttl">General Context &amp; Audit Findings</span><span class="time">3:00</span></div>
+      <div class="role">Make the jury care: establish that Itqān addresses a real industrial lifecycle-control problem at GHI.</div>
+      <div class="subs"><span class="sub">Industrial RFQ Lifecycle</span><span class="sub">Audit Approach</span><span class="sub">Lifecycle Control Gaps</span></div>
+      <ul class="pts"><li>An RFQ is a multi-department, multi-document lifecycle — not CRUD, not a chatbot.</li><li>The three gaps: visibility, coordination, learning.</li><li>Audit framing: the deeper issue is control lost <i>before</i> the quotation is finalised.</li></ul>
+    </div>
+
+    <div class="step" style="--accent:var(--s2)">
+      <div class="hd"><span class="lab">The Pivot</span><span class="ttl">Strategic Direction</span><span class="time">1:15</span></div>
+      <div class="role">Show engineering judgment: BOQ automation rejected, lifecycle intelligence chosen.</div>
+      <div class="subs"><span class="sub">BOQ Automation Limits</span><span class="sub">Pivot Decision</span><span class="sub">Itqān Platform Vision</span></div>
+      <ul class="pts"><li>Initial idea: BOQ automation — found expertise-driven, interconnected, risky.</li><li>Pivot: optimise the lifecycle around estimation instead.</li><li>Maturity moment: knowing what <i>not</i> to automate.</li></ul>
+    </div>
+
+    <div class="step" style="--accent:var(--s3)">
+      <div class="hd"><span class="lab">The Backbone</span><span class="ttl">Operational Backbone</span><span class="time">2:00</span></div>
+      <div class="role">Prove engineering depth: a real service with clear ownership of truth, not a fragile prototype.</div>
+      <div class="subs"><span class="sub">Lifecycle Model</span><span class="sub">Manager Implementation</span><span class="sub">Reliability &amp; Readiness</span><span class="sub">Demo Glimpse</span></div>
+      <ul class="pts"><li>Lifecycle stages → rfq_manager_ms as the stable backbone.</li><li>Proof axes: contracts · workflow correctness · integration readiness · testability.</li><li>Residual items named as <i>hardening directions</i> (canon phrasing), not gaps.</li></ul>
+      <span class="demo">Demo glimpse</span>
+    </div>
+
+    <div class="step" style="--accent:var(--s4)">
+      <div class="hd"><span class="lab">The Evidence</span><span class="ttl">Intelligence Layer</span><span class="time">1:15</span></div>
+      <div class="role">Establish that the platform produces structured, grounded evidence — the source the Copilot reads.</div>
+      <div class="subs"><span class="sub">Structured Evidence</span><span class="sub">Future Insights</span></div>
+      <ul class="pts"><li>Raw artifacts (IF-25144, MR package) → structured evidence in rfq_intelligence_ms.</li><li>Honest cold-start scoping: one golden reference pair, no overclaiming coverage.</li><li>Future insight signals framed as direction, not delivered claims.</li></ul>
+    </div>
+
+    <div class="step" style="--accent:var(--s5)">
+      <div class="hd"><span class="lab">The Boundary</span><span class="ttl">RFQ Copilot Layer</span><span class="time">6:30 · incl. demo</span></div>
+      <div class="role">Technical climax: build the bounded-AI case, then prove it with the recorded demo.</div>
+      <div class="subs"><span class="sub">Contextual Entry</span><span class="sub">Path-Based Architecture</span><span class="sub">Protected Exit Paths</span><span class="sub">Demo Glimpse</span></div>
+      <ul class="pts"><li>Why bounded: generic-chatbot risks — hallucination, context-mixing, leakage.</li><li>Trust boundary: Interpret → Ground → Verify. "LLM understands language; the platform controls truth."</li><li>Protected exit paths: safe behaviour under missing evidence (red branch).</li><li><b>Anchor #2</b> in the Backbone→Copilot transition: the platform <i>holds</i> control.</li></ul>
+      <span class="demo">Recorded · 5 min · sandwich: success → safety → success</span>
+    </div>
+
+    <div class="step" style="--accent:var(--s6)">
+      <div class="hd"><span class="lab">The Experience</span><span class="ttl">Platform Experience</span><span class="time">1:45</span></div>
+      <div class="role">Show the integrated product: role-based experience across the three actors.</div>
+      <div class="subs"><span class="sub">UI Microservice</span><span class="sub">Role-Based Experience</span><span class="sub">Integrated Walkthrough</span></div>
+      <ul class="pts"><li>rfq_ui_ms ties the services into one workspace.</li><li>Estimation Manager · Estimator · Executive each see a fitted view.</li><li>Integrated walkthrough: the lifecycle + Copilot as one experience.</li></ul>
+    </div>
+
+    <div class="step" style="--accent:var(--s7)">
+      <div class="hd"><span class="lab">The Proof</span><span class="ttl">Validation &amp; Perspectives</span><span class="time">2:00</span></div>
+      <div class="role">Close honestly: prove credibility first, then point to the future.</div>
+      <div class="subs"><span class="sub">Validation Evidence</span><span class="sub">Current Limits</span><span class="sub">Future Work</span></div>
+      <ul class="pts"><li>Evidence classes: manager tests · Copilot tests · anti-drift · integration · pain-mapping.</li><li>Honest line: no win-rate claim without deployment data.</li><li>Limits + perspectives + residual hardening directions.</li><li><b>Anchor #3</b>: the hook returns, resolved — "Itqān keeps control." Thank the jury.</li></ul>
+    </div>
+
+  </div>
+
+  <div class="note"><b>Legibility mandate (from DESIGN.md v0.4):</b> datashow in a difficult-light room — every word legible from the back, no text below the ~16–18px floor, full-frame confident layouts. This governs every slide built from this blueprint.</div>
+
+  <div class="note"><span class="pill">After this blueprint</span> &nbsp; Per-slide content drafting → speaker notes → demo recording shot list → Q&amp;A backup deck. Visual system already frozen in DESIGN.md; build sequence in BUILD_BRIEF.md.</div>
+
+  <footer>Itqān PFE Defense · Presentation Blueprint v2.0 · narrative + timing contract — pairs with DESIGN.md (visual) and BUILD_BRIEF.md (execution). Supersedes the six-block v1.1.</footer>
+
+</div>
+</body>
+</html>

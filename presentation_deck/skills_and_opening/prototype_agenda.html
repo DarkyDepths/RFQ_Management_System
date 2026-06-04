@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Itqān — Agenda · chapter index (DESIGN.md v0.2)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+  :root{
+    --amber-500:#e8a04c; --amber-700:#bf7a28; --amber-on-light:#a06a18;
+    --teal-700:#1f9682; --teal-900:#0e4d43;
+    --l-bg:#f6f1e8; --l-surface:#fffdf8; --l-ink:#1c1813; --l-muted:#6b6256;
+    --l-hair:rgba(28,24,19,.12); --l-hair-strong:rgba(28,24,19,.22);
+    --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#e9e4d8;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  .stage{position:relative;width:min(100vw,calc(100vh*16/9));height:min(100vh,calc(100vw*9/16));overflow:hidden;
+    background:
+      radial-gradient(48% 50% at 100% 0%, rgba(232,160,76,.16) 0%, transparent 56%),
+      radial-gradient(52% 56% at 0% 100%, rgba(53,208,186,.15) 0%, transparent 60%),
+      linear-gradient(135deg,#f9f6ef 0%,#f3efe6 52%,#f6f1e8 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.022;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .tick{position:absolute;width:20px;height:20px;border-color:var(--l-hair-strong);border-style:solid;border-width:0;z-index:6}
+  .tick.tl{top:22px;left:22px;border-top-width:1px;border-left-width:1px}
+  .tick.tr{top:22px;right:22px;border-top-width:1px;border-right-width:1px}
+  .tick.bl{bottom:22px;left:22px;border-bottom-width:1px;border-left-width:1px}
+  .tick.br{bottom:22px;right:22px;border-bottom-width:1px;border-right-width:1px}
+
+  .nav{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:3.2% 4.5% 0;z-index:7}
+  .brand{font-family:var(--font-display);font-weight:600;font-size:1.15vw;color:var(--l-ink)}
+  .brand .ar{color:var(--amber-on-light)}
+  .navmeta{font-family:var(--font-mono);font-size:.72vw;letter-spacing:.22em;text-transform:uppercase;color:var(--l-muted)}
+
+  .wrap{position:absolute;left:7%;right:7%;top:13%;bottom:8%;display:flex;flex-direction:column}
+  .head{margin-bottom:2.2%}
+  .eyebrow{font-family:var(--font-mono);font-size:.78vw;letter-spacing:.4em;text-transform:uppercase;color:var(--teal-900);margin-bottom:.7em}
+  .head h1{font-family:var(--font-display);font-weight:600;font-size:2.0vw;color:var(--l-ink);letter-spacing:-.01em}
+  .head h1 .g{color:var(--amber-on-light)}
+
+  .rows{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+  .row{display:flex;align-items:center;gap:1.5vw;padding:.55vw 0;border-top:1px solid var(--l-hair);position:relative}
+  .row:last-child{border-bottom:1px solid var(--l-hair)}
+  .ico{flex:none;width:3.0vw;height:3.0vw;border-radius:26%;background:var(--l-surface);
+    box-shadow:0 6px 14px rgba(28,24,19,.12);display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:1.1vw;color:var(--teal-700);border:1px solid rgba(31,150,130,.18)}
+  .row.active .ico{color:var(--amber-on-light);border-color:rgba(191,122,40,.28)}
+  .txt{display:flex;flex-direction:column;gap:.15em}
+  .word{font-family:var(--font-mono);font-size:.7vw;letter-spacing:.26em;text-transform:uppercase;color:var(--amber-on-light)}
+  .row.active .word{color:var(--amber-700)}
+  .title{font-family:var(--font-display);font-weight:500;font-size:1.5vw;color:var(--l-ink);line-height:1.05}
+  .num{margin-left:auto;font-family:var(--font-display);font-weight:600;font-size:2.6vw;color:rgba(28,24,19,.10);letter-spacing:-.02em}
+  .row.active .num{color:rgba(160,106,24,.22)}
+
+  .meta{position:absolute;bottom:3.4%;left:0;right:0;display:flex;justify-content:center;gap:1em;align-items:center;z-index:6;font-family:var(--font-mono);font-size:.6vw;letter-spacing:.24em;text-transform:uppercase;color:var(--l-muted)}
+  .meta .dot{width:4px;height:4px;border-radius:50%;background:var(--teal-700)}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+    <div class="nav">
+      <div class="brand">Itq<span class="ar">ā</span>n</div>
+      <div class="navmeta">Agenda · 07 chapters</div>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <div class="eyebrow">The Plan</div>
+        <h1>From scattered RFQs to <span class="g">controlled</span> intelligence — in seven chapters.</h1>
+      </div>
+
+      <div class="rows">
+        <div class="row"><div class="ico">⌕</div><div class="txt"><span class="word">The Diagnosis</span><span class="title">General Context &amp; Audit Findings</span></div><span class="num">01</span></div>
+        <div class="row"><div class="ico">⇄</div><div class="txt"><span class="word">The Pivot</span><span class="title">Strategic Direction</span></div><span class="num">02</span></div>
+        <div class="row"><div class="ico">≣</div><div class="txt"><span class="word">The Build</span><span class="title">Operational Backbone</span></div><span class="num">03</span></div>
+        <div class="row"><div class="ico">◆</div><div class="txt"><span class="word">The Evidence</span><span class="title">Intelligence Layer</span></div><span class="num">04</span></div>
+        <div class="row active"><div class="ico">✦</div><div class="txt"><span class="word">The Boundary</span><span class="title">RFQ Copilot Layer</span></div><span class="num">05</span></div>
+        <div class="row"><div class="ico">▦</div><div class="txt"><span class="word">The Experience</span><span class="title">Platform Experience</span></div><span class="num">06</span></div>
+        <div class="row"><div class="ico">✓</div><div class="txt"><span class="word">The Proof</span><span class="title">Validation &amp; Perspectives</span></div><span class="num">07</span></div>
+      </div>
+    </div>
+
+    <div class="meta"><span>GHI · Albassam Group</span><span class="dot"></span><span>RFQ Lifecycle Intelligence</span></div>
+    <div class="grain"></div>
+  </div>
+</body>
+</html>

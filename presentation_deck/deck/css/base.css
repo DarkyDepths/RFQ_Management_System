@@ -1,0 +1,315 @@
+/* ============================================================================
+   base.css — reset · Reveal overrides · slide frame chrome
+   ----------------------------------------------------------------------------
+   Foundation only (Phase A). No component-library styles, no slide-specific
+   layout. Slide-specific composition lives next to its slide markup (inline
+   <style> block in index.html for the hello harness).
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Reset
+   ---------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--l-bg);
+  color: var(--l-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ----------------------------------------------------------------------------
+   Reveal stage — own the visual via tokens; suppress the dark default
+   ---------------------------------------------------------------------------- */
+.reveal {
+  font-family: var(--font-body);
+  color: var(--l-ink);
+  background: var(--l-bg);
+}
+
+.reveal .slides {
+  text-align: left;          /* editorial default; centred slides opt in */
+}
+
+.reveal .slides > section,
+.reveal .slides > section.present {
+  /* Force section = full 1920×1080 stage. Without this, Reveal leaves
+     section at height: auto, our absolutely-positioned .slide collapses
+     to 0px, and every percentage offset (--margin, top:11%, etc.) resolves
+     to 0 — page renders blank. */
+  width:  1920px;
+  height: 1080px;
+  padding: 0;
+  background: var(--l-bg);
+  color: var(--l-ink);
+  font-size: var(--t-sub);
+  line-height: 1.4;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  font-family: var(--font-display);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+  margin: 0;
+  text-transform: none;       /* Reveal default uppercases h1 — undo it */
+}
+
+.reveal p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-ink);
+  line-height: 1.5;
+}
+
+.reveal a {
+  color: var(--amber-on-light);
+  text-decoration: none;
+}
+
+/* defensive — these are disabled in Reveal.initialize() but kill them in CSS too */
+.reveal .controls,
+.reveal .progress,
+.reveal .slide-number {
+  display: none !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Slide canvas — fills the section's 1920×1080 stage
+   ---------------------------------------------------------------------------- */
+.slide {
+  position: absolute;
+  inset: 0;                  /* fill the section regardless of section sizing */
+  background: var(--l-bg);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ----------------------------------------------------------------------------
+   Frame chrome — corner ticks · section label · brand · bottom meta
+   (DESIGN.md §5 — "Chrome & navigation grammar")
+   ---------------------------------------------------------------------------- */
+
+/* corner ticks — 1px L-marks in each corner */
+.tick {
+  position: absolute;
+  width: var(--tick-size);
+  height: var(--tick-size);
+  border: 0 solid var(--l-hair-strong);
+  z-index: 6;
+  pointer-events: none;
+}
+.tick.tl { top:    var(--margin); left:  var(--margin); border-top-width:    1px; border-left-width:  1px; }
+.tick.tr { top:    var(--margin); right: var(--margin); border-top-width:    1px; border-right-width: 1px; }
+.tick.bl { bottom: var(--margin); left:  var(--margin); border-bottom-width: 1px; border-left-width:  1px; }
+.tick.br { bottom: var(--margin); right: var(--margin); border-bottom-width: 1px; border-right-width: 1px; }
+
+/* top-left section label · [ 02 — The Platform ] */
+.section-label {
+  position: absolute;
+  top:  var(--margin);
+  left: calc(var(--margin) + 36px);   /* clear of the corner tick */
+  font-family: var(--font-mono);
+  font-size: var(--t-chrome);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  line-height: 1;
+}
+.section-label .bracket { color: var(--l-hair-strong); font-weight: 400; }
+.section-label .index   { color: var(--amber-on-light); }
+.section-label .name    { color: var(--l-muted); }
+
+/* top-right brand mark — "Itqān" with the amber `ā` */
+.brand {
+  position: absolute;
+  top:   var(--margin);
+  right: calc(var(--margin) + 36px);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--t-chrome);
+  color: var(--l-ink);
+  letter-spacing: .02em;
+  z-index: 7;
+  line-height: 1;
+}
+.brand .ar { color: var(--amber-on-light); }
+
+/* bottom centred meta — "GHI · Albassam Group  •  RFQ Lifecycle Intelligence" */
+.meta {
+  position: absolute;
+  bottom: var(--margin);
+  left:   0;
+  right:  0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 400;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  z-index: 7;
+  line-height: 1;
+}
+.meta .dot {
+  width:  5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal-700);
+  flex: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Slide-positioning slots — used by every Phase C–E slide to anchor content
+   inside the chrome. NOT one-offs: keep here so slides stop reinventing layout.
+   ---------------------------------------------------------------------------- */
+
+/* Full-frame content slot — anchored to --margin on all four sides. */
+.slide-content {
+  position: absolute;
+  left:   var(--margin);
+  right:  var(--margin);
+  top:    var(--margin);
+  bottom: var(--margin);
+  z-index: 1;
+}
+/* leaves room above the top chrome (label + brand + optional slider) */
+.slide-content.below-chrome      { top: 13%; bottom: 8%; }
+.slide-content.below-chrome-mid  { top: 18%; bottom: 8%; }
+.slide-content.below-chrome-deep { top: 24%; bottom: 8%; }
+/* centred middle band — used by single-statement or hero slides */
+.slide-content.center-band       { top: 30%; bottom: 12%; }
+/* demo-frame slot — vertically centred under the chrome */
+.slide-content.demo-frame-slot {
+  top: 18%;
+  bottom: 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Top-right mono kicker label (used when a section has no slider). */
+.section-meta-top {
+  position: absolute;
+  top:   var(--margin);
+  right: calc(var(--margin) + 36px);
+  font-family: var(--font-mono);
+  font-size: var(--t-chrome);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+  z-index: 7;
+}
+.section-meta-top.amber { color: var(--amber-on-light); }
+
+/* Slot for a .subsection-slider in the top-right of a section slide. */
+.slider-slot {
+  position: absolute;
+  top:   var(--margin);
+  right: calc(var(--margin) + 36px);
+  z-index: 7;
+}
+
+/* When the slider is in the top-right, brand needs to shift left of it. */
+.brand.with-slider {
+  right: calc(var(--margin) + 280px);
+}
+
+/* ----------------------------------------------------------------------------
+   Page numbering — bottom-right of every slide. Populated by main.js on ready.
+   ---------------------------------------------------------------------------- */
+.page-num {
+  position: absolute;
+  bottom: var(--margin);
+  right: calc(var(--margin) + 36px);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  line-height: 1;
+  color: var(--l-muted);
+  z-index: 7;
+}
+.page-num .num   { color: var(--amber-on-light); }
+.page-num .total { color: var(--l-muted); }
+
+/* ----------------------------------------------------------------------------
+   Reduced motion — global guard (GSAP also honours it via deck.motion())
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+
+/* ============================================================================
+   Itqān brand wordmark — persistent bottom-left chrome on every slide.
+   Mirrors the page-num position on the right; fills the previously-empty
+   fourth corner. Injected by JS at Reveal-ready into every .slide except
+   the title (which has its own bold "Itqān" headline already). Uses the
+   same amber macron accent as the title slide's wordmark.
+   ============================================================================ */
+.slide-brand {
+  position: absolute;
+  left: calc(var(--margin) + 36px);    /* +36px to clear the corner-tick,
+                                          mirrors page-num's right offset */
+  bottom: var(--margin);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--t-caption);
+  letter-spacing: -.01em;
+  line-height: 1;
+  color: var(--l-muted);
+  z-index: 5;
+}
+.slide-brand .accent {
+  color: var(--amber-on-light);
+}

@@ -1,0 +1,288 @@
+/* ============================================================================
+   gallery.css — components.html review-page layout
+   ----------------------------------------------------------------------------
+   This file is ONLY for the components.html gallery review page. Real slides
+   never load it. Each exhibit lives inside a `.stage-card` (16:9 frame) that
+   holds a `.stage` (1920×1080 canvas) scaled to fit the card via CSS
+   container queries — so every component renders at the same proportions it
+   will show in production.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Page shell
+   ---------------------------------------------------------------------------- */
+body.gallery {
+  background: var(--l-bg);
+  color: var(--l-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  line-height: 1.5;
+}
+
+.gallery-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 56px 48px 96px;
+  gap: 56px;
+  align-items: start;
+}
+
+/* ----------------------------------------------------------------------------
+   Sticky table-of-contents (left rail)
+   ---------------------------------------------------------------------------- */
+.gallery-nav {
+  position: sticky;
+  top: 48px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: .14em;
+  color: var(--l-muted);
+}
+.gallery-nav .nav-eyebrow {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  margin-bottom: 18px;
+}
+.gallery-nav h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--l-ink);
+  letter-spacing: -.01em;
+  line-height: 1.2;
+  margin-bottom: 32px;
+}
+.gallery-nav h1 .ar { color: var(--amber-on-light); }
+.gallery-nav ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gallery-nav li a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  text-decoration: none;
+  color: var(--l-muted);
+  font-size: 13px;
+  letter-spacing: .04em;
+  padding: 4px 0;
+  transition: color .15s var(--ease);
+}
+.gallery-nav li a:hover {
+  color: var(--l-ink);
+}
+.gallery-nav li a .num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  color: var(--amber-on-light);
+  min-width: 32px;
+  flex: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Main column · exhibits
+   ---------------------------------------------------------------------------- */
+.gallery-main {
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  min-width: 0;
+}
+
+.gallery-header {
+  margin-bottom: 24px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--l-hair);
+}
+.gallery-header .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  margin-bottom: 14px;
+}
+.gallery-header h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 40px;
+  color: var(--l-ink);
+  letter-spacing: -.01em;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+.gallery-header p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--l-muted);
+  max-width: 76ch;
+}
+
+.component-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scroll-margin-top: 24px;
+}
+.component-section .section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.component-section .section-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .26em;
+  color: var(--amber-on-light);
+}
+.component-section h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--l-ink);
+  letter-spacing: -.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+.component-section .section-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  margin-left: auto;
+}
+.component-section .section-notes {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--l-muted);
+  max-width: 70ch;
+}
+.component-section .section-notes b { color: var(--l-ink); font-weight: 500; }
+.component-section .section-notes .tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+.component-section .section-notes .tag.placeholder {
+  background: rgba(191, 122, 40, .12);
+  color: var(--amber-on-light);
+}
+.component-section .section-notes .tag.motion {
+  background: rgba(31, 150, 130, .12);
+  color: var(--teal-900);
+}
+
+/* ----------------------------------------------------------------------------
+   Stage card · 16:9 frame with internal 1920×1080 canvas scaled to fit
+   ----------------------------------------------------------------------------
+   Uses container queries so each card scales its own stage independently —
+   no JS, no resize handlers. Falls back to viewport-width on browsers
+   without `cqw`.
+   ---------------------------------------------------------------------------- */
+.stage-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--l-bg);
+  border: 1px solid var(--l-hair);
+  border-radius: 12px;
+  overflow: hidden;
+  container-type: inline-size;
+  isolation: isolate;
+}
+
+.stage-card .stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  /* scale so 1920 canvas-px = 100% of card width.
+     scale() needs a unitless number, so we divide length/length: cqw / 1920px. */
+  transform: scale(calc(100cqw / 1920px));
+  background: var(--l-bg);
+}
+
+/* a card sized for ELEMENT-only previews (no 16:9 frame) — useful for tiles
+   and chrome that don't need a full stage */
+.stage-card.element {
+  aspect-ratio: auto;
+  padding: 64px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 48px;
+  background: var(--l-bg);
+}
+.stage-card.element > * { flex: none; }
+.stage-card.element .element-caption {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+}
+
+/* ----------------------------------------------------------------------------
+   Phase B footer
+   ---------------------------------------------------------------------------- */
+.gallery-footer {
+  margin-top: 96px;
+  padding-top: 28px;
+  border-top: 1px solid var(--l-hair);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.gallery-footer .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal-700);
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 8px;
+}
+
+@media (max-width: 1100px) {
+  .gallery-shell {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 24px 64px;
+  }
+  .gallery-nav {
+    position: static;
+  }
+}
