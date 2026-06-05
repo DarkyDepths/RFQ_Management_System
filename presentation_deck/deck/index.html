@@ -620,23 +620,41 @@
         <div class="slide-content center-band">
           <div class="audit-canvas">
 
-            <!-- Header · credibility badge + the slide's one-line claim.
-                 Both reveal as one beat so the slide opens with its anchor:
-                 "5-day on-site audit · field observation, not assumptions." -->
-            <div class="audit-header">
-              <div class="audit-badge">
-                <span>5-day on-site audit</span>
-                <span class="sep" aria-hidden="true">·</span>
-                <span>Saudi Arabia</span>
-                <span class="sep" aria-hidden="true">·</span>
-                <span>BACAB host context</span>
+            <!-- Slide claim · sits above the two glass containers so the
+                 "field observation, not assumptions" reads as the slide's
+                 thesis before the evidence (the boxed expectation vs. the
+                 boxed audit method) lands. -->
+            <p class="audit-lede">
+              The diagnosis came from
+              <span class="emph">field observation</span>,
+              not assumptions.
+            </p>
+
+            <!-- Before/After spatial framing — narrow EXPECTATION container
+                 on the left, wide AUDIT container on the right. Both are
+                 lifted glass surfaces. The size asymmetry IS the story:
+                 small prior assumption → big field investigation. -->
+            <div class="audit-split">
+
+              <!-- Original client request box · what BACAB/GHI initially
+                   asked for, before the audit widened the scope. -->
+              <div class="expect-box glass-box">
+                <div class="box-eyebrow">Original Client Request</div>
+                <div class="expect-content">AI-generated BOQ</div>
               </div>
-              <p class="audit-lede">
-                The diagnosis came from
-                <span class="emph">field observation</span>,
-                not assumptions.
-              </p>
-            </div>
+
+              <!-- The Audit box · credibility badge + convergence diagram.
+                   The diagram dimensions are unchanged (1280×400); the box
+                   gives it ~22px breathing room on each side. -->
+              <div class="audit-box glass-box">
+                <div class="box-eyebrow">The Audit</div>
+                <div class="audit-badge">
+                  <span>5-day on-site audit</span>
+                  <span class="sep" aria-hidden="true">·</span>
+                  <span>Saudi Arabia</span>
+                  <span class="sep" aria-hidden="true">·</span>
+                  <span>BACAB host context</span>
+                </div>
 
             <!-- Convergence diagram · 3 parallel investigations converge into
                  a synthesis node, which produces the final diagnosis. Nodes
@@ -721,7 +739,9 @@
                 <polygon class="conn-arrow conn-arrow-center" points="558,200 548,195 548,205"/>
                 <polygon class="conn-arrow conn-arrow-output" points="958,200 948,195 948,205"/>
               </svg>
-            </div>
+              </div>  <!-- end .audit-flow -->
+              </div>  <!-- end .audit-box -->
+            </div>  <!-- end .audit-split -->
 
             <!-- Bottom output strip — restates the concrete deliverable in
                  hand-off language for 01.3 (Control Gaps Before Quotation). -->
@@ -733,15 +753,20 @@
           </div>
         </div>
 
-        <!-- Fragments — 7 reveals total:
-             1)    header (credibility badge + claim sentence together)
-             2-4)  3 input nodes, per-input amber pulse on the current
-             5)    convergence: 3 input→trunk lines, trunk vertical, trunk→
+        <!-- Fragments — 8 reveals total:
+             1)    lede claim + EXPECTATION glass box (the "before" state
+                   lands on its own so the speaker can name it before the
+                   investigation takes the stage)
+             2)    AUDIT glass box appears (badge + diagram skeleton); the
+                   "after / what we did" container slides in next to it
+             3-5)  3 input nodes, per-input amber pulse on the current
+             6)    convergence: 3 input→trunk lines, trunk vertical, trunk→
                    center line, and the "Map Control Gaps" node appear
-             6)    output line + "Lifecycle-Control Diagnosis" node appear;
+             7)    output line + "Lifecycle-Control Diagnosis" node appear;
                    center-node highlight clears
-             7)    bottom output strip fades up -->
+             8)    bottom output strip fades up -->
         <span class="fragment storm-resolve-trigger" data-audit-header    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-audit-block     aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-audit-input="1" aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-audit-input="2" aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-audit-input="3" aria-hidden="true"></span>
@@ -751,9 +776,11 @@
 
         <aside class="notes">
           The audit was hosted by BACAB Consulting on-site at GHI in Saudi
-          Arabia over 5 days. The method was deliberately convergent: three
-          parallel investigations (observe workflow, trace evidence, discuss
-          with stakeholders) fed one synthesis step (map control gaps),
+          Arabia over 5 days. It started from a specific client request —
+          an AI-generated BOQ — but field observation revealed a broader
+          issue. The method was deliberately convergent: three parallel
+          investigations (observe workflow, trace evidence, discuss with
+          stakeholders) fed one synthesis step (map control gaps),
           producing the lifecycle-control diagnosis. The concrete output —
           control gaps before quotation — is what 01.3 walks through.
         </aside>
@@ -947,46 +974,329 @@
     </section>
 
     <section data-slide="02.1">
-      <div class="slide" data-section="2">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">02</span><span>—</span><span class="name">The Pivot</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">BOQ Automation Limits</span></span>
-            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
-          </div>
-        </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">11</span><span class="total">/ 39</span></div>
-      </div>
-    </section>
-
-    <section data-slide="02.2">
-      <div class="slide" data-section="2">
+      <div class="slide pivot-slide" data-section="2">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="index">02</span><span>—</span><span class="name">The Pivot</span><span class="bracket">]</span></div>
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">From BOQ Automation to Lifecycle Intelligence</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg current"></span><span class="seg"></span></div>
           </div>
         </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">12</span><span class="total">/ 39</span></div>
+
+        <div class="slide-content center-band">
+          <div class="pivot-canvas">
+
+            <!-- Main statement · names the conceptual shift. Strong amber
+                 on the contrasting verbs ("generating" vs. "controlling")
+                 so the pivot reads as a substitution of objective. -->
+            <p class="pivot-lede">
+              The audit shifted the objective from
+              <span class="emph">generating the quotation</span>
+              to <span class="emph">controlling the lifecycle</span> that prepares it.
+            </p>
+
+            <!-- 3-column pivot map · before → decision → after. The center
+                 box carries the rejection reasons compacted to two tags
+                 (Tacit expertise · No safe error margin) — detailed
+                 reasoning lives in speaker notes / backup material. -->
+            <div class="pivot-map">
+              <div class="map-box">
+                <div class="box-eyebrow">Original Request</div>
+                <div class="map-main">AI-generated BOQ</div>
+                <div class="map-sub">Autonomous estimation target</div>
+                <div class="map-tags">
+                  <span class="map-tag">Encode expert reasoning</span>
+                  <span class="map-tag">Generate final values</span>
+                  <span class="map-tag">High contractual risk</span>
+                </div>
+              </div>
+
+              <span class="map-arrow" aria-hidden="true">→</span>
+
+              <div class="map-box">
+                <div class="box-eyebrow">Audit Decision</div>
+                <div class="map-main">Rejected as autonomous target</div>
+                <div class="map-sub">Estimation remains expert-owned</div>
+                <div class="map-tags">
+                  <span class="map-tag">Tacit expertise</span>
+                  <span class="map-tag">No safe error margin</span>
+                </div>
+              </div>
+
+              <span class="map-arrow" aria-hidden="true">→</span>
+
+              <div class="map-box">
+                <div class="box-eyebrow">New Direction</div>
+                <div class="map-main">RFQ Lifecycle Intelligence</div>
+                <div class="map-sub">Control · evidence · coordination · learning</div>
+                <div class="map-tags">
+                  <span class="map-tag">Track stages</span>
+                  <span class="map-tag">Structure evidence</span>
+                  <span class="map-tag">Coordinate actors</span>
+                  <span class="map-tag">Support decisions</span>
+                  <span class="map-tag">Reuse history</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom line · seals the positioning in one continuous
+                 sentence. Itqān is NOT named here — 02.2 is the platform
+                 reveal. -->
+            <div class="pivot-bottom">
+              <span class="emph">Human estimation remains authoritative</span>;
+              the platform controls the lifecycle around it.
+            </div>
+          </div>
+        </div>
+
+        <!-- Fragments — 4 reveals total. The main statement reveals
+             together with click 1 (the Original Request box) so the
+             speaker frames the pivot and the starting state as one
+             coherent opening beat, without an extra click for prose.
+             1) main statement + ORIGINAL REQUEST box (amber pulse)
+             2) AUDIT DECISION box (pulse); left arrow draws; box 1 clears
+             3) NEW DIRECTION box (pulse); right arrow draws; box 2 clears
+             4) bottom principle lands; box 3 pulse clears -->
+        <span class="fragment storm-resolve-trigger" data-pivot-box="1"  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-pivot-box="2"  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-pivot-box="3"  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-pivot-bottom   aria-hidden="true"></span>
+
+        <aside class="notes">
+          The pivot is from "generate the quotation" to "control the
+          lifecycle that prepares it." Left = original client request
+          (AI-generated BOQ as autonomous estimation target). Center = the
+          audit's decision: rejected as autonomous, for two reasons —
+          (1) Tacit expertise: the BOQ / Estimation Workbook is the output
+          of expert reasoning (material behavior, fabrication complexity,
+          supplier reliability, contractual posture), not a full
+          specification of that reasoning; (2) No safe error margin:
+          underestimate = contractual loss, overestimate = lost bid, no
+          safe autonomous failure mode. Right = the new direction: RFQ
+          Lifecycle Intelligence — control, evidence, coordination,
+          learning around estimation. Don't name "Itqān" here — that's
+          02.2's reveal. Don't frame this as anti-AI — frame it as a
+          positioning decision: human authority on estimation, platform
+          authority on lifecycle. BACKUP for jury questions: the full
+          rejection rationale is the previous "Why AI-Generated BOQ Was
+          Rejected" reasoning (now folded into this slide).
+        </aside>
+
+        <div class="page-num"><span class="num">11</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
-    <section data-slide="02.3">
-      <div class="slide" data-section="2">
+    <section data-slide="02.2.a">
+      <div class="slide itqan-slide" data-section="2">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="index">02</span><span>—</span><span class="name">The Pivot</span><span class="bracket">]</span></div>
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Itqān Platform Direction</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span></div>
           </div>
         </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+
+        <div class="slide-content center-band">
+          <div class="itqan-canvas">
+
+            <!-- Main statement — opens the slide with the system claim.
+                 The brand name is rendered as Itq<ā>n with amber macron,
+                 same convention as the chrome brand mark. -->
+            <p class="itqan-lede">
+              <span class="brand-name">Itq<span class="ar">ā</span>n</span>
+              controls the RFQ lifecycle around
+              <span class="emph">expert estimation</span>.
+            </p>
+
+            <!-- Central core + 4 orbiting foundations. Grid-positioned
+                 at the 4 corners with the core in the middle row. No
+                 boxes on the orbits — light icon + name + service chip.
+                 The arrangement echoes the opening hook's scattered
+                 layout but in ORDER (4 cardinal foundations around a
+                 stable core). -->
+            <div class="itqan-system">
+              <div class="orbit-label orbit-nw">
+                <span class="orbit-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+                  </svg>
+                </span>
+                <div class="orbit-name">Operational Backbone</div>
+                <div class="orbit-service">rfq_manager_ms</div>
+              </div>
+
+              <div class="orbit-label orbit-ne">
+                <span class="orbit-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    <path d="M12 11h4"/><path d="M12 16h4"/>
+                    <path d="M8 11h.01"/><path d="M8 16h.01"/>
+                  </svg>
+                </span>
+                <div class="orbit-name">Structured Evidence</div>
+                <div class="orbit-service">rfq_intelligence_ms</div>
+              </div>
+
+              <!-- Central core — the system identity -->
+              <div class="itqan-core">
+                <div class="core-name">Itq<span class="ar">ā</span>n</div>
+                <div class="core-subtitle">RFQ Lifecycle Intelligence Platform</div>
+              </div>
+
+              <div class="orbit-label orbit-sw">
+                <span class="orbit-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                    <path d="M20 3v4"/><path d="M22 5h-4"/>
+                    <path d="M4 17v2"/><path d="M5 18H3"/>
+                  </svg>
+                </span>
+                <div class="orbit-name">Bounded Copilot</div>
+                <div class="orbit-service">rfq_copilot_ms</div>
+              </div>
+
+              <div class="orbit-label orbit-se">
+                <span class="orbit-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="3" rx="2"/>
+                    <line x1="8" x2="16" y1="21" y2="21"/>
+                    <line x1="12" x2="12" y1="17" y2="21"/>
+                  </svg>
+                </span>
+                <div class="orbit-name">Platform Experience</div>
+                <div class="orbit-service">rfq_ui_ms + IAM</div>
+              </div>
+            </div>
+
+            <!-- Bottom sentence — closes the reveal. Three amber-noun
+                 emphasis on the platform's role (observable / traceable /
+                 intelligent). -->
+            <div class="itqan-bottom">
+              <span class="emph">Human estimation remains authoritative</span>;
+              the platform makes the lifecycle
+              <span class="strong-noun">observable</span>,
+              <span class="strong-noun">traceable</span>, and
+              <span class="strong-noun">intelligent</span>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Fragments — 4 reveals total:
+             1) main statement
+             2) Itqān core lifts in (the reveal moment)
+             3) 4 orbiting foundations appear together with clockwise
+                stagger (NW → NE → SE → SW), echoing the hook's scattered
+                layout but in ORDER
+             4) bottom positioning sentence -->
+        <span class="fragment storm-resolve-trigger" data-itqan-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-itqan-core     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-itqan-orbits   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-itqan-bottom   aria-hidden="true"></span>
+
+        <aside class="notes">
+          This is the platform reveal — calm and memorable, not another
+          explanatory slide. Itqān (إتقان) means "mastery / craftsmanship"
+          in Arabic — the platform name encodes the discipline the audit
+          identified as missing. Four foundations orbit the central core,
+          each carried by a dedicated microservice boundary:
+          rfq_manager_ms (operational backbone), rfq_intelligence_ms
+          (structured evidence), rfq_copilot_ms (bounded copilot),
+          rfq_ui_ms + IAM (platform experience). Mention orally: "Itqān
+          was designed as a microservice-oriented platform — each
+          foundation is carried by a dedicated service boundary, so the
+          system can evolve without turning into one monolithic RFQ
+          application." Don't explain controllers / routes / datasources
+          here — that's Section 03's job. Bottom line lands the
+          positioning: human authority on estimation, platform authority
+          on lifecycle (observable, traceable, intelligent).
+        </aside>
+
+        <div class="page-num"><span class="num">12</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <section data-slide="02.2.b">
+      <div class="slide roadmap-slide" data-section="2">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">02</span><span>—</span><span class="name">The Pivot</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Itqān Platform Direction</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content center-band">
+          <div class="roadmap-canvas">
+
+            <!-- Main statement · transitional framing for the rest of
+                 the defense. -->
+            <p class="roadmap-lede">
+              The rest of the defense proves each foundation
+              <span class="emph">step by step</span>.
+            </p>
+
+            <!-- Thin roadmap rail — 4 section markers connected by
+                 hairline + arrows. Section number above, foundation
+                 name below. Light, transition-map feel, NOT cards. -->
+            <div class="roadmap-rail">
+              <div class="roadmap-stage">
+                <div class="stage-num">03</div>
+                <div class="stage-name">Operational Backbone</div>
+              </div>
+              <span class="roadmap-arrow" aria-hidden="true">→</span>
+              <div class="roadmap-stage">
+                <div class="stage-num">04</div>
+                <div class="stage-name">Intelligence Layer</div>
+              </div>
+              <span class="roadmap-arrow" aria-hidden="true">→</span>
+              <div class="roadmap-stage">
+                <div class="stage-num">05</div>
+                <div class="stage-name">RFQ Copilot Layer</div>
+              </div>
+              <span class="roadmap-arrow" aria-hidden="true">→</span>
+              <div class="roadmap-stage">
+                <div class="stage-num">06</div>
+                <div class="stage-name">Platform Experience</div>
+              </div>
+            </div>
+
+            <!-- Bottom line · seals the microservice framing. Each
+                 foundation = one service boundary. -->
+            <div class="roadmap-bottom">
+              <span class="strong-noun">Four foundations</span>,
+              <span class="strong-noun">four service boundaries</span>,
+              one controlled RFQ lifecycle.
+            </div>
+          </div>
+        </div>
+
+        <!-- Fragments — 3 reveals total:
+             1) transitional statement
+             2) roadmap rail (4 stages stagger in L→R)
+             3) bottom microservice framing -->
+        <span class="fragment storm-resolve-trigger" data-roadmap-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-roadmap-rail     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-roadmap-bottom   aria-hidden="true"></span>
+
+        <aside class="notes">
+          Transition map, not architecture. Each foundation maps to a
+          deck section: 03 Operational Backbone (rfq_manager_ms) ·
+          04 Intelligence Layer (rfq_intelligence_ms) · 05 RFQ Copilot
+          Layer (rfq_copilot_ms) · 06 Platform Experience (UI + IAM).
+          Bottom line lands the microservice framing in one breath: "Four
+          foundations, four service boundaries, one controlled RFQ
+          lifecycle." Don't explain the shared internal pattern here —
+          that's Section 03's opening (routes → controllers → datasources
+          / connectors → models / translators, shown once on
+          rfq_manager_ms as the concrete example, then implied for the
+          other services).
+        </aside>
+
         <div class="page-num"><span class="num">13</span><span class="total">/ 39</span></div>
       </div>
     </section>
@@ -1006,38 +1316,761 @@
       </div>
     </section>
 
-    <section data-slide="03.1">
-      <div class="slide" data-section="3">
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.1.a · Service Architecture Bridge — system shape before
+                   entering the manager. Lays out the service boundaries
+                   honestly: IAM = seam/future, Azure Blob = future. -->
+    <section data-slide="03.1.a">
+      <div class="slide svc-arch-slide" data-section="3">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
         <div class="slider-slot">
           <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Lifecycle Model</span></span>
+            <span class="slider-label"><span class="current">Service Boundary &amp; Architecture Pattern</span></span>
             <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
           </div>
         </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+
+        <div class="slide-content center-band">
+          <div class="topo-canvas">
+
+            <p class="topo-lede">
+              One <span class="emph">entry layer</span>,
+              one <span class="emph">access seam</span>,
+              three <span class="emph">backend services</span>.
+            </p>
+
+            <!-- Layered topology · strict top-down flow inspired by the
+                 system architecture diagram. Each band is one layer:
+                 UI (entry) → IAM (auth, future) → 3 peer backends →
+                 Azure OpenAI dependency (excluded from manager) →
+                 data ownership row. Edge labels in mono caps explain
+                 WHAT FLOWS between layers. Three backends share equal
+                 visual weight — no elevation of manager at this level
+                 (that comes in 03.2.a). -->
+            <div class="topo-flow">
+
+              <!-- Layer 1 · UI (entry) -->
+              <div class="topo-layer topo-layer-ui">
+                <div class="layer-tag">Entry</div>
+                <div class="topo-tile tile-ui">
+                  <span class="tile-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="20" height="14" x="2" y="3" rx="2"/>
+                      <line x1="8" x2="16" y1="21" y2="21"/>
+                      <line x1="12" x2="12" y1="17" y2="21"/>
+                    </svg>
+                  </span>
+                  <div class="tile-name">rfq_ui_ms</div>
+                  <div class="tile-role">User interface</div>
+                </div>
+              </div>
+
+              <!-- Edge: UI → IAM -->
+              <div class="topo-edge edge-1">
+                <span class="edge-arrow" aria-hidden="true">↓</span>
+                <span class="edge-label">All API calls authorized through</span>
+              </div>
+
+              <!-- Layer 2 · IAM (access boundary, future) -->
+              <div class="topo-layer topo-layer-iam">
+                <div class="layer-tag">Access boundary <span class="future-tag">future</span></div>
+                <div class="topo-tile tile-iam tile-future">
+                  <span class="tile-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                  </span>
+                  <div class="tile-name">rfq_iam_ms</div>
+                  <div class="tile-role">Access boundary · future seam</div>
+                </div>
+              </div>
+
+              <!-- Edge: IAM → 3 backends -->
+              <div class="topo-edge edge-2">
+                <span class="edge-arrow" aria-hidden="true">↓</span>
+                <span class="edge-label">Authorized requests</span>
+              </div>
+
+              <!-- Layer 3 · Three backend services. Manager visually
+                   dominant (stronger amber border + tint + glow) so the
+                   "backbone" reading lands without breaking the 12-col
+                   grid alignment with its data stores below. -->
+              <div class="topo-layer topo-layer-backends">
+                <div class="layer-tag">Backend services</div>
+                <div class="backends-row">
+                  <div class="topo-tile tile-svc tile-manager">
+                    <span class="tile-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+                      </svg>
+                    </span>
+                    <div class="tile-name">rfq_manager_ms</div>
+                    <div class="tile-role">Operational lifecycle truth</div>
+                    <div class="svc-chips">
+                      <span class="svc-chip">RFQs</span>
+                      <span class="svc-chip">workflows</span>
+                      <span class="svc-chip">stages</span>
+                      <span class="svc-chip">reminders</span>
+                    </div>
+                  </div>
+                  <div class="topo-tile tile-svc tile-intel">
+                    <span class="tile-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+                        <path d="M9 13a4.5 4.5 0 0 0 3-4"/>
+                        <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+                        <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+                        <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+                        <path d="M12 13h4"/><path d="M12 18h6a2 2 0 0 1 2 2v1"/>
+                        <path d="M12 8h8"/><path d="M16 8V5a2 2 0 0 1 2-2"/>
+                        <circle cx="16" cy="13" r=".5"/><circle cx="18" cy="3" r=".5"/>
+                        <circle cx="20" cy="21" r=".5"/><circle cx="20" cy="8" r=".5"/>
+                      </svg>
+                    </span>
+                    <div class="tile-name">rfq_intelligence_ms</div>
+                    <div class="tile-role">Structured evidence</div>
+                    <div class="svc-chips">
+                      <span class="svc-chip">workbooks</span>
+                      <span class="svc-chip">MR packages</span>
+                      <span class="svc-chip">briefings</span>
+                    </div>
+                  </div>
+                  <div class="topo-tile tile-svc tile-copilot">
+                    <span class="tile-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                        <path d="M20 3v4"/><path d="M22 5h-4"/>
+                        <path d="M4 17v2"/><path d="M5 18H3"/>
+                      </svg>
+                    </span>
+                    <div class="tile-name">rfq_copilot_ms</div>
+                    <div class="tile-role">Bounded conversation</div>
+                    <div class="svc-chips">
+                      <span class="svc-chip">sessions</span>
+                      <span class="svc-chip">safe answers</span>
+                      <span class="svc-chip">manager context</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Layer 4 · Data row · ownership communicated entirely by
+                   the colour stripe + dashed connector + chevron landing on
+                   the owning backend column. Each tile shows its icon
+                   (database / hard-drive / clock) + name + short meta. -->
+              <div class="topo-layer topo-layer-data">
+                <div class="data-row">
+                  <div class="data-tile data-opdb">
+                    <span class="data-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M3 5v14a9 3 0 0 0 18 0V5"/>
+                        <path d="M3 12a9 3 0 0 0 18 0"/>
+                      </svg>
+                    </span>
+                    <div class="data-name">Operational DB</div>
+                  </div>
+                  <div class="data-tile data-files">
+                    <span class="data-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" x2="2" y1="12" y2="12"/>
+                        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                        <line x1="6" x2="6.01" y1="16" y2="16"/>
+                        <line x1="10" x2="10.01" y1="16" y2="16"/>
+                      </svg>
+                    </span>
+                    <div class="data-name">File storage</div>
+                  </div>
+                  <div class="data-tile data-intdb">
+                    <span class="data-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M3 5v14a9 3 0 0 0 18 0V5"/>
+                        <path d="M3 12a9 3 0 0 0 18 0"/>
+                      </svg>
+                    </span>
+                    <div class="data-name">Intelligence DB</div>
+                  </div>
+                  <div class="data-tile data-session">
+                    <span class="data-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                      </svg>
+                    </span>
+                    <div class="data-name">Session store</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Layer 5 · External LLM dependency · sparkles icon +
+                   Azure OpenAI title + framing sub-line + used-by line.
+                   "Used by intelligence + copilot" implicitly excludes
+                   manager — no ✗ shorthand needed. -->
+              <div class="topo-layer topo-layer-ext">
+                <div class="layer-tag">External dependency</div>
+                <div class="ext-strip">
+                  <span class="ext-strip-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                      <path d="M20 3v4"/><path d="M22 5h-4"/>
+                      <path d="M4 17v2"/><path d="M5 18H3"/>
+                    </svg>
+                  </span>
+                  <div class="ext-strip-content">
+                    <div class="ext-strip-name">Azure OpenAI</div>
+                    <div class="ext-strip-sub">External LLM dependency, not lifecycle truth</div>
+                  </div>
+                  <div class="ext-strip-used">
+                    Used by <span class="ext-used-emph">intelligence + copilot</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reveal sequence — 8 clicks:
+             1) title (centered)
+             2) UI box appears (just the box + name + icon, no eyebrow / role yet)
+             3) IAM box appears (same: bare box)
+             4) 3 backend boxes appear staggered (bare boxes)
+             5) context fills in — eyebrows, role text, chips, arrows all
+                fade in across every revealed layer
+             6) data tiles stagger in
+             7) ownership connectors fade in (dashed lines + chevrons)
+             8) external LLM strip -->
+        <span class="fragment storm-resolve-trigger" data-svc-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-ui      aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-iam     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-backends aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-context aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-data    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-links   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-ext     aria-hidden="true"></span>
+
+        <aside class="notes">
+          High-level system shape — three layers: entry (UI), access
+          (IAM, future seam), and three backend services. rfq_manager_ms
+          owns operational lifecycle truth and is the backbone (visually
+          emphasized so the role is felt, then drilled into at 03.2.a).
+          rfq_intelligence_ms = structured evidence around workbooks and
+          MR packages. rfq_copilot_ms = bounded conversation with safe
+          answers and manager context. Each backend owns its own data
+          store; manager's two stores (Operational DB + File storage)
+          sit directly beneath it. Azure OpenAI is consumed by
+          intelligence + copilot — explicitly not by manager. File
+          storage is local today; Azure Blob is the planned target. IAM
+          is a future seam, not yet implemented.
+        </aside>
+
         <div class="page-num"><span class="num">16</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
-    <section data-slide="03.2">
-      <div class="slide" data-section="3">
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.1.b · Shared BACAB Pattern — internal architecture each
+                   backend microservice follows. -->
+    <section data-slide="03.1.b">
+      <div class="slide bacab-slide" data-section="3">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
         <div class="slider-slot">
           <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Manager Service Implementation</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+            <span class="slider-label"><span class="current">Service Boundary &amp; Architecture Pattern</span></span>
+            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
           </div>
         </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+
+        <div class="slide-content center-band">
+          <div class="cutaway-canvas">
+
+            <p class="cutaway-lede">
+              Each backend follows the same
+              <span class="emph">BACAB-inspired</span>
+              internal pattern.
+            </p>
+
+            <!-- Cutaway · one opened backend service. HTTP enters from
+                 outside (top), flows through Routes → Controllers (focal) →
+                 Datasources/Connectors, exits to DB / External (bottom).
+                 Translators sit as a vertical adapter rail INSIDE the
+                 shell on the right — they're the boundary, not a side
+                 panel. Support layers form the foundation strip. -->
+            <div class="cutaway-stage">
+
+              <!-- HTTP request enters at the top -->
+              <div class="cutaway-io cutaway-io-in">
+                <span class="io-label">HTTP request</span>
+                <span class="io-arrow" aria-hidden="true">↓</span>
+              </div>
+
+              <!-- Service shell · the focal central object -->
+              <div class="cutaway-shell">
+
+                <!-- Inner grid: layer stack (left) + translator rail (right) -->
+                <div class="shell-inner">
+
+                  <div class="shell-layers">
+                    <div class="cutaway-layer layer-routes">
+                      <span class="layer-label">Routes</span>
+                      <span class="layer-rule">thin</span>
+                    </div>
+                    <div class="cutaway-layer layer-controllers">
+                      <span class="layer-label">Controllers</span>
+                      <span class="layer-rule">own decisions</span>
+                    </div>
+                    <div class="cutaway-layer layer-datasources">
+                      <span class="layer-label">Datasources <span class="layer-sep" aria-hidden="true">·</span> Connectors</span>
+                      <span class="layer-rule">do not decide</span>
+                    </div>
+                  </div>
+
+                  <!-- Translator adapter rail — vertical strip, inside the
+                       shell. Dashed amber left border = boundary marker. -->
+                  <div class="shell-translators">
+                    <div class="trans-label">Translators</div>
+                    <div class="trans-pair">
+                      <span class="trans-side">API shape</span>
+                      <span class="trans-bidir" aria-hidden="true">↕</span>
+                      <span class="trans-side">internal shape</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Support foundation strip at the base of the shell -->
+                <div class="shell-support">
+                  <span class="support-eyebrow">Support</span>
+                  <span class="support-sep" aria-hidden="true">·</span>
+                  <span>Models</span>
+                  <span class="support-sep" aria-hidden="true">·</span>
+                  <span>Config</span>
+                  <span class="support-sep" aria-hidden="true">·</span>
+                  <span>Utils</span>
+                  <span class="support-sep" aria-hidden="true">·</span>
+                  <span>app_context</span>
+                </div>
+              </div>
+
+              <!-- DB / External services exit at the bottom -->
+              <div class="cutaway-io cutaway-io-out">
+                <span class="io-arrow" aria-hidden="true">↓</span>
+                <span class="io-label">Database <span class="io-sep" aria-hidden="true">·</span> External services</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reveal sequence — 5 clicks:
+             1) lede claim
+             2) HTTP-in + empty shell + DB-out callout (the container framing)
+             3) Routes → Controllers (amber) → Datasources/Connectors stagger
+             4) Translators adapter rail
+             5) Support foundation strip -->
+        <span class="fragment storm-resolve-trigger" data-bacab-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-bacab-shell    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-bacab-flow     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-bacab-trans    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-bacab-support  aria-hidden="true"></span>
+
+        <aside class="notes">
+          Each service follows the same BACAB-inspired structure. Routes
+          are thin. Controllers contain the business decisions. Datasources
+          handle storage. Connectors isolate external calls. Translators
+          separate API shape from database or internal shape. This keeps
+          the platform maintainable and testable.
+        </aside>
+
         <div class="page-num"><span class="num">17</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.2.a · Manager as Operational Core — service grid with
+                   manager highlighted + orbital ownership labels. -->
+    <section data-slide="03.2.a">
+      <div class="slide mgr-core-slide" data-section="3">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Manager Lifecycle Model</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content center-band">
+          <div class="spine-canvas">
+
+            <!-- Manager spine · vertical focal column with attached
+                 ownership domains. Hierarchy in attachments: core
+                 (RFQs / Workflows / Stages) more prominent, support
+                 (Subtasks / Files / Notes / Reminders) regular, Stats
+                 quietest (derived visibility, not core lifecycle). -->
+            <div class="spine-stage">
+
+              <!-- Core lifecycle entities (RFQs · Workflows · Stages) -->
+              <div class="attach attach-left attach-l1 attach-core">
+                <div class="attach-name">RFQs</div>
+                <div class="attach-role">lifecycle records</div>
+              </div>
+              <div class="attach attach-left attach-l2 attach-core">
+                <div class="attach-name">Workflows</div>
+                <div class="attach-role">templates · current pointer</div>
+              </div>
+              <div class="attach attach-left attach-l3 attach-core">
+                <div class="attach-name">Stages</div>
+                <div class="attach-role">progress · blockers</div>
+              </div>
+              <!-- Support concern (Subtasks, left bottom) -->
+              <div class="attach attach-left attach-l4 attach-support">
+                <div class="attach-name">Subtasks</div>
+                <div class="attach-role">checklist items</div>
+              </div>
+
+              <!-- Central spine column · eyebrow + name + short tagline -->
+              <div class="spine-column">
+                <div class="spine-eyebrow">Operational backbone</div>
+                <div class="spine-name">rfq_manager_ms</div>
+                <div class="spine-tagline">Lifecycle state authority</div>
+              </div>
+
+              <!-- Support concerns (right column) -->
+              <div class="attach attach-right attach-r1 attach-support">
+                <div class="attach-name">Files</div>
+                <div class="attach-role">local storage</div>
+              </div>
+              <div class="attach attach-right attach-r2 attach-support">
+                <div class="attach-name">Notes</div>
+                <div class="attach-role">append-only history</div>
+              </div>
+              <div class="attach attach-right attach-r3 attach-support">
+                <div class="attach-name">Reminders</div>
+                <div class="attach-role">deadlines · processing</div>
+              </div>
+              <!-- Derived visibility (Stats — quietest) -->
+              <div class="attach attach-right attach-r4 attach-derived">
+                <div class="attach-name">Stats</div>
+                <div class="attach-role">analytics · export</div>
+              </div>
+
+              <!-- SVG connector overlay · viewBox matches stage 580px
+                   exactly, no preserveAspectRatio stretch — coordinates
+                   land on attach centers (top: 60/180/300/420 + 40px
+                   half-height = centres at 100/220/340/460). Hairline
+                   connectors with small amber anchor dots where each
+                   line meets the spine edge (x=670 left, x=1030 right). -->
+              <svg class="spine-connectors" viewBox="0 0 1700 580" preserveAspectRatio="none" aria-hidden="true">
+                <!-- Lines grouped by TIER (not by side) so each reveal beat
+                     shows the connectors for that tier. -->
+                <!-- Core tier (RFQs, Workflows, Stages — all on left) -->
+                <path class="spine-line conn-core conn-l1" d="M 460 100 L 670 100"/>
+                <path class="spine-line conn-core conn-l2" d="M 460 220 L 670 220"/>
+                <path class="spine-line conn-core conn-l3" d="M 460 340 L 670 340"/>
+                <!-- Support tier (Subtasks left + Files/Notes/Reminders right) -->
+                <path class="spine-line conn-support conn-l4" d="M 460 460 L 670 460"/>
+                <path class="spine-line conn-support conn-r1" d="M 1030 100 L 1240 100"/>
+                <path class="spine-line conn-support conn-r2" d="M 1030 220 L 1240 220"/>
+                <path class="spine-line conn-support conn-r3" d="M 1030 340 L 1240 340"/>
+                <!-- Derived tier (Stats only) -->
+                <path class="spine-line conn-derived conn-r4" d="M 1030 460 L 1240 460"/>
+                <!-- Amber anchor dots, grouped by tier -->
+                <circle class="spine-anchor anc-core anc-l1" cx="670"  cy="100" r="3"/>
+                <circle class="spine-anchor anc-core anc-l2" cx="670"  cy="220" r="3"/>
+                <circle class="spine-anchor anc-core anc-l3" cx="670"  cy="340" r="3"/>
+                <circle class="spine-anchor anc-support anc-l4" cx="670"  cy="460" r="3"/>
+                <circle class="spine-anchor anc-support anc-r1" cx="1030" cy="100" r="3"/>
+                <circle class="spine-anchor anc-support anc-r2" cx="1030" cy="220" r="3"/>
+                <circle class="spine-anchor anc-support anc-r3" cx="1030" cy="340" r="3"/>
+                <circle class="spine-anchor anc-derived anc-r4" cx="1030" cy="460" r="3"/>
+              </svg>
+            </div>
+
+            <div class="spine-boundary">
+              <span class="bound-eyebrow">Boundary</span>
+              <span class="bound-text">
+                Owns lifecycle truth —
+                <span class="emph-strike">not estimation logic</span>,
+                <span class="emph-strike">not document parsing</span>,
+                <span class="emph-strike">not chatbot reasoning</span>.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reveal sequence — 5 clicks, tier-based not spatial:
+             1) spine column lifts in (the focal central object)
+             2) CORE lifecycle entities: RFQs · Workflows · Stages
+             3) SUPPORT concerns: Subtasks · Files · Notes · Reminders
+             4) DERIVED: Stats (analytics — quietest)
+             5) boundary statement lands -->
+        <span class="fragment storm-resolve-trigger" data-mgr-spine    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mgr-core     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mgr-support  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mgr-derived  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mgr-boundary aria-hidden="true"></span>
+
+        <aside class="notes">
+          Among these services, rfq_manager_ms is the first foundation
+          because it owns the operational truth. If the platform needs to
+          know where an RFQ is, what stage is active, what is blocked,
+          what files are attached, or what reminders exist, the answer
+          comes from the manager.
+        </aside>
+
+        <div class="page-num"><span class="num">17</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.2.b · Lifecycle Data Model — simplified ERD: Workflow →
+                   RFQ → RFQ_Stage with children + current_stage_id link. -->
+    <section data-slide="03.2.b">
+      <div class="slide erd-slide" data-section="3">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Manager Lifecycle Model</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content center-band">
+          <div class="live-canvas">
+
+            <p class="live-lede">
+              The RFQ becomes a
+              <span class="emph">live workflow object</span> —
+              its current stage is a pointer, not a label.
+            </p>
+
+            <!-- Live workflow object stage. Left: Workflow + RFQ object
+                 with current_stage_id field highlighted. Right: horizontal
+                 stage rail where one stage is the "active" instance,
+                 receiving the pointer. Below the active stage: 4 attached
+                 entities. Asymmetric layout — RFQ is the focal object;
+                 the rail is the timeline it points into. -->
+            <div class="live-stage">
+
+              <!-- Workflow source (top-left, small) -->
+              <div class="live-workflow">
+                <div class="lw-label">Workflow</div>
+                <div class="lw-meta">template · 6 stages</div>
+              </div>
+
+              <!-- RFQ object (focal, "open" card showing internals) -->
+              <div class="live-rfq">
+                <div class="rfq-tab">RFQ · live object</div>
+                <div class="rfq-fields">
+                  <div class="rfq-field"><span class="f-key">id</span><span class="f-val">42</span></div>
+                  <div class="rfq-field"><span class="f-key">title</span><span class="f-val">MR pkg · GHI</span></div>
+                  <div class="rfq-field"><span class="f-key">workflow_id</span><span class="f-val">→ template</span></div>
+                  <div class="rfq-field rfq-field-pointer">
+                    <span class="f-key">current_stage_id</span>
+                    <span class="f-val f-val-pointer">→ Estimation</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stage rail (right zone) — 6 instances, one active -->
+              <div class="stage-rail">
+                <div class="rail-eyebrow">Stage instances</div>
+                <div class="rail-row">
+                  <div class="rail-cell rail-done"><span class="rc-num">1</span><span class="rc-name">Intake</span></div>
+                  <div class="rail-cell rail-done"><span class="rc-num">2</span><span class="rc-name">Review</span></div>
+                  <div class="rail-cell rail-active">
+                    <span class="rc-num">3</span>
+                    <span class="rc-name">Estimation</span>
+                    <span class="rc-marker">active</span>
+                  </div>
+                  <div class="rail-cell"><span class="rc-num">4</span><span class="rc-name">Validation</span></div>
+                  <div class="rail-cell"><span class="rc-num">5</span><span class="rc-name">Submission</span></div>
+                  <div class="rail-cell"><span class="rc-num">6</span><span class="rc-name">Outcome</span></div>
+                </div>
+              </div>
+
+              <!-- Attached entities (below active stage) -->
+              <div class="active-attaches">
+                <div class="aa-label">Active stage attaches</div>
+                <div class="aa-row">
+                  <div class="aa-tag aa-1">Subtask</div>
+                  <div class="aa-tag aa-2">Note</div>
+                  <div class="aa-tag aa-3">File</div>
+                  <div class="aa-tag aa-4">Reminder</div>
+                </div>
+              </div>
+
+              <!-- SVG · viewBox matches stage 1700×640 exactly.
+                   Workflow → RFQ: short teal vertical drop.
+                   current_stage_id pointer: dashed amber arc from the
+                     bottom of the RFQ pointer field UP to the active
+                     stage bottom edge (Estimation, 3rd of 6).
+                   Active-stage attaches: short dashed hair lines from
+                     active stage bottom (~y=220) straight down to chip
+                     top edges (~y=280). -->
+              <svg class="live-connectors" viewBox="0 0 1700 640" preserveAspectRatio="none" aria-hidden="true">
+                <!-- Workflow → RFQ (top-left vertical) -->
+                <path class="live-line live-wf" d="M 220 80 L 220 160"/>
+                <!-- RFQ.current_stage_id arc → Active stage bottom -->
+                <path class="live-line live-pointer" d="M 380 350 C 550 350, 750 240, 940 230"/>
+                <!-- Active stage bottom → 4 attaches (short fan down) -->
+                <path class="live-line live-attach" d="M 940 230 L 870 280"/>
+                <path class="live-line live-attach" d="M 940 230 L 920 280"/>
+                <path class="live-line live-attach" d="M 940 230 L 970 280"/>
+                <path class="live-line live-attach" d="M 940 230 L 1020 280"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <span class="fragment storm-resolve-trigger" data-erd-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-erd-rfq      aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-erd-rail     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-erd-pointer  aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-erd-attaches aria-hidden="true"></span>
+
+        <aside class="notes">
+          The data model represents the RFQ as a lifecycle object. An RFQ
+          is linked to a workflow, and the workflow generates stage
+          instances. Around each stage, the system stores files, notes,
+          subtasks, progress, blockers, and reminders. This is what makes
+          the RFQ observable and traceable.
+        </aside>
+
+        <div class="page-num"><span class="num">18</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.2.c · Workflow Execution Logic — business lifecycle view
+                   mapped to system workflow model + execution example. -->
+    <section data-slide="03.2.c">
+      <div class="slide wf-exec-slide" data-section="3">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Manager Lifecycle Model</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content center-band">
+          <div class="gates-canvas">
+
+            <p class="gates-lede">
+              Advancement is
+              <span class="emph">gated</span>, not free.
+              The platform decides when a stage can close.
+            </p>
+
+            <!-- Gated advancement · current stage on left, 4 validation
+                 gates as vertical bars in the middle, next stage on right.
+                 The "try to advance" beam animates from current through
+                 each gate to next. Atomic update operation at bottom. -->
+            <div class="gates-stage">
+
+              <!-- Current stage (left, highlighted) -->
+              <div class="gate-stage gate-stage-current">
+                <div class="gs-eyebrow">Current stage</div>
+                <div class="gs-name">Estimation</div>
+                <div class="gs-meta">
+                  <span>progress 80%</span>
+                  <span class="gs-sep">·</span>
+                  <span>2 notes</span>
+                  <span class="gs-sep">·</span>
+                  <span>1 file</span>
+                </div>
+              </div>
+
+              <!-- 4 validation gates (center) -->
+              <div class="gate-cluster">
+                <div class="gate gate-1">
+                  <span class="gate-num">01</span>
+                  <span class="gate-label">Mandatory fields</span>
+                  <span class="gate-check" aria-hidden="true">✓</span>
+                </div>
+                <div class="gate gate-2">
+                  <span class="gate-num">02</span>
+                  <span class="gate-label">No active blockers</span>
+                  <span class="gate-check" aria-hidden="true">✓</span>
+                </div>
+                <div class="gate gate-3">
+                  <span class="gate-num">03</span>
+                  <span class="gate-label">Transition valid</span>
+                  <span class="gate-check" aria-hidden="true">✓</span>
+                </div>
+                <div class="gate gate-4">
+                  <span class="gate-num">04</span>
+                  <span class="gate-label">Progress recalc</span>
+                  <span class="gate-check" aria-hidden="true">✓</span>
+                </div>
+              </div>
+
+              <!-- Next stage (right) -->
+              <div class="gate-stage gate-stage-next">
+                <div class="gs-eyebrow">Next stage</div>
+                <div class="gs-name">Validation</div>
+                <div class="gs-meta">opens when all gates pass</div>
+              </div>
+
+              <!-- Advance beam (SVG, animates through gates) -->
+              <svg class="gates-beam" viewBox="0 0 1700 360" preserveAspectRatio="none" aria-hidden="true">
+                <path class="beam-line" d="M 380 180 L 1320 180"/>
+              </svg>
+            </div>
+
+            <!-- Atomic update operation (bottom) -->
+            <div class="atomic-update">
+              <div class="au-eyebrow">Atomic update on advance</div>
+              <div class="au-row">
+                <div class="au-card au-1">
+                  <span class="au-key">stage state</span>
+                  <span class="au-val">current → closed · next → active</span>
+                </div>
+                <div class="au-card au-2">
+                  <span class="au-key">timestamps</span>
+                  <span class="au-val">closed_at · current_stage_id</span>
+                </div>
+                <div class="au-card au-3">
+                  <span class="au-key">progress</span>
+                  <span class="au-val">RFQ-level recalculated</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="fragment storm-resolve-trigger" data-wf-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-wf-stages   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-wf-gates    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-wf-beam     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-wf-atomic   aria-hidden="true"></span>
+
+        <aside class="notes">
+          The lifecycle shown earlier was the business understanding of
+          the RFQ process. In implementation, I do not hardcode one fixed
+          drawing. I represent the lifecycle as a workflow model. When an
+          RFQ is created, the selected workflow generates ordered stage
+          instances, initializes the current stage, and then the system
+          controls progress and advancement. So the platform does not
+          replace expert estimation; it controls the operational path
+          around it.
+        </aside>
+
+        <div class="page-num"><span class="num">19</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.3 · API Surface & Workflow Reliability — left: API
+                 families · right: reliability guards. -->
     <section data-slide="03.3">
-      <div class="slide" data-section="3">
+      <div class="slide api-slide" data-section="3">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
         <div class="slider-slot">
@@ -1046,8 +2079,77 @@
             <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
           </div>
         </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">18</span><span class="total">/ 39</span></div>
+
+        <div class="slide-content center-band">
+          <div class="contract-canvas">
+
+            <p class="contract-lede">
+              An API surface alone is not proof.
+              <span class="emph">Workflow integrity</span> is.
+            </p>
+
+            <div class="contract-split">
+
+              <!-- Left: API resource families (clean editorial column) -->
+              <div class="api-column">
+                <div class="col-eyebrow">Resource families</div>
+                <div class="api-rows">
+                  <div class="api-row"><span class="ar-name">RFQ</span><span class="ar-ops">create · list · detail · update · stats · export</span></div>
+                  <div class="api-row"><span class="ar-name">Workflow</span><span class="ar-ops">list · detail · update</span></div>
+                  <div class="api-row"><span class="ar-name">RFQ Stage</span><span class="ar-ops">list · detail · update · notes · files · advance</span></div>
+                  <div class="api-row"><span class="ar-name">Subtask</span><span class="ar-ops">create · list · update · delete</span></div>
+                  <div class="api-row"><span class="ar-name">File</span><span class="ar-ops">download · delete</span></div>
+                  <div class="api-row"><span class="ar-name">Reminder</span><span class="ar-ops">list · create · update · process · rules · stats</span></div>
+                </div>
+              </div>
+
+              <!-- Right: Integrity Contract (formal document panel) -->
+              <div class="contract-column">
+                <div class="contract-doc">
+                  <div class="doc-header">
+                    <div class="doc-seal" aria-hidden="true">§</div>
+                    <div class="doc-title">
+                      <div class="doc-name">Integrity Contract</div>
+                      <div class="doc-sub">what the backbone guarantees</div>
+                    </div>
+                  </div>
+                  <ol class="doc-clauses">
+                    <li><span class="clause-key">Current-stage control</span><span class="clause-body">one stage is active at a time per RFQ.</span></li>
+                    <li><span class="clause-key">Blocked stage</span><span class="clause-body">cannot advance until blockers clear.</span></li>
+                    <li><span class="clause-key">Mandatory fields</span><span class="clause-body">checked before advance.</span></li>
+                    <li><span class="clause-key">Transition validity</span><span class="clause-body">only the workflow's allowed next stage.</span></li>
+                    <li><span class="clause-key">Progress</span><span class="clause-body">RFQ-level value recalculated atomically.</span></li>
+                    <li><span class="clause-key">Reminder processing</span><span class="clause-body">scheduled rules drive outbound state.</span></li>
+                    <li><span class="clause-key">Health &amp; metrics</span><span class="clause-body">live signals available to ops.</span></li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div class="contract-maturity">
+              <span class="mat-tag">Future hardening</span>
+              deployment readiness, concurrency, edge-case error semantics — out of scope for v1.
+            </div>
+          </div>
+        </div>
+
+        <span class="fragment storm-resolve-trigger" data-api-sentence aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-api-families aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-api-contract aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-api-maturity aria-hidden="true"></span>
+
+        <aside class="notes">
+          The manager is exposed through a structured API surface grouped
+          around lifecycle resources: RFQs, workflows, stages, subtasks,
+          files, and reminders. The important point is not the number of
+          endpoints alone — it is workflow integrity: the service controls
+          stage advancement, blockers, mandatory data, progress, notes,
+          files, and reminders. Some hardening remains future work,
+          especially deployment readiness, concurrency, and refined
+          edge-case error semantics. Save test numbers for Section 07.
+        </aside>
+
+        <div class="page-num"><span class="num">21</span><span class="total">/ 39</span></div>
       </div>
     </section>
 

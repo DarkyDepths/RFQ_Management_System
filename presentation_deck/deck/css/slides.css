@@ -1569,54 +1569,25 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 .audit-slide .slide-content.center-band {
-  top: 10%;
-  bottom: 10%;
+  /* Tighter than chrome margins (8%) so the two glass boxes can breathe
+     side-by-side with the 1280px diagram intact. Body extends slightly
+     past the corner-tick frame — acceptable for a content-dense slide. */
+  left: 60px;
+  right: 60px;
+  top: 9%;
+  bottom: 9%;
 }
 .audit-canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 56px;
+  gap: 40px;
   width: 100%;
   height: 100%;
 }
 
-/* ── Header block · credibility badge + claim line ───────────────────── */
-.audit-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  max-width: 1300px;
-  width: 100%;
-}
-
-.audit-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 28px;
-  border: 1px solid var(--l-hair-strong);
-  border-radius: 999px;
-  background: rgba(232, 160, 76, 0.05);
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
-  font-weight: 500;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  color: var(--teal-900);
-  line-height: 1;
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2, .7, .2, 1);
-}
-.audit-badge .sep {
-  color: var(--amber-on-light);
-  font-weight: 400;
-}
-
+/* ── Slide claim · sits above the two glass containers ───────────────── */
 .audit-lede {
   font-family: var(--font-display);
   font-size: var(--t-h2);
@@ -1629,16 +1600,122 @@
   margin: 0;
   opacity: 0;
   transform: translateY(12px);
-  transition: opacity 0.6s ease-out 80ms,
-              transform 0.6s cubic-bezier(.2, .7, .2, 1) 80ms;
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
 }
 .audit-lede .emph {
   color: var(--amber-on-light);
   font-weight: 600;
 }
 
-.audit-slide.header-shown .audit-badge,
+/* ── Glass containers · lifted-surface treatment ─────────────────────── */
+/* Refined glass — not heavy frosted-pane. Subtle warm-white tint over
+   the cream background, soft hairline border, gentle drop shadow, light
+   backdrop blur so any content rendered behind softens just enough to
+   read as "lifted surface." */
+.glass-box {
+  background: rgba(255, 250, 242, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 12px 36px rgba(40, 28, 12, 0.06),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Box-internal eyebrow title — small mono caps amber. Same vocabulary
+   as the section-label chrome so the box reads as a labelled container. */
+.box-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+
+/* ── Two-column split ─────────────────────────────────────────────────── */
+/* Asymmetric grid — narrow expectation box, wide audit box. The size
+   contrast IS the narrative: small prior assumption vs. large field
+   investigation. flex-end alignment keeps content top-anchored so the
+   eyebrow rows visually line up across the two boxes. */
+.audit-split {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 36px;
+  width: 100%;
+}
+
+/* ── Expectation box ─────────────────────────────────────────────────── */
+.expect-box {
+  flex: 0 0 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px 32px;
+  justify-content: center;
+}
+.expect-content {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.008em;
+  color: var(--l-ink);
+}
+
+/* ── Audit box · contains badge + convergence diagram ────────────────── */
+.audit-box {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 32px;
+}
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 24px;
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 999px;
+  background: rgba(232, 160, 76, 0.06);
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  line-height: 1;
+}
+.audit-badge .sep {
+  color: var(--amber-on-light);
+  font-weight: 400;
+}
+
+/* Click 1 (header-shown) — lede + expectation glass box lift in. The
+   expectation is the "before" state; it lands on its own beat so the
+   speaker can frame the prior assumption before the investigation
+   container takes the stage. */
 .audit-slide.header-shown .audit-lede {
+  opacity: 1;
+  transform: translateY(0);
+}
+.audit-slide.header-shown .expect-box {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 120ms;
+}
+/* Click 2 (block-shown) — the audit glass box appears on its own click,
+   sliding in next to the expectation. */
+.audit-slide.block-shown .audit-box {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1818,7 +1895,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .audit-badge, .audit-lede, .flow-node, .audit-output-strip {
+  .audit-lede, .expect-box, .audit-box, .flow-node, .audit-output-strip {
     transition: opacity 0.2s linear;
     transform: none;
     transition-delay: 0s !important;
@@ -2111,4 +2188,2293 @@
     transition-delay: 0s !important;
   }
   .gap-card.current { animation: none; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   §02.1 · From BOQ Automation to Lifecycle Intelligence — pivot map
+   ────────────────────────────────────────────────────────────────────────
+   Layout (top → bottom inside center-band):
+     · main statement → "shifted the objective from generating to controlling"
+     · pivot map     → 3 boxes (Original Request → Audit Decision →
+                       New Direction) with arrows between, each box
+                       containing eyebrow + main + sub + optional tags
+     · bottom line   → "human estimation remains the authority; the platform
+                       controls the lifecycle around it" — same chrome as
+                       the diagnosis / decision strips on prior slides
+   Click sequence:
+     1) main statement
+     2) ORIGINAL REQUEST box with amber pulse
+     3) left arrow draws + AUDIT DECISION box with pulse; left card clears
+     4) right arrow draws + NEW DIRECTION box with pulse; center clears
+     5) bottom line lands; right card clears
+   ════════════════════════════════════════════════════════════════════════ */
+
+.pivot-slide .slide-content.center-band {
+  top: 9%;
+  bottom: 9%;
+  left: 60px;
+  right: 60px;
+}
+.pivot-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Main statement ──────────────────────────────────────────────────── */
+.pivot-lede {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.2;
+  letter-spacing: -.012em;
+  text-align: center;
+  max-width: 1500px;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.pivot-lede .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.pivot-slide.sentence-shown .pivot-lede {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── 3-column pivot map ──────────────────────────────────────────────── */
+/* Boxes share visual grammar (3px amber top accent + hair border + tile
+   shadow). The center box is intentionally narrower — it holds the
+   decision moment, not a feature list. Arrows are static text glyphs
+   between boxes, revealed alongside their target box. */
+.pivot-map {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+}
+.map-box {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 26px 26px;
+  background: var(--l-surface);
+  border: 1.5px solid var(--l-hair);
+  border-top: 3px solid var(--amber-on-light);
+  border-radius: 10px;
+  box-shadow: var(--sh-tile);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1),
+              border-color 0.4s ease-out,
+              box-shadow 0.4s ease-out;
+}
+/* Center box is narrower than the side boxes — it's the decision moment,
+   not a feature list. Uses :nth-child(3) because of the arrow siblings. */
+.pivot-map .map-box:nth-child(3) {
+  flex: 0 0 360px;
+}
+.map-box .map-main {
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.006em;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+.map-box .map-sub {
+  font-family: var(--font-body);
+  font-size: var(--t-caption);
+  font-weight: 400;
+  color: var(--l-muted);
+  line-height: 1.4;
+  letter-spacing: -.002em;
+}
+.map-box .map-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.map-tag {
+  display: inline-block;
+  padding: 5px 11px;
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 999px;
+  background: rgba(232, 160, 76, 0.04);
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  line-height: 1;
+}
+
+/* Arrows between boxes — static glyphs, revealed when the box they
+   point to lands. Vertically centred against the box stack. */
+.map-arrow {
+  align-self: center;
+  color: var(--l-muted);
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.45s ease-out;
+}
+.map-arrow.revealed {
+  opacity: 1;
+  color: var(--amber-on-light);
+}
+
+/* Per-box reveal — the current box pulses, previous boxes stay normal.
+   Same animation grammar as the rail / limit cards. */
+.map-box.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+.map-box.current {
+  border-color: var(--amber-on-light);
+  box-shadow: 0 8px 24px rgba(232, 160, 76, 0.22),
+              0 0 0 4px rgba(232, 160, 76, 0.08);
+  animation: rail-stage-pulse 2.2s ease-in-out infinite;
+}
+
+/* ── Bottom positioning line ─────────────────────────────────────────── */
+.pivot-bottom {
+  display: inline-block;
+  padding: 16px 32px;
+  border-top: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.3;
+  letter-spacing: -.005em;
+  text-align: center;
+  max-width: 1200px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.pivot-bottom .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.pivot-slide.bottom-shown .pivot-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pivot-lede, .map-box, .map-arrow, .pivot-bottom {
+    transition: opacity 0.2s linear;
+    transform: none;
+    transition-delay: 0s !important;
+  }
+  .map-box.current { animation: none; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   §02.2.a · Itqān Platform Direction — Itqān Reveal
+   ────────────────────────────────────────────────────────────────────────
+   The system reveal — calm, aesthetic, memorable. Visual grammar:
+     · main statement (top)
+     · central core + 4 orbiting foundations (middle)
+       The core is the only bordered element; the orbits are light
+       (icon + name + service chip) so the layout reads as "structure"
+       not "more cards to read."
+     · positioning sentence (bottom)
+   The arrangement echoes the opening hook's scattered tiles, but in
+   ORDER — 4 cardinal foundations around a stable core. Chaos → calm.
+   Click sequence (4 reveals):
+     1) main statement
+     2) Itqān core lifts in (the reveal moment, no pulse — calm)
+     3) 4 orbiting foundations appear with clockwise stagger
+     4) bottom positioning sentence
+   ════════════════════════════════════════════════════════════════════════ */
+
+.itqan-slide .slide-content.center-band {
+  top: 9%;
+  bottom: 9%;
+}
+.itqan-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Main statement ─────────────────────────────────────────────────── */
+.itqan-lede {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.2;
+  letter-spacing: -.012em;
+  text-align: center;
+  max-width: 1400px;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.itqan-lede .brand-name {
+  font-weight: 600;
+}
+.itqan-lede .brand-name .ar {
+  color: var(--amber-on-light);
+}
+.itqan-lede .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.itqan-slide.sentence-shown .itqan-lede {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Central core + orbiting foundations ────────────────────────────── */
+/* 3×3 CSS grid — orbiters at the 4 corners, core spanning the middle
+   row, gaps create the orbital distance. The core is the visual anchor;
+   the orbits are typographic, not boxed. */
+.itqan-system {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  grid-template-rows: auto 1fr auto;
+  gap: 28px 96px;
+  width: 100%;
+  max-width: 1280px;
+  align-items: center;
+  justify-items: center;
+}
+.orbit-nw { grid-column: 1; grid-row: 1; }
+.orbit-ne { grid-column: 3; grid-row: 1; }
+.orbit-sw { grid-column: 1; grid-row: 3; }
+.orbit-se { grid-column: 3; grid-row: 3; }
+.itqan-core { grid-column: 2; grid-row: 2; }
+
+/* Central core — bordered, lifted, with the Itqān brand name large +
+   subtitle in mono caps below. The amber macron echoes the chrome
+   brand mark for instant recognition. */
+.itqan-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 44px;
+  border: 1.5px solid var(--amber-on-light);
+  border-radius: 16px;
+  background: rgba(232, 160, 76, 0.06);
+  box-shadow: 0 12px 36px rgba(232, 160, 76, 0.14),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.7s ease-out,
+              transform 0.7s cubic-bezier(.2, .7, .2, 1);
+}
+.itqan-core .core-name {
+  font-family: var(--font-display);
+  font-size: 78px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.015em;
+  line-height: 1;
+}
+.itqan-core .core-name .ar {
+  color: var(--amber-on-light);
+}
+.itqan-core .core-subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  line-height: 1;
+}
+.itqan-slide.core-shown .itqan-core {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Orbiting labels — light, no box. Icon + name + service chip stacked
+   center. The 4 orbits face the core implicitly via spatial proximity. */
+.orbit-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.orbit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--amber-on-light);
+}
+.orbit-icon svg {
+  width: 32px;
+  height: 32px;
+}
+.orbit-name {
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.008em;
+  line-height: 1.15;
+}
+.orbit-service {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .12em;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+/* Clockwise reveal — NW → NE → SE → SW, evoking orbital motion.
+   Subtle floating animation continues forever for "alive but calm." */
+.itqan-slide.orbits-shown .orbit-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+.itqan-slide.orbits-shown .orbit-nw { transition-delay:   0ms; animation: orbit-float 7s ease-in-out 1500ms infinite; }
+.itqan-slide.orbits-shown .orbit-ne { transition-delay: 130ms; animation: orbit-float 7s ease-in-out 1900ms infinite; }
+.itqan-slide.orbits-shown .orbit-se { transition-delay: 260ms; animation: orbit-float 7s ease-in-out 2300ms infinite; }
+.itqan-slide.orbits-shown .orbit-sw { transition-delay: 390ms; animation: orbit-float 7s ease-in-out 2700ms infinite; }
+@keyframes orbit-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* ── Bottom positioning sentence ─────────────────────────────────────── */
+.itqan-bottom {
+  display: inline-block;
+  padding: 16px 32px;
+  border-top: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.3;
+  letter-spacing: -.005em;
+  text-align: center;
+  max-width: 1280px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.itqan-bottom .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.itqan-bottom .strong-noun {
+  color: var(--teal-900);
+  font-weight: 600;
+}
+.itqan-slide.bottom-shown .itqan-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itqan-lede, .itqan-core, .orbit-label, .itqan-bottom {
+    transition: opacity 0.2s linear;
+    transform: none;
+    transition-delay: 0s !important;
+    animation: none !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   §02.2.b · Platform Foundations Roadmap — thin transition rail
+   ────────────────────────────────────────────────────────────────────────
+   Transition map, not architecture. Visual grammar:
+     · main statement (top, light)
+     · thin roadmap rail: 4 stage markers (section number + foundation
+       name) with → between them. No cards.
+     · bottom microservice framing
+   Click sequence (3 reveals):
+     1) main statement
+     2) roadmap rail (4 stages stagger in L→R)
+     3) bottom line
+   ════════════════════════════════════════════════════════════════════════ */
+
+.roadmap-slide .slide-content.center-band {
+  top: 18%;
+  bottom: 18%;
+}
+.roadmap-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Main statement ─────────────────────────────────────────────────── */
+.roadmap-lede {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.25;
+  letter-spacing: -.008em;
+  text-align: center;
+  max-width: 1100px;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.roadmap-lede .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.roadmap-slide.sentence-shown .roadmap-lede {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Thin roadmap rail ───────────────────────────────────────────────── */
+.roadmap-rail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  width: 100%;
+  max-width: 1500px;
+}
+.roadmap-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  flex: 1 1 0;
+  min-width: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.roadmap-stage .stage-num {
+  font-family: var(--font-mono);
+  font-size: 56px;
+  font-weight: 500;
+  color: var(--amber-on-light);
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.roadmap-stage .stage-name {
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.006em;
+  line-height: 1.15;
+}
+.roadmap-arrow {
+  flex: 0 0 auto;
+  color: var(--l-muted);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.roadmap-slide.rail-shown .roadmap-stage,
+.roadmap-slide.rail-shown .roadmap-arrow {
+  opacity: 1;
+  transform: translateY(0);
+}
+.roadmap-slide.rail-shown .roadmap-arrow { color: var(--amber-on-light); }
+.roadmap-slide.rail-shown .roadmap-stage:nth-child(1) { transition-delay:   0ms; }
+.roadmap-slide.rail-shown .roadmap-arrow:nth-child(2) { transition-delay:  60ms; }
+.roadmap-slide.rail-shown .roadmap-stage:nth-child(3) { transition-delay: 120ms; }
+.roadmap-slide.rail-shown .roadmap-arrow:nth-child(4) { transition-delay: 180ms; }
+.roadmap-slide.rail-shown .roadmap-stage:nth-child(5) { transition-delay: 240ms; }
+.roadmap-slide.rail-shown .roadmap-arrow:nth-child(6) { transition-delay: 300ms; }
+.roadmap-slide.rail-shown .roadmap-stage:nth-child(7) { transition-delay: 360ms; }
+
+/* ── Bottom microservice framing ─────────────────────────────────────── */
+.roadmap-bottom {
+  display: inline-block;
+  padding: 16px 32px;
+  border-top: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.3;
+  letter-spacing: -.005em;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.roadmap-bottom .strong-noun {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.roadmap-slide.bottom-shown .roadmap-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roadmap-lede, .roadmap-stage, .roadmap-arrow, .roadmap-bottom {
+    transition: opacity 0.2s linear;
+    transform: none;
+    transition-delay: 0s !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   SECTION 03 — THE BACKBONE · custom diagrams per slide (rebuilt)
+   ────────────────────────────────────────────────────────────────────────
+   Each slide has its OWN visual identity (no shared grids):
+     §03.1.a  topology map         (absolute nodes + SVG spine)
+     §03.1.b  service cutaway      (shell with layered interior)
+     §03.2.a  manager spine        (vertical column with side attachments)
+     §03.2.b  live workflow object (asymmetric: RFQ card + stage rail + arc)
+     §03.2.c  gated advancement    (current → 4 gates → next + atomic update)
+     §03.3    integrity contract   (API list + formal contract document)
+   Shared utilities (lede style, eyebrow) defined once at top.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Shared lede across §03 slides — kept LESS dominant than other sections
+   because every slide here carries a custom diagram below. */
+.topo-lede, .cutaway-lede, .spine-lede, .live-lede, .gates-lede, .contract-lede {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.25;
+  letter-spacing: -.008em;
+  text-align: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  align-self: center;                  /* horizontally centred within flex column */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.topo-lede .emph, .cutaway-lede .emph, .spine-lede .emph,
+.live-lede .emph, .gates-lede .emph, .contract-lede .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.topo-lede .brand-name { font-family: var(--font-mono); font-weight: 600; }
+.topo-lede .brand-name .ar { color: var(--amber-on-light); }
+
+.svc-arch-slide.sentence-shown .topo-lede,
+.bacab-slide.sentence-shown .cutaway-lede,
+.mgr-core-slide.sentence-shown .spine-lede,
+.erd-slide.sentence-shown .live-lede,
+.wf-exec-slide.sentence-shown .gates-lede,
+.api-slide.sentence-shown .contract-lede {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.1.a · Service Topology — layered vertical flow
+   ────────────────────────────────────────────────────────────────────
+   Inspired by the reference architecture diagram. Strict top-down
+   flow, each layer = one horizontal band with labeled-edge between
+   bands. Three backend services as equal peers (no manager elevation
+   at this level — that's 03.2.a). External LLM box right-floats with
+   explicit × manager marker. Data ownership row at the bottom names
+   each store + its owner.
+   ══════════════════════════════════════════════════════════════════════ */
+.svc-arch-slide .slide-content.center-band {
+  top: 10%;
+  bottom: 10%;                        /* equal top/bottom — content centres */
+  left: 80px;
+  right: 80px;
+}
+.topo-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;            /* vertical centring of the whole block */
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+}
+.topo-flow {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+/* Layer band — container always visible; the TILE inside (or items
+   inside multi-item layers) animate in. The "context" beat reveals
+   the eyebrows, role text, chips, and the connecting arrows. */
+.topo-layer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;                            /* tighter spacing between layer-tag and tile */
+  opacity: 1;
+  transform: none;
+}
+
+/* Tile reveal: single tile inside its layer (UI / IAM) animates with
+   the corresponding `*-shown` class. Backends stagger inside. */
+.topo-layer-ui  .topo-tile,
+.topo-layer-iam .topo-tile {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.65s ease-out,
+              transform 0.65s cubic-bezier(.2, .7, .2, 1);
+}
+.svc-arch-slide.ui-shown  .topo-layer-ui  .topo-tile  { opacity: 1; transform: translateY(0); }
+.svc-arch-slide.iam-shown .topo-layer-iam .topo-tile  { opacity: 1; transform: translateY(0); }
+
+/* External LLM strip — its own layer fades in as a single beat */
+.topo-layer-ext {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease-out,
+              transform 0.7s cubic-bezier(.2, .7, .2, 1);
+  margin-top: 36px;                   /* clear separation from the data row above */
+}
+
+/* CONTEXT fill-in beat — the eyebrows, role text, chips, future tags,
+   and connecting arrows are all hidden until the speaker has named the
+   service boxes (clicks 2-4), then context-shown reveals them together. */
+.layer-tag,
+.tile-role,
+.tile-icon,
+.svc-chips,
+.svc-chip,
+.future-tag,
+.topo-edge {
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.svc-arch-slide.context-shown .layer-tag,
+.svc-arch-slide.context-shown .tile-role,
+.svc-arch-slide.context-shown .tile-icon,
+.svc-arch-slide.context-shown .svc-chips,
+.svc-arch-slide.context-shown .svc-chip,
+.svc-arch-slide.context-shown .future-tag,
+.svc-arch-slide.context-shown .topo-edge {
+  opacity: 1;
+}
+.layer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 15px;                     /* up from 13 → more visible */
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--teal-900);              /* up from muted → reads as a section marker */
+  line-height: 1;
+}
+.layer-tag .layer-sub {
+  color: var(--amber-on-light);
+  letter-spacing: .14em;
+}
+
+/* Generic tile — vertically stacked, all content centred. Icon on top
+   (color-coded), then name, then role, then optional chip list. */
+.topo-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 5px;                           /* tighter vertical rhythm inside tile */
+  padding: 10px 22px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(40, 28, 12, 0.04);
+}
+.topo-tile .tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: var(--l-muted);
+}
+.topo-tile .tile-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.topo-tile .tile-name {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--l-ink);
+  line-height: 1.2;
+}
+.topo-tile .tile-role {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--l-muted);
+  line-height: 1.4;
+}
+
+/* Backend chip row — small mono pills, centred under the role line. */
+.svc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.svc-chip {
+  padding: 3px 9px;
+  background: var(--l-bg);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--teal-900);
+  line-height: 1.3;
+}
+/* Service-coloured chip borders match the owner stripe */
+.tile-manager .svc-chip { border-color: rgba(232, 160, 76, 0.35); }
+.tile-intel   .svc-chip { border-color: rgba(60, 110, 61, 0.30); }
+.tile-copilot .svc-chip { border-color: rgba(28, 72, 35, 0.30); }
+/* Service icons take the colour of the owner stripe */
+.tile-manager .tile-icon { color: var(--amber-on-light); }
+.tile-intel   .tile-icon { color: var(--teal-700); }
+.tile-copilot .tile-icon { color: var(--teal-900); }
+.tile-ui  .tile-icon { color: var(--l-muted); }
+.tile-iam .tile-icon { color: var(--l-muted); }
+
+/* UI / IAM single-tile layers — narrower than full-width, balanced size
+   that doesn't overpower the 3-peer backend row below */
+.tile-ui {
+  border-left: 4px solid var(--l-hair-strong);
+}
+.topo-layer-ui  .topo-tile,
+.topo-layer-iam .topo-tile {
+  width: 100%;
+  max-width: 1100px;
+  align-self: center;
+  padding: 10px 22px;                   /* tighter padding so the slot has chrome margin */
+  gap: 4px;
+}
+.topo-layer-ui  .topo-tile .tile-name,
+.topo-layer-iam .topo-tile .tile-name {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.topo-layer-ui  .topo-tile .tile-role,
+.topo-layer-iam .topo-tile .tile-role {
+  font-size: 14px;
+  color: var(--l-muted);
+}
+
+/* IAM layer (future, dashed) — no opacity mute here; that conflicts
+   with the reveal animation. The dashed border + muted tile-name
+   colour below already signal "planned, not implemented." */
+.tile-iam.tile-future {
+  border-style: dashed;
+  border-color: var(--l-hair-strong);
+  background: transparent;
+}
+.tile-iam .tile-name { color: var(--l-muted); }
+
+/* Backend row & data row share a 12-column grid so that the dotted
+   ownership connectors actually point at the right backend (manager
+   owns 2 data tiles, intel + copilot one each). */
+.backends-row,
+.data-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+.tile-svc {
+  display: flex;
+  flex-direction: column;
+  grid-column: span 4;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.svc-arch-slide.backends-shown .tile-svc {
+  opacity: 1;
+  transform: translateY(0);
+}
+.svc-arch-slide.backends-shown .tile-manager  { transition-delay:   0ms; }
+.svc-arch-slide.backends-shown .tile-intel    { transition-delay: 100ms; }
+.svc-arch-slide.backends-shown .tile-copilot  { transition-delay: 200ms; }
+/* Manager visually dominant — full amber border, stronger tint, and a
+   warm amber glow. Same grid-column width as siblings so data stores
+   stay aligned underneath. Intel + copilot keep the lighter left-stripe
+   treatment so they read as supporting peers. */
+.tile-manager {
+  border: 2px solid var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.08);
+  box-shadow: 0 10px 28px rgba(232, 160, 76, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.tile-intel    { border-left: 4px solid var(--teal-700);       background: rgba(60, 110, 61, 0.03); }
+.tile-copilot  { border-left: 4px solid var(--teal-900);       background: rgba(28, 72, 35, 0.03); }
+
+/* Edges (between layers) */
+.topo-edge {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 12px;
+  padding: 2px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.topo-edge .edge-arrow {
+  color: var(--amber-on-light);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/* External LLM dependency · horizontal strip band. Sparkles icon left,
+   service name center-left, usage list right. Slightly elevated visual
+   weight via fuller padding + amber-tinted background so it lands as a
+   real "external" zone, not a thin footnote strip. */
+.ext-strip {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 12px 22px;
+  background: rgba(232, 160, 76, 0.04);
+  border: 1.5px dashed var(--amber-on-light);
+  border-radius: 12px;
+}
+.ext-strip .ext-strip-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--amber-on-light);
+}
+.ext-strip .ext-strip-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.ext-strip .ext-strip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.ext-strip .ext-strip-name {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: .02em;
+  line-height: 1.1;
+}
+.ext-strip .ext-strip-sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--l-muted);
+  font-style: italic;
+  line-height: 1.3;
+}
+.ext-strip .ext-strip-used {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: .08em;
+  color: var(--l-muted);
+  line-height: 1.2;
+  text-align: right;
+}
+.ext-strip .ext-used-emph {
+  color: var(--teal-900);
+  font-weight: 600;
+}
+
+/* Data row aligned to the backend columns:
+     opdb + files span 2 each (under manager's 4-col block)
+     intdb spans 4 (under intelligence)
+     session spans 4 (under copilot) */
+.data-opdb,
+.data-files    { grid-column: span 2; }
+.data-intdb    { grid-column: span 4; }
+.data-session  { grid-column: span 4; }
+.topo-layer-data {
+  /* top margin so the ownership connectors have real room to extend
+     up between this band and the backends band above */
+  margin-top: 14px;
+}
+.data-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;          /* centre icon + text inside the tile */
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.svc-arch-slide.data-shown .data-tile {
+  opacity: 1;
+  transform: translateY(0);
+}
+.svc-arch-slide.data-shown .data-opdb    { transition-delay:   0ms; }
+.svc-arch-slide.data-shown .data-files   { transition-delay:  80ms; }
+.svc-arch-slide.data-shown .data-intdb   { transition-delay: 160ms; }
+.svc-arch-slide.data-shown .data-session { transition-delay: 240ms; }
+.data-tile .data-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+.data-tile .data-icon svg {
+  width: 22px;
+  height: 22px;
+  /* colour follows the owner stripe via the .data-* selectors below */
+}
+.data-tile .data-name {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--l-ink);
+  line-height: 1.1;
+}
+/* Icon colour follows the owner — same colour family as the stripe + connector */
+.data-opdb   .data-icon,
+.data-files  .data-icon { color: var(--amber-on-light); }
+.data-intdb  .data-icon { color: var(--teal-700); }
+.data-session .data-icon { color: var(--teal-900); }
+.data-opdb,
+.data-files    { border-left: 3px solid var(--amber-on-light); }
+.data-intdb    { border-left: 3px solid var(--teal-700); }
+.data-session  { border-left: 3px solid var(--teal-900); }
+
+/* Visible ownership connector — dashed vertical line + arrow head,
+   centred on each data tile, rising up toward its owning backend.
+   The data row and backends row share the same 12-col grid above, so
+   the connector lands inside the right column. Taller (56px) and
+   bolder (2.5px dashed) than before so the relationship reads from
+   across the room. */
+.data-tile::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 22px;
+  border-left: 2.5px dashed var(--l-hair-strong);
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.data-tile::after {
+  /* small downward chevron at the bottom of the line, touching the
+     data tile top — makes "this is a pointer to this tile" obvious */
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--l-hair-strong);
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.svc-arch-slide.links-shown .data-tile::before,
+.svc-arch-slide.links-shown .data-tile::after { opacity: 1; }
+.data-opdb::before,
+.data-files::before  { border-left-color: var(--amber-on-light); }
+.data-intdb::before  { border-left-color: var(--teal-700); }
+.data-session::before { border-left-color: var(--teal-900); }
+.data-opdb::after,
+.data-files::after   { border-top-color: var(--amber-on-light); }
+.data-intdb::after   { border-top-color: var(--teal-700); }
+.data-session::after  { border-top-color: var(--teal-900); }
+
+/* Future tag (reused) */
+.future-tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+/* Reveal sequence — `ext-shown` is the only layer-level fade (its layer
+   starts at opacity 0). The UI/IAM/backends tiles handle their own
+   reveal animations above; context-shown reveals labels/arrows/chips;
+   data-shown reveals the data tiles; links-shown reveals connectors. */
+.svc-arch-slide.ext-shown .topo-layer-ext { opacity: 1; transform: translateY(0); }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.1.b · Service Cutaway — one opened backend service.
+   Larger central shell, lower (vertically centred), with the request
+   flow as the focal request journey. Translators integrated as a
+   vertical adapter rail INSIDE the shell. Support layer = foundation
+   strip at the base. HTTP IN / DB OUT as compact mono callouts.
+   ══════════════════════════════════════════════════════════════════════ */
+.bacab-slide .slide-content.center-band {
+  top: 10%;
+  bottom: 10%;
+  left: 80px;
+  right: 80px;
+}
+.cutaway-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  justify-content: center;             /* whole content vertically centred */
+}
+.cutaway-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* HTTP IN / DB OUT callouts (outside the shell) — compact, mono, the
+   amber arrow carries the directional weight. */
+.cutaway-io {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.cutaway-io .io-arrow {
+  color: var(--amber-on-light);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 300;
+}
+.cutaway-io-out { flex-direction: column-reverse; gap: 4px; }
+.cutaway-io .io-sep { color: var(--amber-on-light); }
+
+/* Service shell — the dominant central object. Soft elevation, generous
+   internal structure, no redundant header tab. */
+.cutaway-shell {
+  position: relative;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  background: var(--l-surface);
+  border: 1.5px solid var(--l-hair-strong);
+  border-radius: 18px;
+  overflow: hidden;                    /* clip inner sections to shell radius */
+  box-shadow: 0 14px 40px rgba(40, 28, 12, 0.07),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+  transition: opacity 0.65s ease-out,
+              transform 0.65s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Two-column inner grid: layer stack (left) + translator adapter rail
+   (right). Border-bottom separates this row from the support strip. */
+.shell-inner {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  border-bottom: 1px solid var(--l-hair);
+}
+
+/* Layer stack — three horizontal slices, each with name (left) + rule
+   (right). Controllers visually focal: amber border + tint. */
+.shell-layers {
+  display: flex;
+  flex-direction: column;
+}
+.cutaway-layer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--l-hair);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--teal-900);
+  line-height: 1.2;
+  background: var(--l-surface);
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.cutaway-layer:last-child { border-bottom: none; }
+.cutaway-layer .layer-rule {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--amber-on-light);
+  font-style: italic;
+}
+.cutaway-layer .layer-sep { color: var(--amber-on-light); margin: 0 4px; }
+
+/* Controllers — focal layer */
+.layer-controllers {
+  background: rgba(232, 160, 76, 0.07);
+  border-left: 4px solid var(--amber-on-light);
+  border-bottom-color: rgba(232, 160, 76, 0.25);
+  border-top: 1px solid rgba(232, 160, 76, 0.18);
+}
+.layer-controllers .layer-label {
+  color: var(--amber-on-light);
+}
+
+/* Translator adapter rail — vertical strip on the right inside shell.
+   Dashed amber left border = "this is the boundary between API shape
+   and internal shape". Compact label + bidirectional pair. */
+.shell-translators {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 22px;
+  border-left: 1.5px dashed var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.02);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.shell-translators .trans-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+.shell-translators .trans-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 14px;
+  border: 1px dashed rgba(232, 160, 76, 0.5);
+  border-radius: 10px;
+  background: var(--l-surface);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.2;
+}
+.shell-translators .trans-bidir {
+  color: var(--amber-on-light);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Support foundation strip at the bottom of the shell */
+.shell-support {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 24px;
+  background: rgba(60, 110, 61, 0.04);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.shell-support .support-eyebrow {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+.shell-support .support-sep {
+  color: var(--amber-on-light);
+}
+
+/* ── Reveal sequence ─────────────────────────────────────────────────── */
+.bacab-slide.shell-shown .cutaway-io { opacity: 1; }
+.bacab-slide.shell-shown .cutaway-shell {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.bacab-slide.flow-shown  .cutaway-layer { opacity: 1; transform: translateX(0); }
+.bacab-slide.flow-shown  .layer-routes        { transition-delay:   0ms; }
+.bacab-slide.flow-shown  .layer-controllers   { transition-delay: 180ms; }
+.bacab-slide.flow-shown  .layer-datasources   { transition-delay: 360ms; }
+.bacab-slide.trans-shown .shell-translators { opacity: 1; transform: translateX(0); }
+.bacab-slide.support-shown .shell-support   { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.2.a · Manager Spine
+   ══════════════════════════════════════════════════════════════════════ */
+.mgr-core-slide .slide-content.center-band {
+  top: 7%;
+  bottom: 7%;
+  left: 50px;
+  right: 50px;
+}
+.spine-canvas {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;            /* whole block centres in slot */
+  gap: 32px;
+  width: 100%;
+  height: 100%;
+}
+.spine-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1700px;                  /* clamp to SVG viewBox width so x
+                                          coords are 1:1 with CSS pixels —
+                                          dots actually land on the spine
+                                          edge instead of floating off */
+  height: 580px;                      /* fixed — matches SVG viewBox so y
+                                          coords land on attach centres */
+  margin: 0 auto;
+}
+
+/* Central spine column (focal) — height tightened to span exactly
+   the attachment range (top of first attach to bottom of last), so
+   the spine no longer has empty rectangles above and below content. */
+.spine-column {
+  position: absolute;
+  left: 670px;
+  top: 60px;
+  width: 360px;
+  height: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 28px;
+  background: linear-gradient(180deg, rgba(232, 160, 76, 0.10) 0%, rgba(232, 160, 76, 0.04) 100%);
+  border: 2px solid var(--amber-on-light);
+  border-radius: 16px;
+  box-shadow: 0 16px 42px rgba(232, 160, 76, 0.20),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transform: scaleY(0.9);
+  transform-origin: center;
+  transition: opacity 0.7s ease-out,
+              transform 0.7s cubic-bezier(.2, .7, .2, 1);
+}
+.spine-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+.spine-name {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.01em;
+  line-height: 1.1;
+}
+.spine-tagline {
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-ink);
+  line-height: 1.35;
+  letter-spacing: -.003em;
+  max-width: 280px;
+}
+
+/* Attachments — default = support tier */
+.attach {
+  position: absolute;
+  width: 220px;
+  padding: 12px 18px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateX(0);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2, .7, .2, 1);
+}
+.attach-left  { left: 240px; text-align: right; }
+.attach-right { left: 1240px; text-align: left; }
+.attach-left.attach-l1  { top:  60px; }
+.attach-left.attach-l2  { top: 180px; }
+.attach-left.attach-l3  { top: 300px; }
+.attach-left.attach-l4  { top: 420px; }
+.attach-right.attach-r1 { top:  60px; }
+.attach-right.attach-r2 { top: 180px; }
+.attach-right.attach-r3 { top: 300px; }
+.attach-right.attach-r4 { top: 420px; }
+.attach-left  { transform: translateX(20px); }
+.attach-right { transform: translateX(-20px); }
+.attach .attach-name {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--teal-900);
+  line-height: 1.2;
+}
+.attach .attach-role {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--l-muted);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* Tier hierarchy via BORDER WEIGHT + SIZE only — all attachment names
+   keep the same teal-900 colour so the eye reads "calm hierarchy" not
+   "heat map." */
+
+/* Core tier — RFQs, Workflows, Stages */
+.attach-core {
+  border-width: 1.5px;
+  padding: 14px 20px;
+  box-shadow: 0 4px 12px rgba(40, 28, 12, 0.05);
+}
+.attach-core .attach-name {
+  font-weight: 600;
+}
+
+/* Support tier — Subtasks, Files, Notes, Reminders. Default styling
+   (1px border, default padding, weight 500). */
+
+/* Derived tier — Stats. Smaller card, hair border, no shadow. */
+.attach-derived {
+  width: 200px;
+  padding: 10px 16px;
+  border-color: var(--l-hair);
+  box-shadow: none;
+}
+.attach-derived .attach-name {
+  font-size: 14px;
+}
+.attach-derived .attach-role {
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+/* SVG connectors — thin hairline lines + small amber anchor dots at
+   the spine edges. Quieter than before; amber lives in the dot. */
+.spine-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.spine-line {
+  fill: none;
+  stroke: var(--l-hair-strong);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  transition: stroke-dashoffset 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.spine-anchor {
+  fill: var(--amber-on-light);
+  opacity: 0;
+  transition: opacity 0.45s ease-out;
+}
+
+.spine-boundary {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 28px;
+  border-top: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  color: var(--l-ink);
+  line-height: 1.3;
+  align-self: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.spine-boundary .bound-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+}
+.spine-boundary .emph-strike {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+
+/* Reveal sequence — tier-based, not spatial. Each tier reveals its
+   attachments + matching connector lines + amber anchor dots together. */
+.mgr-core-slide.spine-shown .spine-column { opacity: 1; transform: scaleY(1); }
+
+/* Core tier — RFQs · Workflows · Stages */
+.mgr-core-slide.core-shown .attach-core   { opacity: 1; transform: translateX(0); }
+.mgr-core-slide.core-shown .conn-core     { stroke-dashoffset: 0; }
+.mgr-core-slide.core-shown .anc-core      { opacity: 1; transition-delay: 200ms; }
+.mgr-core-slide.core-shown .attach-l1     { transition-delay:   0ms; }
+.mgr-core-slide.core-shown .attach-l2     { transition-delay:  80ms; }
+.mgr-core-slide.core-shown .attach-l3     { transition-delay: 160ms; }
+
+/* Support tier — Subtasks · Files · Notes · Reminders */
+.mgr-core-slide.support-shown .attach-support { opacity: 1; transform: translateX(0); }
+.mgr-core-slide.support-shown .conn-support   { stroke-dashoffset: 0; }
+.mgr-core-slide.support-shown .anc-support    { opacity: 1; transition-delay: 200ms; }
+.mgr-core-slide.support-shown .attach-l4   { transition-delay:   0ms; }
+.mgr-core-slide.support-shown .attach-r1   { transition-delay:  60ms; }
+.mgr-core-slide.support-shown .attach-r2   { transition-delay: 120ms; }
+.mgr-core-slide.support-shown .attach-r3   { transition-delay: 180ms; }
+
+/* Derived tier — Stats only */
+.mgr-core-slide.derived-shown .attach-derived { opacity: 1; transform: translateX(0); }
+.mgr-core-slide.derived-shown .conn-derived   { stroke-dashoffset: 0; }
+.mgr-core-slide.derived-shown .anc-derived    { opacity: 1; transition-delay: 200ms; }
+
+.mgr-core-slide.boundary-shown .spine-boundary { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.2.b · Live Workflow Object
+   ══════════════════════════════════════════════════════════════════════ */
+.erd-slide .slide-content.center-band {
+  top: 9%;
+  bottom: 9%;
+  left: 50px;
+  right: 50px;
+}
+.live-canvas {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;            /* vertically centre lede + stage */
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+}
+.live-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1700px;                  /* clamp to SVG viewBox width — SVG
+                                          and CSS pixel coords stay 1:1,
+                                          fan lines hit chip tops exactly */
+  height: 640px;
+  margin: 0 auto;
+}
+
+/* Workflow source (top-left, small) */
+.live-workflow {
+  position: absolute;
+  left: 100px;
+  top: 40px;
+  width: 240px;
+  padding: 14px 20px;
+  background: rgba(60, 110, 61, 0.06);
+  border: 1px solid var(--teal-700);
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2, .7, .2, 1);
+}
+.live-workflow .lw-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--teal-900);
+  line-height: 1;
+}
+.live-workflow .lw-meta {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--l-muted);
+  margin-top: 4px;
+}
+
+/* RFQ object (focal "live object" card) */
+.live-rfq {
+  position: absolute;
+  left: 60px;
+  top: 160px;
+  width: 320px;
+  padding: 18px 22px;
+  background: var(--l-surface);
+  border: 2px solid var(--amber-on-light);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(232, 160, 76, 0.18);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.live-rfq .rfq-tab {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.live-rfq .rfq-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.live-rfq .rfq-field {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--l-hair);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.2;
+}
+.live-rfq .rfq-field:last-child { border-bottom: none; }
+.live-rfq .rfq-field .f-key { color: var(--l-muted); flex: 0 0 130px; }
+.live-rfq .rfq-field .f-val { color: var(--l-ink); }
+.live-rfq .rfq-field-pointer {
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: rgba(232, 160, 76, 0.08);
+  border: 1px solid var(--amber-on-light);
+  border-radius: 6px;
+}
+.live-rfq .rfq-field-pointer .f-key { color: var(--amber-on-light); font-weight: 600; }
+.live-rfq .rfq-field-pointer .f-val-pointer { color: var(--amber-on-light); font-weight: 600; }
+
+/* Stage rail (right zone) */
+.stage-rail {
+  position: absolute;
+  left: 460px;
+  top: 130px;
+  right: 60px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.stage-rail .rail-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  margin-bottom: 14px;
+  line-height: 1;
+}
+.rail-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+.rail-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair);
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+}
+.rail-cell .rc-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+.rail-cell .rc-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--teal-900);
+  line-height: 1.2;
+}
+.rail-done { opacity: 0.55; }
+.rail-done .rc-num { color: var(--teal-700); }
+.rail-active {
+  border-color: var(--amber-on-light);
+  border-width: 2px;
+  background: rgba(232, 160, 76, 0.08);
+  box-shadow: 0 8px 22px rgba(232, 160, 76, 0.20);
+  transform: scale(1.08);
+}
+.rail-active .rc-num   { color: var(--amber-on-light); }
+.rail-active .rc-name  { color: var(--amber-on-light); }
+.rail-active .rc-marker {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  background: var(--amber-on-light);
+  color: var(--l-bg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Attached entities — chips sit DIRECTLY under the active stage card
+   (3rd column of 6 in the rail), tightly anchored. The active-stage
+   eyebrow label is also tighter; could be dropped if the chips alone
+   read clearly enough. */
+.active-attaches {
+  position: absolute;
+  left: 820px;
+  top: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.active-attaches .aa-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+}
+.aa-row {
+  display: flex;
+  gap: 8px;
+}
+.aa-tag {
+  padding: 8px 14px;
+  background: rgba(232, 160, 76, 0.06);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  color: var(--teal-900);
+  line-height: 1;
+}
+
+/* SVG live connectors */
+.live-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.live-line {
+  fill: none;
+  stroke: var(--amber-on-light);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  transition: stroke-dashoffset 0.8s cubic-bezier(.2, .7, .2, 1);
+}
+/* Workflow → RFQ vertical drop — thicker teal so the "template generates
+   this RFQ" relationship reads, not whispers. */
+.live-wf {
+  stroke: var(--teal-700);
+  stroke-width: 2;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+/* current_stage_id pointer — dashed amber arc. Reads as "this is a
+   REFERENCE pointing at that cell," not a solid wire. Hidden via
+   opacity (the offset-800 hiding trick doesn't work with a repeating
+   `6 5` dasharray — same gotcha as .live-attach). */
+.live-pointer {
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+/* Active-stage attach lines — hidden via OPACITY initially, not via the
+   stroke-dashoffset trick (which doesn't work when the line's own
+   dasharray pattern overrides it). */
+.live-attach {
+  stroke: var(--l-hair-strong);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  stroke-dashoffset: 0;               /* dashes always show when visible */
+  opacity: 0;                         /* hidden until attaches-shown */
+  transition: opacity 0.55s ease-out;
+}
+
+/* Reveal sequence */
+.erd-slide.rfq-shown .live-workflow,
+.erd-slide.rfq-shown .live-rfq { opacity: 1; transform: translateY(0); }
+.erd-slide.rfq-shown .live-wf  { stroke-dashoffset: 0; transition-delay: 100ms; }
+.erd-slide.rail-shown .stage-rail { opacity: 1; transform: translateY(0); }
+.erd-slide.pointer-shown .live-pointer { opacity: 1; }
+.erd-slide.attaches-shown .active-attaches { opacity: 1; transform: translateY(0); }
+.erd-slide.attaches-shown .live-attach { opacity: 1; transition-delay: 100ms; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.2.c · Gated Advancement
+   ══════════════════════════════════════════════════════════════════════ */
+.wf-exec-slide .slide-content.center-band {
+  top: 8%;
+  bottom: 8%;
+  left: 50px;
+  right: 50px;
+}
+.gates-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  height: 100%;
+}
+.gates-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  gap: 40px;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+/* Current / Next stage cards */
+.gate-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 28px;
+  background: var(--l-surface);
+  border: 1.5px solid var(--l-hair-strong);
+  border-radius: 12px;
+  box-shadow: var(--sh-tile);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.gate-stage .gs-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+}
+.gate-stage .gs-name {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.005em;
+  line-height: 1.1;
+}
+.gate-stage .gs-meta {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--l-muted);
+  line-height: 1.3;
+}
+.gate-stage .gs-sep { color: var(--amber-on-light); margin: 0 4px; }
+.gate-stage-current {
+  border-color: var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.05);
+}
+.gate-stage-current .gs-eyebrow { color: var(--amber-on-light); }
+.gate-stage-next { border-style: dashed; opacity: 0.95; }
+
+/* Gate cluster (center, 4 vertical bars) */
+.gate-cluster {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 14px;
+  background: var(--l-bg);
+  border: 1.5px solid var(--l-hair-strong);
+  border-radius: 10px;
+  text-align: center;
+  min-height: 160px;
+  opacity: 0;
+  transform: translateY(10px) scaleY(0.85);
+  transform-origin: center bottom;
+  transition: opacity 0.5s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.gate .gate-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+.gate .gate-label {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  color: var(--teal-900);
+  line-height: 1.2;
+}
+.gate .gate-check {
+  font-size: 24px;
+  color: var(--l-hair-strong);
+  font-weight: 700;
+  transition: color 0.4s ease-out;
+}
+
+/* Advance beam */
+.gates-beam {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.beam-line {
+  fill: none;
+  stroke: var(--amber-on-light);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1.4s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Atomic update */
+.atomic-update {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.atomic-update .au-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+.au-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 1400px;
+}
+.au-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 20px;
+  background: rgba(60, 110, 61, 0.05);
+  border: 1px solid rgba(60, 110, 61, 0.18);
+  border-radius: 10px;
+}
+.au-card .au-key {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal-900);
+  line-height: 1;
+}
+.au-card .au-val {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--l-ink);
+  line-height: 1.3;
+}
+
+/* Reveal sequence */
+.wf-exec-slide.stages-shown .gate-stage { opacity: 1; transform: translateY(0); }
+.wf-exec-slide.stages-shown .gate-stage-current { transition-delay: 0ms; }
+.wf-exec-slide.stages-shown .gate-stage-next    { transition-delay: 80ms; }
+.wf-exec-slide.gates-shown .gate { opacity: 1; transform: translateY(0) scaleY(1); }
+.wf-exec-slide.gates-shown .gate-1 { transition-delay:   0ms; }
+.wf-exec-slide.gates-shown .gate-2 { transition-delay:  80ms; }
+.wf-exec-slide.gates-shown .gate-3 { transition-delay: 160ms; }
+.wf-exec-slide.gates-shown .gate-4 { transition-delay: 240ms; }
+.wf-exec-slide.beam-shown .beam-line { stroke-dashoffset: 0; }
+.wf-exec-slide.beam-shown .gate .gate-check { color: var(--amber-on-light); }
+.wf-exec-slide.beam-shown .gate-1 .gate-check { transition-delay: 350ms; }
+.wf-exec-slide.beam-shown .gate-2 .gate-check { transition-delay: 700ms; }
+.wf-exec-slide.beam-shown .gate-3 .gate-check { transition-delay: 1050ms; }
+.wf-exec-slide.beam-shown .gate-4 .gate-check { transition-delay: 1400ms; }
+.wf-exec-slide.atomic-shown .atomic-update { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.3 · Integrity Contract
+   ══════════════════════════════════════════════════════════════════════ */
+.api-slide .slide-content.center-band {
+  top: 8%;
+  bottom: 8%;
+  left: 50px;
+  right: 50px;
+}
+.contract-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  height: 100%;
+}
+.contract-split {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  flex: 1;
+  align-items: start;
+}
+
+/* Left column — API families (clean editorial list) */
+.api-column {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+}
+.api-column .col-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+  margin-bottom: 18px;
+}
+.api-rows {
+  display: flex;
+  flex-direction: column;
+}
+.api-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--l-hair);
+}
+.api-row:last-child { border-bottom: none; }
+.api-row .ar-name {
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.006em;
+  line-height: 1.15;
+}
+.api-row .ar-ops {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--l-muted);
+  line-height: 1.4;
+}
+
+/* Right column — formal Integrity Contract document */
+.contract-column {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.contract-doc {
+  position: relative;
+  background: var(--l-surface);
+  border: 1.5px solid var(--l-hair-strong);
+  border-radius: 4px;
+  padding: 32px 36px;
+  box-shadow: 0 14px 36px rgba(40, 28, 12, 0.08);
+}
+.contract-doc::before {
+  /* decorative left rule (formal document style) */
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: 2px;
+  background: var(--amber-on-light);
+}
+.doc-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--amber-on-light);
+}
+.doc-header .doc-seal {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--amber-on-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.05);
+  line-height: 1;
+}
+.doc-title .doc-name {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -.008em;
+  line-height: 1;
+}
+.doc-title .doc-sub {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  margin-top: 4px;
+  line-height: 1;
+}
+.doc-clauses {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: clause;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.doc-clauses li {
+  counter-increment: clause;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--l-ink);
+  line-height: 1.4;
+}
+.doc-clauses li::before {
+  content: counter(clause, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  color: var(--amber-on-light);
+}
+.doc-clauses .clause-key {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--l-ink);
+  margin-right: 8px;
+}
+.doc-clauses .clause-body { color: var(--l-muted); }
+
+/* Maturity footnote (small) */
+.contract-maturity {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--l-muted);
+  line-height: 1.3;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.contract-maturity .mat-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  padding: 3px 9px;
+  border: 1px solid var(--amber-on-light);
+  border-radius: 999px;
+}
+
+/* Reveal sequence */
+.api-slide.families-shown .api-column { opacity: 1; transform: translateX(0); }
+.api-slide.contract-shown .contract-column { opacity: 1; transform: translateX(0); }
+.api-slide.maturity-shown .contract-maturity { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .topo-lede, .cutaway-lede, .spine-lede, .live-lede, .gates-lede, .contract-lede,
+  .topo-layer, .topo-edge, .ext-strip,
+  .tile-svc, .data-tile, .topo-layer-backends .layer-tag,
+  .cutaway-shell, .cutaway-layer, .shell-translators, .shell-support, .cutaway-io,
+  .spine-column, .attach, .spine-boundary,
+  .live-workflow, .live-rfq, .stage-rail, .active-attaches,
+  .gate-stage, .gate, .atomic-update,
+  .api-column, .contract-column, .contract-maturity {
+    transition: opacity 0.2s linear;
+    transform: none;
+    transition-delay: 0s !important;
+  }
+  .spine-line, .live-line, .beam-line {
+    transition: opacity 0.2s linear;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  .mgr-core-slide.core-shown .conn-core,
+  .mgr-core-slide.support-shown .conn-support,
+  .mgr-core-slide.derived-shown .conn-derived,
+  .erd-slide.rfq-shown .live-wf,
+  .erd-slide.pointer-shown .live-pointer,
+  .erd-slide.attaches-shown .live-attach,
+  .wf-exec-slide.beam-shown .beam-line { opacity: 1; }
 }

@@ -510,6 +510,21 @@ function scrambleTo(element, newText, duration = 800) {
   requestAnimationFrame(frame);
 }
 
+// Slide 02.1 pivot map — per-box reveal + arrows-with-target-box helper.
+// Arrow i sits between box i and box i+1, so it reveals when box i+1 lands.
+function setPivotBox(slide, n) {
+  if (!slide) return;
+  const boxes  = slide.querySelectorAll('.map-box');
+  const arrows = slide.querySelectorAll('.map-arrow');
+  boxes.forEach((box, i) => {
+    box.classList.toggle('revealed', i < n);
+    box.classList.toggle('current',  i === n - 1);
+  });
+  arrows.forEach((arrow, i) => {
+    arrow.classList.toggle('revealed', i < n - 1);
+  });
+}
+
 // Slide 01.3 gap cards — per-card reveal + active-highlight helper.
 // n = how many gap cards should be revealed; the LAST one carries .current
 // (speaker is talking about that gap). n = 0 resets the grid.
@@ -648,6 +663,11 @@ Reveal.on('fragmentshown', (event) => {
     if (slide) slide.classList.add('header-shown');
     return;
   }
+  if (trigger.matches('[data-audit-block]')) {
+    const slide = trigger.closest('.audit-slide');
+    if (slide) slide.classList.add('block-shown');
+    return;
+  }
   if (trigger.matches('[data-audit-input]')) {
     const slide = trigger.closest('.audit-slide');
     if (slide) setFlowInput(slide, parseInt(trigger.dataset.auditInput, 10));
@@ -707,6 +727,122 @@ Reveal.on('fragmentshown', (event) => {
     slide.querySelectorAll('.gap-card.current').forEach((c) => c.classList.remove('current'));
     return;
   }
+
+  // ── Slide 02.1 · From BOQ Automation to Lifecycle Intelligence ───────
+  // 4-click sequence: 1) lede + Original Request box (combined opening
+  // beat) · 2-3) Audit Decision + New Direction boxes with per-box amber
+  // pulse (arrows draw alongside their target box) · 4) bottom principle.
+  if (trigger.matches('[data-pivot-box]')) {
+    const slide = trigger.closest('.pivot-slide');
+    if (!slide) return;
+    const n = parseInt(trigger.dataset.pivotBox, 10);
+    setPivotBox(slide, n);
+    // First box click also reveals the main statement (combined beat).
+    if (n >= 1) slide.classList.add('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-pivot-bottom]')) {
+    const slide = trigger.closest('.pivot-slide');
+    if (!slide) return;
+    slide.classList.add('bottom-shown');
+    // Speaker lands the positioning — clear the last box's pulse.
+    slide.querySelectorAll('.map-box.current').forEach((b) => b.classList.remove('current'));
+    return;
+  }
+
+  // ── Slide 02.2.a · Itqān Platform Direction (Reveal) · 4 clicks ──────
+  // 1) main statement · 2) Itqān core lifts in · 3) 4 orbiting foundations
+  // appear with clockwise stagger · 4) bottom positioning sentence.
+  if (trigger.matches('[data-itqan-sentence]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.add('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-core]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.add('core-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-orbits]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.add('orbits-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-bottom]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.add('bottom-shown');
+    return;
+  }
+
+  // ── Slide 02.2.b · Platform Foundations Roadmap · 3 clicks ───────────
+  // 1) transitional statement · 2) roadmap rail (4 stages stagger) ·
+  // 3) bottom microservice framing.
+  if (trigger.matches('[data-roadmap-sentence]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.add('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-roadmap-rail]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.add('rail-shown');
+    return;
+  }
+  if (trigger.matches('[data-roadmap-bottom]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.add('bottom-shown');
+    return;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+  // SECTION 03 — THE BACKBONE (6 slides). Each slide uses simple state-class
+  // toggles; no helpers needed beyond class add/remove.
+  // ──────────────────────────────────────────────────────────────────────
+
+  // §03.1.a · Service Topology — 8 clicks: lede → UI box → IAM box →
+  // 3 backend boxes (staggered) → context fill-in (eyebrows, roles, chips,
+  // arrows) → data tiles → ownership connectors → external LLM.
+  if (trigger.matches('[data-svc-sentence]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('sentence-shown'); return; }
+  if (trigger.matches('[data-svc-ui]'))       { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('ui-shown'); return; }
+  if (trigger.matches('[data-svc-iam]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('iam-shown'); return; }
+  if (trigger.matches('[data-svc-backends]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('backends-shown'); return; }
+  if (trigger.matches('[data-svc-context]'))  { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('context-shown'); return; }
+  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('data-shown'); return; }
+  if (trigger.matches('[data-svc-links]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('links-shown'); return; }
+  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('ext-shown'); return; }
+
+  // §03.1.b · Service Cutaway — 5 clicks (lede → shell → flow → translators → support).
+  if (trigger.matches('[data-bacab-sentence]')) { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('sentence-shown'); return; }
+  if (trigger.matches('[data-bacab-shell]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('shell-shown'); return; }
+  if (trigger.matches('[data-bacab-flow]'))     { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('flow-shown'); return; }
+  if (trigger.matches('[data-bacab-trans]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('trans-shown'); return; }
+  if (trigger.matches('[data-bacab-support]'))  { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('support-shown'); return; }
+
+  // §03.2.a · Manager Spine — 5 clicks tier-based: spine → core → support → derived → boundary.
+  if (trigger.matches('[data-mgr-spine]'))    { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('spine-shown'); return; }
+  if (trigger.matches('[data-mgr-core]'))     { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('core-shown'); return; }
+  if (trigger.matches('[data-mgr-support]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('support-shown'); return; }
+  if (trigger.matches('[data-mgr-derived]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('derived-shown'); return; }
+  if (trigger.matches('[data-mgr-boundary]')) { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('boundary-shown'); return; }
+
+  // §03.2.b · Live Workflow Object — 5 clicks (lede → rfq → rail → pointer → attaches).
+  if (trigger.matches('[data-erd-sentence]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('sentence-shown'); return; }
+  if (trigger.matches('[data-erd-rfq]'))      { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('rfq-shown'); return; }
+  if (trigger.matches('[data-erd-rail]'))     { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('rail-shown'); return; }
+  if (trigger.matches('[data-erd-pointer]'))  { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('pointer-shown'); return; }
+  if (trigger.matches('[data-erd-attaches]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('attaches-shown'); return; }
+
+  // §03.2.c · Gated Advancement — 5 clicks (lede → stages → gates → beam → atomic).
+  if (trigger.matches('[data-wf-sentence]')) { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.add('sentence-shown'); return; }
+  if (trigger.matches('[data-wf-stages]'))   { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.add('stages-shown'); return; }
+  if (trigger.matches('[data-wf-gates]'))    { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.add('gates-shown'); return; }
+  if (trigger.matches('[data-wf-beam]'))     { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.add('beam-shown'); return; }
+  if (trigger.matches('[data-wf-atomic]'))   { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.add('atomic-shown'); return; }
+
+  // §03.3 · Integrity Contract — 4 clicks (lede → families → contract → maturity).
+  if (trigger.matches('[data-api-sentence]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('sentence-shown'); return; }
+  if (trigger.matches('[data-api-families]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('families-shown'); return; }
+  if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('contract-shown'); return; }
+  if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('maturity-shown'); return; }
 
   // Title-slide cascade — first click on slide 0.1 plays the intro reveal.
   if (trigger.matches('[data-title-intro-trigger]')) {
@@ -846,6 +982,11 @@ Reveal.on('fragmenthidden', (event) => {
     if (slide) slide.classList.remove('header-shown');
     return;
   }
+  if (trigger.matches('[data-audit-block]')) {
+    const slide = trigger.closest('.audit-slide');
+    if (slide) slide.classList.remove('block-shown');
+    return;
+  }
   if (trigger.matches('[data-audit-input]')) {
     const slide = trigger.closest('.audit-slide');
     if (slide) setFlowInput(slide, parseInt(trigger.dataset.auditInput, 10) - 1);
@@ -906,6 +1047,104 @@ Reveal.on('fragmenthidden', (event) => {
     if (cards[3]) cards[3].classList.add('current');
     return;
   }
+
+  // ── Slide 02.1 · reverse navigation ──────────────────────────────────
+  if (trigger.matches('[data-pivot-box]')) {
+    const slide = trigger.closest('.pivot-slide');
+    if (!slide) return;
+    const n = parseInt(trigger.dataset.pivotBox, 10);
+    setPivotBox(slide, n - 1);
+    // Hiding box 1 also hides the lede (they reveal together).
+    if (n === 1) slide.classList.remove('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-pivot-bottom]')) {
+    const slide = trigger.closest('.pivot-slide');
+    if (!slide) return;
+    slide.classList.remove('bottom-shown');
+    // Restore .current on the last box (bottom only fires after all boxes).
+    const boxes = slide.querySelectorAll('.map-box');
+    if (boxes[2]) boxes[2].classList.add('current');
+    return;
+  }
+
+  // ── Slide 02.2.a · reverse navigation ────────────────────────────────
+  if (trigger.matches('[data-itqan-sentence]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.remove('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-core]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.remove('core-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-orbits]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.remove('orbits-shown');
+    return;
+  }
+  if (trigger.matches('[data-itqan-bottom]')) {
+    const slide = trigger.closest('.itqan-slide');
+    if (slide) slide.classList.remove('bottom-shown');
+    return;
+  }
+
+  // ── Slide 02.2.b · reverse navigation ────────────────────────────────
+  if (trigger.matches('[data-roadmap-sentence]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.remove('sentence-shown');
+    return;
+  }
+  if (trigger.matches('[data-roadmap-rail]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.remove('rail-shown');
+    return;
+  }
+  if (trigger.matches('[data-roadmap-bottom]')) {
+    const slide = trigger.closest('.roadmap-slide');
+    if (slide) slide.classList.remove('bottom-shown');
+    return;
+  }
+
+  // ── SECTION 03 reverse navigation ─────────────────────────────────────
+  if (trigger.matches('[data-svc-sentence]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('sentence-shown'); return; }
+  if (trigger.matches('[data-svc-ui]'))       { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('ui-shown'); return; }
+  if (trigger.matches('[data-svc-iam]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('iam-shown'); return; }
+  if (trigger.matches('[data-svc-backends]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('backends-shown'); return; }
+  if (trigger.matches('[data-svc-context]'))  { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('context-shown'); return; }
+  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('data-shown'); return; }
+  if (trigger.matches('[data-svc-links]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('links-shown'); return; }
+  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('ext-shown'); return; }
+
+  if (trigger.matches('[data-bacab-sentence]')) { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('sentence-shown'); return; }
+  if (trigger.matches('[data-bacab-shell]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('shell-shown'); return; }
+  if (trigger.matches('[data-bacab-flow]'))     { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('flow-shown'); return; }
+  if (trigger.matches('[data-bacab-trans]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('trans-shown'); return; }
+  if (trigger.matches('[data-bacab-support]'))  { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('support-shown'); return; }
+
+  if (trigger.matches('[data-mgr-spine]'))    { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('spine-shown'); return; }
+  if (trigger.matches('[data-mgr-core]'))     { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('core-shown'); return; }
+  if (trigger.matches('[data-mgr-support]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('support-shown'); return; }
+  if (trigger.matches('[data-mgr-derived]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('derived-shown'); return; }
+  if (trigger.matches('[data-mgr-boundary]')) { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('boundary-shown'); return; }
+
+  if (trigger.matches('[data-erd-sentence]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('sentence-shown'); return; }
+  if (trigger.matches('[data-erd-rfq]'))      { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('rfq-shown'); return; }
+  if (trigger.matches('[data-erd-rail]'))     { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('rail-shown'); return; }
+  if (trigger.matches('[data-erd-pointer]'))  { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('pointer-shown'); return; }
+  if (trigger.matches('[data-erd-attaches]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('attaches-shown'); return; }
+
+  if (trigger.matches('[data-wf-sentence]')) { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.remove('sentence-shown'); return; }
+  if (trigger.matches('[data-wf-stages]'))   { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.remove('stages-shown'); return; }
+  if (trigger.matches('[data-wf-gates]'))    { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.remove('gates-shown'); return; }
+  if (trigger.matches('[data-wf-beam]'))     { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.remove('beam-shown'); return; }
+  if (trigger.matches('[data-wf-atomic]'))   { const s = trigger.closest('.wf-exec-slide'); if (s) s.classList.remove('atomic-shown'); return; }
+
+  if (trigger.matches('[data-api-sentence]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('sentence-shown'); return; }
+  if (trigger.matches('[data-api-families]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('families-shown'); return; }
+  if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('contract-shown'); return; }
+  if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('maturity-shown'); return; }
 
   // Title-slide — going back (left arrow on slide 0.1 from the shown state)
   // resets to the blank pre-anim state so the next forward press replays.
@@ -1105,11 +1344,13 @@ Reveal.on('slidechanged', (event) => {
     setFlowInput(auditSlide, maxInput);
 
     const headerShown   = !!slide.querySelector('[data-audit-header].visible');
+    const blockShown    = !!slide.querySelector('[data-audit-block].visible');
     const convergeShown = !!slide.querySelector('[data-audit-converge].visible');
     const outputShown   = !!slide.querySelector('[data-audit-output].visible');
     const stripShown    = !!slide.querySelector('[data-audit-strip].visible');
 
     auditSlide.classList.toggle('header-shown',   headerShown);
+    auditSlide.classList.toggle('block-shown',    blockShown);
     auditSlide.classList.toggle('converge-shown', convergeShown);
     auditSlide.classList.toggle('output-shown',   outputShown);
     auditSlide.classList.toggle('strip-shown',    stripShown);
@@ -1151,6 +1392,94 @@ Reveal.on('slidechanged', (event) => {
     if (diagnosisShown) {
       gapsSlide.querySelectorAll('.gap-card.current').forEach((c) => c.classList.remove('current'));
     }
+  }
+
+  // Slide 02.1 re-entry — restore pivot boxes (+ arrows) to their deepest
+  // visible state and snap the bottom flag. The lede tracks the first box
+  // (they reveal together as the opening beat).
+  const pivotSlide = slide.querySelector('.pivot-slide');
+  if (pivotSlide) {
+    let maxBox = 0;
+    for (let n = 3; n >= 1; n--) {
+      if (slide.querySelector(`[data-pivot-box="${n}"].visible`)) { maxBox = n; break; }
+    }
+    setPivotBox(pivotSlide, maxBox);
+    pivotSlide.classList.toggle('sentence-shown', maxBox >= 1);
+
+    const bottomShown = !!slide.querySelector('[data-pivot-bottom].visible');
+    pivotSlide.classList.toggle('bottom-shown', bottomShown);
+    if (bottomShown) {
+      pivotSlide.querySelectorAll('.map-box.current').forEach((b) => b.classList.remove('current'));
+    }
+  }
+
+  // Slide 02.2.a re-entry — snap the four Itqān-reveal flags.
+  const itqanSlide = slide.querySelector('.itqan-slide');
+  if (itqanSlide) {
+    itqanSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-itqan-sentence].visible'));
+    itqanSlide.classList.toggle('core-shown',     !!slide.querySelector('[data-itqan-core].visible'));
+    itqanSlide.classList.toggle('orbits-shown',   !!slide.querySelector('[data-itqan-orbits].visible'));
+    itqanSlide.classList.toggle('bottom-shown',   !!slide.querySelector('[data-itqan-bottom].visible'));
+  }
+
+  // Slide 02.2.b re-entry — snap the three roadmap flags.
+  const roadmapSlide = slide.querySelector('.roadmap-slide');
+  if (roadmapSlide) {
+    roadmapSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-roadmap-sentence].visible'));
+    roadmapSlide.classList.toggle('rail-shown',     !!slide.querySelector('[data-roadmap-rail].visible'));
+    roadmapSlide.classList.toggle('bottom-shown',   !!slide.querySelector('[data-roadmap-bottom].visible'));
+  }
+
+  // ── SECTION 03 re-entry — snap all state-class flags by fragment visibility.
+  const svcArchSlide = slide.querySelector('.svc-arch-slide');
+  if (svcArchSlide) {
+    svcArchSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-svc-sentence].visible'));
+    svcArchSlide.classList.toggle('ui-shown',       !!slide.querySelector('[data-svc-ui].visible'));
+    svcArchSlide.classList.toggle('iam-shown',      !!slide.querySelector('[data-svc-iam].visible'));
+    svcArchSlide.classList.toggle('backends-shown', !!slide.querySelector('[data-svc-backends].visible'));
+    svcArchSlide.classList.toggle('context-shown',  !!slide.querySelector('[data-svc-context].visible'));
+    svcArchSlide.classList.toggle('data-shown',     !!slide.querySelector('[data-svc-data].visible'));
+    svcArchSlide.classList.toggle('links-shown',    !!slide.querySelector('[data-svc-links].visible'));
+    svcArchSlide.classList.toggle('ext-shown',      !!slide.querySelector('[data-svc-ext].visible'));
+  }
+  const bacabSlide = slide.querySelector('.bacab-slide');
+  if (bacabSlide) {
+    bacabSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-bacab-sentence].visible'));
+    bacabSlide.classList.toggle('shell-shown',    !!slide.querySelector('[data-bacab-shell].visible'));
+    bacabSlide.classList.toggle('flow-shown',     !!slide.querySelector('[data-bacab-flow].visible'));
+    bacabSlide.classList.toggle('trans-shown',    !!slide.querySelector('[data-bacab-trans].visible'));
+    bacabSlide.classList.toggle('support-shown',  !!slide.querySelector('[data-bacab-support].visible'));
+  }
+  const mgrCoreSlide = slide.querySelector('.mgr-core-slide');
+  if (mgrCoreSlide) {
+    mgrCoreSlide.classList.toggle('spine-shown',    !!slide.querySelector('[data-mgr-spine].visible'));
+    mgrCoreSlide.classList.toggle('core-shown',     !!slide.querySelector('[data-mgr-core].visible'));
+    mgrCoreSlide.classList.toggle('support-shown',  !!slide.querySelector('[data-mgr-support].visible'));
+    mgrCoreSlide.classList.toggle('derived-shown',  !!slide.querySelector('[data-mgr-derived].visible'));
+    mgrCoreSlide.classList.toggle('boundary-shown', !!slide.querySelector('[data-mgr-boundary].visible'));
+  }
+  const erdSlide = slide.querySelector('.erd-slide');
+  if (erdSlide) {
+    erdSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-erd-sentence].visible'));
+    erdSlide.classList.toggle('rfq-shown',      !!slide.querySelector('[data-erd-rfq].visible'));
+    erdSlide.classList.toggle('rail-shown',     !!slide.querySelector('[data-erd-rail].visible'));
+    erdSlide.classList.toggle('pointer-shown',  !!slide.querySelector('[data-erd-pointer].visible'));
+    erdSlide.classList.toggle('attaches-shown', !!slide.querySelector('[data-erd-attaches].visible'));
+  }
+  const wfExecSlide = slide.querySelector('.wf-exec-slide');
+  if (wfExecSlide) {
+    wfExecSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-wf-sentence].visible'));
+    wfExecSlide.classList.toggle('stages-shown',   !!slide.querySelector('[data-wf-stages].visible'));
+    wfExecSlide.classList.toggle('gates-shown',    !!slide.querySelector('[data-wf-gates].visible'));
+    wfExecSlide.classList.toggle('beam-shown',     !!slide.querySelector('[data-wf-beam].visible'));
+    wfExecSlide.classList.toggle('atomic-shown',   !!slide.querySelector('[data-wf-atomic].visible'));
+  }
+  const apiSlide = slide.querySelector('.api-slide');
+  if (apiSlide) {
+    apiSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-api-sentence].visible'));
+    apiSlide.classList.toggle('families-shown', !!slide.querySelector('[data-api-families].visible'));
+    apiSlide.classList.toggle('contract-shown', !!slide.querySelector('[data-api-contract].visible'));
+    apiSlide.classList.toggle('maturity-shown', !!slide.querySelector('[data-api-maturity].visible'));
   }
 
   // Agenda re-entry — if any agenda fragment is already shown, jump to
