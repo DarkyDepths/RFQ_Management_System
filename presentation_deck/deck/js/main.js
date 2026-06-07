@@ -888,6 +888,15 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-memory-future]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.add('future-shown'); return; }
   if (trigger.matches('[data-memory-ground]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.add('ground-shown'); return; }
 
+  // §06.1 · Unified Workspace — single reveal (frame + zones + footer together).
+  if (trigger.matches('[data-ws-show]')) { const s = trigger.closest('.workspace-slide'); if (s) s.classList.add('show'); return; }
+
+  // §06.2 · Role-Aware Views — single reveal (platform + 3 lenses + boundary).
+  if (trigger.matches('[data-lens-show]')) { const s = trigger.closest('.lens-slide'); if (s) s.classList.add('show'); return; }
+
+  // §06.3 · Integrated User Path — single reveal (5-step cascade → services → synthesis).
+  if (trigger.matches('[data-journey-show]')) { const s = trigger.closest('.journey-slide'); if (s) s.classList.add('show'); return; }
+
   // §03.2.b · Manager Lifecycle Model — 3 clicks (template → instance → context).
   if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('template-shown'); return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('instance-shown'); return; }
@@ -1239,6 +1248,12 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-memory-flow]'))   { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('flow-shown');   return; }
   if (trigger.matches('[data-memory-future]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('future-shown'); return; }
   if (trigger.matches('[data-memory-ground]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('ground-shown'); return; }
+
+  if (trigger.matches('[data-ws-show]')) { const s = trigger.closest('.workspace-slide'); if (s) s.classList.remove('show'); return; }
+
+  if (trigger.matches('[data-lens-show]')) { const s = trigger.closest('.lens-slide'); if (s) s.classList.remove('show'); return; }
+
+  if (trigger.matches('[data-journey-show]')) { const s = trigger.closest('.journey-slide'); if (s) s.classList.remove('show'); return; }
 
   if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('template-shown'); return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('instance-shown'); return; }
@@ -1624,6 +1639,18 @@ Reveal.on('slidechanged', (event) => {
     memorySlide.classList.toggle('flow-shown',   !!slide.querySelector('[data-memory-flow].visible'));
     memorySlide.classList.toggle('future-shown', !!slide.querySelector('[data-memory-future].visible'));
     memorySlide.classList.toggle('ground-shown', !!slide.querySelector('[data-memory-ground].visible'));
+  }
+  const workspaceSlide = slide.querySelector('.workspace-slide');
+  if (workspaceSlide) {
+    workspaceSlide.classList.toggle('show', !!slide.querySelector('[data-ws-show].visible'));
+  }
+  const lensSlide = slide.querySelector('.lens-slide');
+  if (lensSlide) {
+    lensSlide.classList.toggle('show', !!slide.querySelector('[data-lens-show].visible'));
+  }
+  const journeySlide = slide.querySelector('.journey-slide');
+  if (journeySlide) {
+    journeySlide.classList.toggle('show', !!slide.querySelector('[data-journey-show].visible'));
   }
   const managerWorkflowSlide = slide.querySelector('.manager-workflow-slide');
   if (managerWorkflowSlide) {

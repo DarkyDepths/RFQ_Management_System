@@ -6205,6 +6205,514 @@
 }
 
 
+/* ============================================================================
+   06.1 · Unified Workspace
+   ----------------------------------------------------------------------------
+   First slide of §06 (The Experience). The platform becomes ONE usable
+   workspace: manager truth, intelligence evidence, copilot support — three
+   services, one shared surface. The browser frame is a container only
+   (minimal chrome); inside is a labeled SCHEMATIC of three zones, NOT a
+   screenshot (real screenshots are §07's demo). Section 06 = teal accent.
+   ============================================================================ */
+
+.workspace-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+}
+
+.ws-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── Browser frame (window + minimal chrome) ──────────────────────── */
+
+.browser-frame {
+  width: 100%;
+  max-width: 1500px;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(28, 24, 19, 0.10);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.workspace-slide.show .browser-frame {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bf-chrome {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 12px 20px 0;
+  height: 50px;
+  background: rgba(28, 24, 19, 0.03);
+  border-bottom: 1px solid var(--l-hair-strong);
+}
+
+.bf-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  bottom: -1px;
+}
+.bf-tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal-700);
+  flex: 0 0 auto;
+}
+.bf-tab-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.bf-url {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: 0.14em;
+  padding: 6px 18px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 100px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── The workspace surface — 3 zones in ONE shared frame ──────────── */
+
+.bf-surface {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  min-height: 460px;
+}
+
+.ws-zone {
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid var(--l-hair-strong);
+}
+.ws-zone:last-child { border-right: none; }
+
+.ws-zone-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--l-hair-strong);
+}
+
+.ws-zone-label {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ws-zone-sub {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+.ws-zone-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-item {
+  position: relative;
+  padding-left: 18px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.4;
+}
+.ws-item::before {
+  content: "·";
+  position: absolute;
+  left: 2px;
+  top: -4px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--teal-700);
+  line-height: 1;
+}
+
+/* ── Footer · single quiet line beneath the frame ─────────────────── */
+
+.ws-footer {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.workspace-slide.show .ws-footer {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 240ms;
+}
+
+
+/* ============================================================================
+   06.2 · Role-Aware Views
+   ----------------------------------------------------------------------------
+   Second slide of §06. Three role columns — Estimation Manager, Estimator,
+   Executive — live inside ONE shared platform container. Same skeleton per
+   column (role label + verb + focus items), different emphasis. The unified
+   outer frame is the visual argument: same platform, three lenses, not
+   three apps. Boundary line below is the honesty beat — small, italic,
+   subordinate. Section 06 = teal accent.
+   ============================================================================ */
+
+.lens-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+}
+
+.lens-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── Platform container — one shared frame holds three role lenses ── */
+
+.lens-platform {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  max-width: 1500px;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(28, 24, 19, 0.10);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease-out,
+              transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.lens-slide.show .lens-platform {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lens-column {
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid var(--l-hair-strong);
+}
+.lens-column:last-child { border-right: none; }
+
+.lens-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--l-hair-strong);
+}
+
+.lens-role {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.lens-verb {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+.lens-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lens-item {
+  position: relative;
+  padding-left: 18px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.4;
+}
+.lens-item::before {
+  content: "·";
+  position: absolute;
+  left: 2px;
+  top: -4px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--teal-700);
+  line-height: 1;
+}
+
+/* ── Boundary line · honesty beat, quiet, subordinate ─────────────── */
+
+.lens-boundary {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.lens-slide.show .lens-boundary {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 240ms;
+}
+
+
+/* ============================================================================
+   06.3 · Integrated User Path
+   ----------------------------------------------------------------------------
+   Section closer for §06. A horizontal 5-step user journey reads first
+   (icons + labels). A faint service-mapping layer beneath shows which
+   service powers each step — clearly subordinate. The intended read:
+   one smooth path on top, three services underneath, invisible to the
+   user. Closing synthesis line is the calm payoff. Section 06 = teal.
+   ============================================================================ */
+
+.journey-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
+}
+
+.journey-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── Platform container · echoes 06.1 / 06.2's shared-surface motif ─ */
+
+.journey-platform {
+  width: 100%;
+  max-width: 1620px;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(28, 24, 19, 0.10);
+  padding: 48px 56px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Top rail · the 5-step user journey (reads FIRST) ─────────────── */
+
+.journey-rail {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.journey-step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+  transition-delay: calc((var(--n, 1) - 1) * 80ms);
+}
+.journey-slide.show .journey-step {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.js-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--l-bg);
+  border: 1.2px solid var(--l-hair-strong);
+  color: var(--teal-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.js-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.js-label {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.3;
+  max-width: 200px;
+}
+
+.js-arrow {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--l-hair-strong);
+  font-weight: 400;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+  transition-delay: calc((var(--n, 1) - 1) * 80ms + 60ms);
+}
+.journey-slide.show .js-arrow {
+  opacity: 1;
+}
+
+/* ── Service mapping · subordinate layer beneath the journey ──────── */
+
+.journey-services {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--l-hair-strong);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+  transition-delay: 520ms;
+}
+.journey-slide.show .journey-services {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.js-svc {
+  flex: 1 1 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--l-muted);
+  text-align: center;
+  letter-spacing: 0.10em;
+  line-height: 1;
+  /* no text-transform — preserves lowercase 'copilot' rule */
+}
+
+.js-svc-gap {
+  flex: 0 0 auto;
+  width: 28px;
+}
+
+/* ── Closing synthesis · calm payoff line ─────────────────────────── */
+
+.journey-synthesis {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+  transition-delay: 720ms;
+}
+.journey-slide.show .journey-synthesis {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   .topo-lede, .cutaway-lede, .spine-lede, .live-lede, .gates-lede, .contract-lede,
   .topo-layer, .topo-edge, .ext-strip,
@@ -6223,6 +6731,9 @@
   .failure-row, .esc-arrow, .escalation-gate, .escalation-exit, .failure-principle,
   .scatter-tile, .scatter-label, .workbook-zone, .zero-key-line,
   .memory-flow, .memory-future, .memory-grounding,
+  .browser-frame, .ws-footer,
+  .lens-platform, .lens-boundary,
+  .journey-step, .js-arrow, .journey-services, .journey-synthesis,
   .mw-zone {
     transition: opacity 0.2s linear;
     transform: none;
