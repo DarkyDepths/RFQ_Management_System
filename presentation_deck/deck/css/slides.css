@@ -4039,417 +4039,2171 @@
 .erd-slide.attaches-shown .live-attach { opacity: 1; transition-delay: 100ms; }
 
 /* ══════════════════════════════════════════════════════════════════════
-   §03.2.c · Gated Advancement
+   §03.2.c · Gated Advancement — Rail v2 (Atomic Update inline as focal)
+   ──────────────────────────────────────────────────────────────────────
+   Process rail: Current Stage → Gate Checks → Atomic Update → Next Stage
+   All 4 cards share min-height 360px so they read as ONE composition.
+   Atomic Update is the FOCAL block — wider, stronger amber border,
+   amber-tinted fill, drop shadow. 5 compact chips inside (close current,
+   activate next, current_stage_id, timestamps, progress recalculated)
+   replace the previous bullet list. 3-click reveal: stages → gates → atomic.
    ══════════════════════════════════════════════════════════════════════ */
-.wf-exec-slide .slide-content.center-band {
-  top: 8%;
-  bottom: 8%;
-  left: 50px;
-  right: 50px;
-}
-.gates-canvas {
+
+.wf-exec-slide .slide-content {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  width: 100%;
-  height: 100%;
-}
-.gates-stage {
-  position: relative;
-  display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  gap: 40px;
-  align-items: center;
-  width: 100%;
-  flex: 1;
+  justify-content: center;
+  align-items: stretch;
+  gap: 50px;
 }
 
-/* Current / Next stage cards */
-.gate-stage {
+.gates-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+}
+.gates-headline .emph {
+  color: var(--amber-on-light);
+}
+
+/* ── The rail (4 cards + 3 arrows, inline horizontal) ─────────────── */
+
+.gates-rail {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+}
+
+.rail-arrow {
+  align-self: center;
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  line-height: 1;
+  padding: 0 4px;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+.wf-exec-slide.stages-shown .rail-arrow {
+  opacity: 1;
+  transition-delay: 200ms;
+}
+
+/* ── Base card (shared) ───────────────────────────────────────────── */
+
+.rail-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 24px 28px;
+  justify-content: center;
+  padding: 28px;
+  min-height: 360px;
   background: var(--l-surface);
   border: 1.5px solid var(--l-hair-strong);
-  border-radius: 12px;
-  box-shadow: var(--sh-tile);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2, .7, .2, 1);
-}
-.gate-stage .gs-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  color: var(--l-muted);
-  line-height: 1;
-}
-.gate-stage .gs-name {
-  font-family: var(--font-display);
-  font-size: var(--t-h3);
-  font-weight: 600;
-  color: var(--l-ink);
-  letter-spacing: -.005em;
-  line-height: 1.1;
-}
-.gate-stage .gs-meta {
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: var(--l-muted);
-  line-height: 1.3;
-}
-.gate-stage .gs-sep { color: var(--amber-on-light); margin: 0 4px; }
-.gate-stage-current {
-  border-color: var(--amber-on-light);
-  background: rgba(232, 160, 76, 0.05);
-}
-.gate-stage-current .gs-eyebrow { color: var(--amber-on-light); }
-.gate-stage-next { border-style: dashed; opacity: 0.95; }
-
-/* Gate cluster (center, 4 vertical bars) */
-.gate-cluster {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  position: relative;
-  z-index: 1;
-}
-.gate {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 22px 14px;
-  background: var(--l-bg);
-  border: 1.5px solid var(--l-hair-strong);
   border-radius: 10px;
-  text-align: center;
-  min-height: 160px;
+  flex: 0 0 auto;
   opacity: 0;
-  transform: translateY(10px) scaleY(0.85);
-  transform-origin: center bottom;
-  transition: opacity 0.5s ease-out,
-              transform 0.55s cubic-bezier(.2, .7, .2, 1);
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
 }
-.gate .gate-num {
+
+.rc-eyebrow {
   font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--l-muted);
-  letter-spacing: -.01em;
-  line-height: 1;
-}
-.gate .gate-label {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: .1em;
-  color: var(--teal-900);
-  line-height: 1.2;
-}
-.gate .gate-check {
-  font-size: 24px;
-  color: var(--l-hair-strong);
+  font-size: 12px;
   font-weight: 700;
-  transition: color 0.4s ease-out;
-}
-
-/* Advance beam */
-.gates-beam {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-.beam-line {
-  fill: none;
-  stroke: var(--amber-on-light);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  transition: stroke-dashoffset 1.4s cubic-bezier(.2, .7, .2, 1);
-}
-
-/* Atomic update */
-.atomic-update {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2, .7, .2, 1);
-}
-.atomic-update .au-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
-  font-weight: 500;
-  letter-spacing: .22em;
+  color: var(--l-muted);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--amber-on-light);
-  line-height: 1;
-}
-.au-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  width: 100%;
-  max-width: 1400px;
-}
-.au-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 20px;
-  background: rgba(60, 110, 61, 0.05);
-  border: 1px solid rgba(60, 110, 61, 0.18);
-  border-radius: 10px;
-}
-.au-card .au-key {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--teal-900);
-  line-height: 1;
-}
-.au-card .au-val {
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: var(--l-ink);
-  line-height: 1.3;
-}
-
-/* Reveal sequence */
-.wf-exec-slide.stages-shown .gate-stage { opacity: 1; transform: translateY(0); }
-.wf-exec-slide.stages-shown .gate-stage-current { transition-delay: 0ms; }
-.wf-exec-slide.stages-shown .gate-stage-next    { transition-delay: 80ms; }
-.wf-exec-slide.gates-shown .gate { opacity: 1; transform: translateY(0) scaleY(1); }
-.wf-exec-slide.gates-shown .gate-1 { transition-delay:   0ms; }
-.wf-exec-slide.gates-shown .gate-2 { transition-delay:  80ms; }
-.wf-exec-slide.gates-shown .gate-3 { transition-delay: 160ms; }
-.wf-exec-slide.gates-shown .gate-4 { transition-delay: 240ms; }
-.wf-exec-slide.beam-shown .beam-line { stroke-dashoffset: 0; }
-.wf-exec-slide.beam-shown .gate .gate-check { color: var(--amber-on-light); }
-.wf-exec-slide.beam-shown .gate-1 .gate-check { transition-delay: 350ms; }
-.wf-exec-slide.beam-shown .gate-2 .gate-check { transition-delay: 700ms; }
-.wf-exec-slide.beam-shown .gate-3 .gate-check { transition-delay: 1050ms; }
-.wf-exec-slide.beam-shown .gate-4 .gate-check { transition-delay: 1400ms; }
-.wf-exec-slide.atomic-shown .atomic-update { opacity: 1; transform: translateY(0); }
-
-/* ══════════════════════════════════════════════════════════════════════
-   §03.3 · Integrity Contract
-   ══════════════════════════════════════════════════════════════════════ */
-.api-slide .slide-content.center-band {
-  top: 8%;
-  bottom: 8%;
-  left: 50px;
-  right: 50px;
-}
-.contract-canvas {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  width: 100%;
-  height: 100%;
-}
-.contract-split {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 60px;
-  flex: 1;
-  align-items: start;
-}
-
-/* Left column — API families (clean editorial list) */
-.api-column {
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2, .7, .2, 1);
-}
-.api-column .col-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
-  font-weight: 500;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  color: var(--amber-on-light);
   line-height: 1;
   margin-bottom: 18px;
 }
-.api-rows {
-  display: flex;
-  flex-direction: column;
+
+/* ── Current stage (left, active — amber border + tint) ───────────── */
+
+.rail-current {
+  width: 280px;
+  border-color: var(--amber-on-light);
+  border-width: 2.2px;
+  background: rgba(160, 106, 24, 0.09);
 }
-.api-row {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 16px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--l-hair);
-}
-.api-row:last-child { border-bottom: none; }
-.api-row .ar-name {
+.rail-current .rc-eyebrow { color: var(--amber-on-light); }
+.rc-name {
   font-family: var(--font-display);
-  font-size: var(--t-sub);
+  font-size: 30px;
   font-weight: 600;
   color: var(--l-ink);
-  letter-spacing: -.006em;
-  line-height: 1.15;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
+  margin-bottom: 12px;
 }
-.api-row .ar-ops {
+.rc-meta {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--l-muted);
   line-height: 1.4;
 }
 
-/* Right column — formal Integrity Contract document */
-.contract-column {
-  opacity: 0;
-  transform: translateX(10px);
-  transition: opacity 0.6s ease-out,
-              transform 0.6s cubic-bezier(.2, .7, .2, 1);
+/* ── Gate checks card (3 sub-items vertically stacked) ────────────── */
+
+.rail-gates {
+  width: 300px;
 }
-.contract-doc {
-  position: relative;
+.rc-gates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.rcg-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: rgba(60, 110, 61, 0.05);
+  border: 1px solid rgba(60, 110, 61, 0.22);
+  border-radius: 6px;
+}
+.rcg-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.rcg-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.25;
+}
+.rcg-check {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+
+/* ── Atomic Update card — THE FOCAL BLOCK ─────────────────────────── */
+
+.rail-atomic {
+  width: 460px;
+  border-color: var(--amber-on-light);
+  border-width: 2.8px;
+  background: rgba(160, 106, 24, 0.13);
+  box-shadow: 0 8px 22px rgba(28, 24, 19, 0.14);
+}
+.rail-atomic .rc-eyebrow {
+  color: var(--amber-on-light);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.rc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-content: center;
+}
+.rcc-chip {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber-on-light);
   background: var(--l-surface);
-  border: 1.5px solid var(--l-hair-strong);
+  border: 1.5px solid var(--amber-on-light);
   border-radius: 4px;
-  padding: 32px 36px;
-  box-shadow: 0 14px 36px rgba(40, 28, 12, 0.08);
+  padding: 9px 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
 }
-.contract-doc::before {
-  /* decorative left rule (formal document style) */
-  content: '';
+.rcc-chip-code {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Next stage (right, awaiting — dashed border) ─────────────────── */
+
+.rail-next {
+  width: 280px;
+  border-style: dashed;
+}
+.rail-next .rc-name { color: var(--l-muted); }
+
+/* ── Reveal sequence (3 clicks) ───────────────────────────────────── */
+
+.wf-exec-slide.stages-shown .rail-current,
+.wf-exec-slide.stages-shown .rail-next {
+  opacity: 1;
+  transform: translateY(0);
+}
+.wf-exec-slide.stages-shown .rail-next { transition-delay: 100ms; }
+
+.wf-exec-slide.gates-shown .rail-gates {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wf-exec-slide.atomic-shown .rail-atomic {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.3 · API & Workflow Reliability — rebuilt (Integrity Contract focal)
+   ──────────────────────────────────────────────────────────────────────
+   Two-column contrast delivering the headline:
+     LEFT  = API surface (subordinate — necessary, not sufficient)
+     RIGHT = Integrity Contract (FOCAL — what proves the backbone works)
+   Surface is small/muted; contract is amber-bordered, prominent, with
+   5 numbered guarantees. 2-click reveal: surface → contract.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.api-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 48px;
+}
+
+.api-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+}
+.api-headline .emph {
+  color: var(--amber-on-light);
+}
+
+/* ── Two-column split ─────────────────────────────────────────────── */
+
+.api-split {
+  position: relative;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 60px;
+  width: 100%;
+  max-width: 1620px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+/* Thin amber connector — sits in the gap between the two cards, mid-height.
+   Reveals with the contract on click 2 (when both cards are present). */
+.api-split::before {
+  content: "";
   position: absolute;
-  left: 16px;
-  top: 16px;
-  bottom: 16px;
-  width: 2px;
+  top: 50%;
+  left: 380px;
+  width: 60px;
+  height: 1.5px;
   background: var(--amber-on-light);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
 }
-.doc-header {
+.api-slide.contract-shown .api-split::before { opacity: 0.55; }
+
+.api-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 32px;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+.api-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.api-card-sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--l-muted);
+  line-height: 1.3;
+  margin-bottom: 22px;
+}
+
+/* ── LEFT: API surface (subordinate) ──────────────────────────────── */
+
+.api-resources {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.api-resource {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--l-hair-strong);
+}
+.api-resource:last-child {
+  border-bottom: none;
+}
+.api-resource .ar-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1;
+}
+
+.api-foot {
+  margin-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+
+/* ── RIGHT: Integrity Contract (FOCAL) ────────────────────────────── */
+
+.api-contract {
+  border-color: var(--amber-on-light);
+  border-width: 2.4px;
+  background: rgba(160, 106, 24, 0.07);
+  box-shadow: 0 8px 22px rgba(28, 24, 19, 0.10);
+  padding: 32px 44px;
+}
+
+.contract-eyebrow {
+  color: var(--amber-on-light) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.24em !important;
+}
+
+.contract-sub {
+  color: var(--amber-on-light) !important;
+  opacity: 0.75;
+  margin-bottom: 20px !important;
+}
+
+/* Clauses fill the panel — flex-1 + space-between distributes the 5 rows
+   evenly through the vertical space so the panel no longer feels empty. */
+.contract-clauses {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.contract-clauses li {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 22px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(160, 106, 24, 0.22);
+}
+.contract-clauses li:last-child {
+  border-bottom: none;
+  padding-bottom: 6px;
+}
+.contract-clauses li:first-child {
+  padding-top: 6px;
+}
+
+.cc-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.cc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cc-title {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--l-ink);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.cc-desc {
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--l-muted);
+  line-height: 1.35;
+}
+
+/* ── Reveal sequence (2 clicks) ───────────────────────────────────── */
+
+.api-slide.families-shown .api-surface,
+.api-slide.contract-shown .api-contract {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   05.1 · The Chatbot Trap
+   ----------------------------------------------------------------------------
+   Layout: headline · rejected anti-pattern picture · 3 risk tiles · synthesis.
+   The picture (GPT · arrow · RFQ DATA) is the "before" — muted/dashed from
+   click 1, dimmed and struck-through at click 3. The 3 risk tiles use the
+   frozen `.label-chip` primitive (mono-amber pill) that will recur as the
+   05.3 closure ticks. Reveal:
+     1) picture appears (muted, dashed, eyebrow declares it rejected)
+     2) all 3 tiles cascade in, then collectively light up amber (active beat)
+     3) tile highlights clear, picture dims + strike-through, synthesis lands
+   ============================================================================ */
+
+.chatbot-trap-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 44px;
+}
+
+.trap-headline {
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-align: center;
+}
+.trap-headline .trap-gpt-mark { color: var(--amber-on-light); }
+
+/* ── The rejected anti-pattern picture ────────────────────────────────── */
+
+.naive-picture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 4px 60px;
+  margin: 0 auto;
+  max-width: 1300px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+.chatbot-trap-slide.picture-shown .naive-picture {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* The × THE NAIVE DESIGN eyebrow stays full-opacity throughout — it's the
+   rejection stamp. The .naive-row (GPT · arrow · DATA) below carries the
+   muting, so the picture reads as rejected from click 1, not only at synthesis. */
+.naive-eyebrow {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding-bottom: 18px;
-  margin-bottom: 22px;
-  border-bottom: 1px solid var(--amber-on-light);
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
 }
-.doc-header .doc-seal {
-  width: 56px;
-  height: 56px;
-  border: 2px solid var(--amber-on-light);
+.naive-eyebrow .naive-x {
+  font-size: 1.65em;
+  line-height: 0.7;
+  color: var(--l-muted);
+  font-weight: 500;
+}
+
+/* Row is muted from arrival — clearly subordinate but still readable on
+   a projector (the jury must see WHAT is being rejected). At synthesis it
+   recedes further and is struck through. */
+.naive-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  opacity: 0.6;
+  transition: opacity 0.55s ease-out;
+}
+.chatbot-trap-slide.synthesis-shown .naive-row { opacity: 0.45; }
+
+/* Strike-line at synthesis — draws across the row L→R */
+.naive-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--l-muted);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.65s cubic-bezier(.2,.7,.2,1);
+  pointer-events: none;
+  z-index: 2;
+}
+.chatbot-trap-slide.synthesis-shown .naive-row::after { transform: scaleX(1); }
+
+.naive-tile {
+  flex: 0 0 auto;
+  min-width: 220px;
+  padding: 28px 48px;
+  text-align: center;
+  background: var(--l-surface);
+  border: 1px dashed var(--l-hair-strong);  /* dashed = "draft, not real" */
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.naive-arrow {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.naive-arrow svg {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  height: 28px;
+}
+.naive-arrow svg line {
+  stroke: var(--l-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.naive-arrow svg polyline {
+  stroke: var(--l-muted);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.naive-arrow-caption {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+/* ── The 3 risk tiles ────────────────────────────────────────────────── */
+
+.risk-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin: 0 auto;
+  max-width: 1500px;
+  width: 100%;
+}
+
+.risk-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 34px 30px 28px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1),
+              border-color 0.4s ease-out;
+}
+
+/* Cascade-then-finale: each tile fades up with stagger; ~1000ms after click
+   all three border-colors shift to amber together (the "group light-up"). */
+.chatbot-trap-slide.risks-shown .risk-tile {
+  opacity: 1;
+  transform: translateY(0);
+  border-color: var(--amber-on-light);
+}
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(1) { transition-delay: 0ms,   0ms,   1000ms; }
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(2) { transition-delay: 120ms, 120ms, 1000ms; }
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(3) { transition-delay: 240ms, 240ms, 1000ms; }
+
+/* Synthesis click — speaker has moved on, clear the active highlight */
+.chatbot-trap-slide.synthesis-shown .risk-tile {
+  border-color: var(--l-hair-strong);
+  transition-delay: 0ms;
+}
+
+.risk-title {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.risk-line {
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-muted);
+  line-height: 1.35;
+}
+
+/* The label-chip primitive — frozen visual; recurs in 05.3 closure ticks */
+.label-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-top: auto;
+  padding: 8px 18px;
+  border: 1px solid var(--amber-on-light);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+  align-self: flex-start;
+}
+
+/* ── The synthesis line ──────────────────────────────────────────────── */
+
+.trap-synthesis {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.1;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.chatbot-trap-slide.synthesis-shown .trap-synthesis {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   05.2 · The Copilot Inversion
+   ----------------------------------------------------------------------------
+   Principle slide. Headline ("The model proposes. The platform decides.")
+   is present from empty state — it IS the conclusion the speaker arrives at.
+   Two small inversion diagrams sit subordinate beneath: BEFORE (chatbot:
+   MODEL centered, 3 outward arrows) and AFTER (copilot: PLATFORM dominant
+   with 3 chips inside, model on the edge, ONE inward amber arrow labeled
+   "language"). Both diagrams full-strength and neutral — the symmetry IS
+   the argument. The amber "language" arrow is the slide's hero (the only
+   thing the model is allowed to contribute). 3 clicks:
+     1) chatbot tag + BEFORE diagram
+     2) copilot tag + AFTER diagram
+     3) support line fades up
+   Guardrail: headline dominates visually at every click state — diagrams
+   stay small and low, support line stays quiet.
+   ============================================================================ */
+
+/* Layout — vertically center the entire stack (headline + diagrams + support)
+   in the slide-content area. Items have opacity transitions (not display),
+   so the headline position stays stable across click states. */
+.copilot-inversion-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 50px;
+}
+
+.copilot-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── Inversion frame — two diagrams side-by-side with VS between ────── */
+
+.inversion-frame {
+  margin-top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60px;
+  width: 100%;
+}
+
+.inv-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 420px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+.copilot-inversion-slide.chatbot-shown .inv-before { opacity: 1; transform: translateY(0); }
+.copilot-inversion-slide.copilot-shown .inv-after  { opacity: 1; transform: translateY(0); }
+
+.inv-tag {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+/* Tag color reinforces the side's identity:
+   chatbot = muted gray (the naive alternative),
+   copilot = amber (the answer in the section's theme color). */
+.inv-before .inv-tag { color: var(--l-muted); }
+.inv-after  .inv-tag {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+
+/* ── Icon badge — speech bubble (chatbot) / shield+check (copilot)
+   identity accent above each structural diagram. Larger for prominence. */
+.inv-icon-badge {
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 400;
-  color: var(--amber-on-light);
-  background: rgba(232, 160, 76, 0.05);
-  line-height: 1;
+  background: var(--l-surface);
 }
-.doc-title .doc-name {
+.inv-before .inv-icon-badge {
+  border: 1.8px solid var(--l-muted);
+}
+.inv-after .inv-icon-badge {
+  border: 2.6px solid var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.07);
+  box-shadow: 0 4px 14px rgba(28, 24, 19, 0.10);
+}
+.inv-icon {
+  width: 66px;
+  height: 66px;
+  display: block;
+}
+.inv-before .inv-icon { color: var(--l-muted); }
+.inv-after  .inv-icon { color: var(--amber-on-light); }
+
+/* ── The structural SVG diagram ────────────────────────────────────── */
+.inv-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 420 / 340;
+}
+
+/* CHATBOT — naive/draft treatment: hollow box, muted gray border + label.
+   Reads as "the alternative we considered" without rejection. */
+.inv-before .brain-box {
+  fill: var(--l-surface);
+  stroke: var(--l-muted);
+  stroke-width: 1.6;
+}
+.inv-before .brain-label {
   font-family: var(--font-display);
-  font-size: var(--t-h3);
+  font-size: 44px;
   font-weight: 600;
-  color: var(--l-ink);
-  letter-spacing: -.008em;
-  line-height: 1;
+  fill: var(--l-muted);
+  letter-spacing: 0.02em;
 }
-.doc-title .doc-sub {
+.inv-svg .model-connector {
+  stroke: var(--l-muted);
+  stroke-width: 1.6;
+  fill: none;
+  stroke-linecap: round;
+}
+.inv-svg .muted-marker-fill { fill: var(--l-muted); }
+
+/* COPILOT — engineered/answer treatment: amber border, amber-tinted fill,
+   amber label. The section's full identity — this is what we built. */
+.inv-after .brain-box {
+  fill: rgba(160, 106, 24, 0.08);
+  stroke: var(--amber-on-light);
+  stroke-width: 3;
+}
+.inv-after .brain-label {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  fill: var(--amber-on-light);
+  letter-spacing: 0.02em;
+}
+.inv-svg .amber-marker-fill { fill: var(--amber-on-light); }
+
+/* The 3 item chips — IDENTICAL on both sides. The 3 conceptual items
+   are the same; only their location (outside MODEL vs inside PLATFORM)
+   differs. That's the topological inversion. */
+.inv-svg .item-chip {
+  fill: var(--l-surface);
+  stroke: var(--l-hair-strong);
+  stroke-width: 1.2;
+}
+.inv-svg .item-text {
   font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 500;
-  letter-spacing: .18em;
+  font-weight: 600;
+  fill: var(--l-ink);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+/* External model tile (copilot only) — visibly diminished, on the edge */
+.inv-svg .model-edge-tile {
+  fill: var(--l-surface);
+  stroke: var(--l-hair-strong);
+  stroke-width: 1.4;
+}
+.inv-svg .model-edge-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  fill: var(--l-ink);
+  letter-spacing: 0.02em;
+}
+
+/* THE language arrow — single, one-way, amber, THICK. The architectural
+   commitment — the only thing the model is allowed to contribute. */
+.inv-svg .lang-arrow {
+  stroke: var(--amber-on-light);
+  stroke-width: 4;
+  fill: none;
+  stroke-linecap: round;
+}
+.inv-svg .lang-label {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  fill: var(--amber-on-light);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* ── VS marker — between the two sides at the SAME LEVEL as icon badges.
+   tag (~20) + gap (14) = 34px to badge top. Badge center at 34 + 55 = 89.
+   VS (70 tall) center matches badge center → margin-top: 89 − 35 = 54. */
+.inv-vs {
+  flex: 0 0 auto;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 1.8px solid var(--l-hair-strong);
+  background: var(--l-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: 54px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+.copilot-inversion-slide.copilot-shown .inv-vs {
+  opacity: 1;
+  transform: scale(1);
+}
+.vs-text {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--l-muted);
-  margin-top: 4px;
+  letter-spacing: 0.16em;
   line-height: 1;
 }
-.doc-clauses {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  counter-reset: clause;
+
+/* ── Support line — pulled close beneath diagrams, one composition ──── */
+
+.copilot-support {
+  margin-top: 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-muted);
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.copilot-inversion-slide.support-shown .copilot-support {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   05.3 · The Trust-Boundary Architecture
+   ----------------------------------------------------------------------------
+   The four-phase controlled pipeline. The architecture has VISIBLE WEIGHT
+   HIERARCHY — phases 1 & 4 (model's edges) are visually light; phase 3
+   (deterministic core) is heavy; phase 2 (the keystone, CI-enforced) is
+   the heaviest. One-second glance reads "heavy middle, light edges."
+   That's the model-at-edges / code-in-middle argument shown visually,
+   not just stated. 5 clicks: pipeline appears → walk through phases →
+   closure ticks land (matching 05.1's risk chips byte-for-byte).
+   ============================================================================ */
+
+/* Layout — vertically center the entire stack (headline + pipeline + closure)
+   in the slide-content area. Items have opacity transitions (not display),
+   so the headline position stays stable across click states. */
+.pipeline-slide .slide-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  align-items: stretch;
+  gap: 50px;
 }
-.doc-clauses li {
-  counter-increment: clause;
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 14px;
-  align-items: baseline;
-  font-family: var(--font-body);
-  font-size: 17px;
+
+.pipeline-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
   color: var(--l-ink);
-  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
 }
-.doc-clauses li::before {
-  content: counter(clause, decimal-leading-zero);
+
+/* ── The pipeline frame: 4 boxes + 3 arrows ──────────────────────────── */
+
+.pipeline-frame {
+  margin-top: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+}
+
+.phase-box {
+  position: relative;
+  width: 360px;
+  height: 296px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 22px 24px;
+  background: var(--l-surface);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+.pipeline-slide.pipeline-shown .phase-box {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pipeline-slide.pipeline-shown .phase-box[data-phase="1"] { transition-delay: 0ms; }
+.pipeline-slide.pipeline-shown .phase-box[data-phase="2"] { transition-delay: 110ms; }
+.pipeline-slide.pipeline-shown .phase-box[data-phase="3"] { transition-delay: 220ms; }
+.pipeline-slide.pipeline-shown .phase-box[data-phase="4"] { transition-delay: 330ms; }
+
+/* ── WEIGHT HIERARCHY ─────────────────────────────────────────────────
+   1 & 4 (edges, model helps)  — thin border, no fill, no shadow
+   3 (deterministic core)      — medium border, light amber fill, subtle shadow
+   2 (keystone, CI-enforced)   — thick border, strong amber fill, drop shadow
+   The shape of the row reads: light-HEAVIEST-heavy-light. */
+
+.phase-edge {
+  border: 1.6px solid var(--amber-on-light);
+  background: var(--l-surface);
+}
+
+.phase-core {
+  border: 2.6px solid var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.07);
+  box-shadow: 0 4px 14px rgba(28, 24, 19, 0.06);
+}
+
+.phase-keystone {
+  border: 3.6px solid var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.13);
+  box-shadow: 0 8px 22px rgba(28, 24, 19, 0.13);
+}
+
+/* Active-phase top stripe (the highlight pointer that walks through).
+   A solid amber bar at the top edge of the currently active phase. */
+.phase-box::before {
+  content: "";
+  position: absolute;
+  left: -1.6px;
+  right: -1.6px;
+  top: -1.6px;
+  height: 4px;
+  background: transparent;
+  transition: background 0.4s ease-out;
+}
+.phase-core::before { left: -2.6px; right: -2.6px; top: -2.6px; height: 5px; }
+.phase-keystone::before { left: -3.6px; right: -3.6px; top: -3.6px; height: 6px; }
+
+.pipeline-slide[data-active-phase="1"] .phase-box[data-phase="1"]::before,
+.pipeline-slide[data-active-phase="2"] .phase-box[data-phase="2"]::before,
+.pipeline-slide[data-active-phase="3"] .phase-box[data-phase="3"]::before,
+.pipeline-slide[data-active-phase="4"] .phase-box[data-phase="4"]::before {
+  background: var(--amber-on-light);
+}
+
+/* ── Phase content typography ────────────────────────────────────────── */
+
+.phase-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  min-height: 18px;
+}
+.phase-num {
   font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
-  letter-spacing: .12em;
+  font-weight: 700;
   color: var(--amber-on-light);
+  letter-spacing: 0.22em;
+  line-height: 1;
 }
-.doc-clauses .clause-key {
-  font-family: var(--font-display);
-  font-weight: 600;
-  color: var(--l-ink);
-  margin-right: 8px;
-}
-.doc-clauses .clause-body { color: var(--l-muted); }
-
-/* Maturity footnote (small) */
-.contract-maturity {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 12px;
-  padding: 10px 24px;
-  font-family: var(--font-body);
-  font-size: 15px;
-  color: var(--l-muted);
-  line-height: 1.3;
-  text-align: center;
+.phase-lock {
+  font-size: 16px;
+  line-height: 1;
   opacity: 0;
-  transition: opacity 0.5s ease-out;
+  transition: opacity 0.45s ease-out;
 }
-.contract-maturity .mat-tag {
+.pipeline-slide.phase-2-key .phase-lock { opacity: 1; }
+
+.phase-title {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--l-ink);
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-align: center;
+  margin: 6px 0 10px;
+}
+
+.phase-action {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--l-muted);
+  line-height: 1.4;
+  text-align: center;
+  flex: 1;
+}
+
+/* Model-helps annotation (phases 1, 4) — the model's presence marker.
+   Amber (matches the architectural commitment vocabulary) + bumped size
+   and weight so it reads from the back of the room. */
+.phase-helper {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  margin-top: 14px;
+}
+
+/* Phase 2 keystone extras — ONE COMPONENT ONLY claim chip + CHECKED
+   BY TESTS pill. Reveal at click 2 (when speaker explains "the key
+   step, checked automatically by tests"). The plain-language claim
+   carries the keystone for a francophone jury; the technical class
+   name (ExecutionPlanFactory) lives on the Q&A backup slide. */
+.phase-code-wrap {
+  text-align: center;
+  margin-top: 14px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.phase-code {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.12);
+  padding: 5px 11px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.phase-tests {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  margin-top: 10px;
+  padding: 6px 13px;
+  border: 1.4px solid var(--amber-on-light);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.pipeline-slide.phase-2-key .phase-code-wrap,
+.pipeline-slide.phase-2-key .phase-tests {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pipeline-slide.phase-2-key .phase-tests { transition-delay: 150ms; }
+
+/* ── Arrows between phases ───────────────────────────────────────────── */
+
+.phase-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--amber-on-light);
+  line-height: 1;
+  padding: 0 18px;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.pipeline-slide.pipeline-shown .phase-arrow { opacity: 1; transition-delay: 500ms; }
+
+/* ── Closure ticks — match 05.1 .label-chip primitive byte-for-byte ──
+   The 05.1 risk chips (TRUTH/ISOLATION/AUTHORITY pills) OPEN. These
+   same primitives CLOSE here with ✓. Visual rhyme = the loop closing. */
+
+.closure-ticks {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  width: 100%;
+}
+.closure-ticks .label-chip {
+  margin-top: 0;          /* override 05.1's flex-bottom pin */
+  align-self: auto;       /* override 05.1's flex-start */
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.pipeline-slide.closure-shown .closure-ticks .label-chip {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Cascade-then-finale: 3 chips fade up with stagger, all together a beat. */
+.pipeline-slide.closure-shown .closure-ticks .label-chip:nth-child(1) { transition-delay: 0ms; }
+.pipeline-slide.closure-shown .closure-ticks .label-chip:nth-child(2) { transition-delay: 140ms; }
+.pipeline-slide.closure-shown .closure-ticks .label-chip:nth-child(3) { transition-delay: 280ms; }
+
+
+/* ============================================================================
+   05.4 · Failure Is Also Designed
+   ----------------------------------------------------------------------------
+   The section's closing slide. 5 unsafe cases shown as one SET (not a
+   sequential problem list), funneled through a single Escalation Gate to
+   "one safe answer." Calm not alarmist — these are controlled exits.
+   Response column visually favored — the jury's takeaway is the controlled
+   behaviors, not the problems. 2 clicks:
+     1) full table appears as a set (rows cascade tightly)
+     2) gate funnel + principle line land together — the resolution moment
+   ============================================================================ */
+
+.failure-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 48px;
+}
+
+.failure-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── The 5-case table ────────────────────────────────────────────────── */
+
+.failure-table {
+  display: flex;
+  flex-direction: column;
+  max-width: 1140px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.failure-row {
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr;
+  align-items: center;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--l-hair-strong);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+/* All 5 rows get the same divider treatment — the closing rule under
+   row 5 ties the table together as one complete block. */
+
+/* Quick cascade — tight stagger so 5 rows read as ONE set, not a list */
+.failure-slide.table-shown .failure-row {
+  opacity: 1;
+  transform: translateY(0);
+}
+.failure-slide.table-shown .failure-row:nth-child(1) { transition-delay: 0ms; }
+.failure-slide.table-shown .failure-row:nth-child(2) { transition-delay: 70ms; }
+.failure-slide.table-shown .failure-row:nth-child(3) { transition-delay: 140ms; }
+.failure-slide.table-shown .failure-row:nth-child(4) { transition-delay: 210ms; }
+.failure-slide.table-shown .failure-row:nth-child(5) { transition-delay: 280ms; }
+
+/* Left (situation) — muted secondary, smaller. The PROBLEM is subordinate
+   but readable — weight 500 gives it the contrast it needs against l-bg. */
+.row-when {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-muted);
+  line-height: 1.4;
+  text-align: right;
+}
+
+/* Arrow — amber directional accent */
+.row-arrow {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--amber-on-light);
+  text-align: center;
+  line-height: 1;
+}
+
+/* Right (response) — PROMINENT, larger, bolder, ink. The CONTROLLED
+   BEHAVIOR is the takeaway. The eye should rest on these — that's where
+   the resolution lives. */
+.row-then {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* ── Escalation Gate — small collector node ─────────────────────────── */
+
+.escalation-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.esc-arrow {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--amber-on-light);
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+
+.escalation-gate {
+  display: inline-block;
+  padding: 11px 24px;
+  border: 2px solid var(--amber-on-light);
+  border-radius: 6px;
+  background: rgba(160, 106, 24, 0.08);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+
+.escalation-exit {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-muted);
+  text-align: center;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Gate-reveal cascade: arrow-in → gate → arrow-out → exit text */
+.failure-slide.gate-shown .esc-arrow-in     { opacity: 1; transform: translateY(0); transition-delay: 0ms;   }
+.failure-slide.gate-shown .escalation-gate  { opacity: 1; transform: translateY(0); transition-delay: 130ms; }
+.failure-slide.gate-shown .esc-arrow-out    { opacity: 1; transform: translateY(0); transition-delay: 260ms; }
+.failure-slide.gate-shown .escalation-exit  { opacity: 1; transform: translateY(0); transition-delay: 360ms; }
+
+/* ── Principle takeaway ─────────────────────────────────────────────── */
+
+.failure-principle {
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 500;
+  color: var(--l-ink);
+  text-align: center;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.failure-slide.gate-shown .failure-principle {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 480ms;
+}
+
+
+/* ============================================================================
+   03.2.b · Manager Lifecycle Model — Live Workflow Object (rebuilt)
+   ----------------------------------------------------------------------------
+   New framing: "The manager turns each RFQ into a controlled workflow,
+   with one active stage at a time."
+   3 zones stacked vertically:
+     1) WORKFLOW TEMPLATE — reusable stage sequence (6 stages)
+     2) RFQ INSTANCE — created from template, has a current stage
+     3) ACTIVE STAGE CONTEXT — attachments to the active stage
+   Active stage (Estimation) gets amber treatment across all 3 zones.
+   Small technical strip at the bottom names the data model relationships.
+   3-click reveal: template → instance → context.
+   ============================================================================ */
+
+.manager-workflow-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 28px;
+}
+
+.mw-headline {
+  margin-top: 0;
+  font-size: var(--t-h3);
+  color: var(--l-ink);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  text-align: center;
+}
+.mw-headline .emph {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+
+/* Small supporting line under the headline — the transition-validation
+   point. Modest, italic, muted — supports the headline without competing. */
+.mw-subline {
+  margin: -8px 0 0 0;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--l-muted);
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ── 3 zones stacked vertically ───────────────────────────────────── */
+
+.mw-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.mw-zone {
+  position: relative;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 6px;
+  padding: 18px 26px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Central lifecycle spine — a vertical amber thread descending through
+   the gaps between zones. Prominent between zones 1→2 (the "Estimation
+   is active" moment); subtler between zones 2→3 (the attachments flow). */
+.mw-template::after,
+.mw-instance::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 16px;
+  background: var(--amber-on-light);
+  pointer-events: none;
+}
+.mw-template::after {
+  width: 2.6px;
+}
+.mw-instance::after {
+  width: 1.6px;
+  opacity: 0.55;
+}
+
+.manager-workflow-slide.template-shown .mw-template,
+.manager-workflow-slide.instance-shown .mw-instance,
+.manager-workflow-slide.context-shown .mw-context {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.zone-label {
   font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .2em;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--amber-on-light);
-  padding: 3px 9px;
-  border: 1px solid var(--amber-on-light);
-  border-radius: 999px;
+  line-height: 1;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.zone-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--l-muted);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-/* Reveal sequence */
-.api-slide.families-shown .api-column { opacity: 1; transform: translateX(0); }
-.api-slide.contract-shown .contract-column { opacity: 1; transform: translateX(0); }
-.api-slide.maturity-shown .contract-maturity { opacity: 1; }
+/* ── Zone 1: Workflow Template (6 stages in a row) ────────────────── */
+
+.template-stages {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.t-stage {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-ink);
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  padding: 14px 18px;
+  text-align: center;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.t-stage-active {
+  position: relative;
+  border-color: var(--amber-on-light);
+  border-width: 2.4px;
+  background: rgba(160, 106, 24, 0.11);
+  color: var(--amber-on-light);
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(28, 24, 19, 0.09);
+}
+
+/* Small ACTIVE chip — corner badge on the active stage tile */
+.t-active-chip {
+  position: absolute;
+  top: -9px;
+  right: -8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--l-surface);
+  background: var(--amber-on-light);
+  padding: 3px 8px;
+  border-radius: 999px;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(28, 24, 19, 0.16);
+}
+
+/* ── Zone 2: RFQ Instance (current stage state) ───────────────────── */
+
+.instance-state {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--font-display);
+  padding: 6px 0;
+}
+
+.i-label {
+  font-size: 18px;
+  color: var(--l-muted);
+  font-weight: 500;
+}
+
+.i-value {
+  font-size: 26px;
+  color: var(--amber-on-light);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+/* ── Zone 3: Active Stage Context (6 attachment chips) ────────────── */
+
+.context-chips {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.c-chip {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.05);
+  border: 1px solid var(--teal-700);
+  padding: 8px 18px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+/* ── Technical strip (data model — 2 lines, more readable) ──────────── */
+
+.mw-tech-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+
+/* ============================================================================
+   04.1 · Every RFQ Starts From Zero
+   ----------------------------------------------------------------------------
+   Setup slide for section 04 (The Evidence). The platform doesn't reuse
+   GHI's deep estimating experience — every new RFQ starts blank. Visual
+   hierarchy CRITICAL (per spec):
+     - LEFT (scatter): small, faded, disconnected past artifacts.
+     - RIGHT (blank workbook): sharp, dominant, the visual hero.
+     - Eye must land on workbook, not scatter. The point: "they have all
+       this past work but still restart blank."
+   Section 04 uses TEAL (teal-700) for architectural accents — distinct
+   from section 05's amber, so the jury feels the section change.
+   3-click reveal: scatter → workbook → key line.
+   ============================================================================ */
+
+.zero-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 50px;
+}
+
+.zero-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── The visual stage: scatter on left, workbook on right ──────────── */
+
+.zero-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 100px;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+/* ── LEFT: scattered past (small, faded, no connecting lines) ──────── */
+
+.scatter-zone {
+  position: relative;
+  width: 580px;
+  height: 420px;
+  flex: 0 0 auto;
+}
+
+.scatter-tile {
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  color: var(--l-muted);
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.scatter-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Scatter positions — randomly distributed, slight rotation each tile.
+   No connecting lines: disconnection is the point. */
+.scatter-tile.scatter-1 { left:  10px; top:  50px; transform: rotate(-9deg); }
+.scatter-tile.scatter-2 { left: 180px; top:   0px; transform: rotate( 6deg); }
+.scatter-tile.scatter-3 { left: 380px; top:  60px; transform: rotate(-4deg); }
+.scatter-tile.scatter-4 { left:  60px; top: 220px; transform: rotate( 7deg); }
+.scatter-tile.scatter-5 { left: 260px; top: 200px; transform: rotate(-6deg); }
+.scatter-tile.scatter-6 { left: 460px; top: 230px; transform: rotate( 5deg); }
+
+/* Cascade reveal — quick stagger so scatter appears as "the set of past
+   work that exists" (not sequential storytelling). Final opacity 0.45 —
+   present but visibly faded. */
+.zero-slide.scatter-shown .scatter-tile { opacity: 0.45; }
+.zero-slide.scatter-shown .scatter-tile.scatter-1 { transition-delay: 0ms;   }
+.zero-slide.scatter-shown .scatter-tile.scatter-2 { transition-delay: 70ms;  }
+.zero-slide.scatter-shown .scatter-tile.scatter-3 { transition-delay: 140ms; }
+.zero-slide.scatter-shown .scatter-tile.scatter-4 { transition-delay: 210ms; }
+.zero-slide.scatter-shown .scatter-tile.scatter-5 { transition-delay: 280ms; }
+.zero-slide.scatter-shown .scatter-tile.scatter-6 { transition-delay: 350ms; }
+
+.scatter-label {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+  transition-delay: 480ms;
+}
+.zero-slide.scatter-shown .scatter-label { opacity: 0.6; }
+
+/* ── RIGHT: new package + blank workbook (the visual hero) ─────────── */
+
+.workbook-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.zero-slide.workbook-shown .workbook-zone {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* New package tag — small teal chip showing arrival */
+.new-package-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.np-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.08);
+  border: 1px solid var(--teal-700);
+  padding: 5px 13px;
+  border-radius: 3px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.np-arrow {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--teal-700);
+  line-height: 1;
+}
+
+/* Blank workbook SVG — the hero. Sharp ink frame, prominent grid,
+   drop shadow for physical weight. */
+.blank-workbook {
+  width: 500px;
+  height: auto;
+  display: block;
+  aspect-ratio: 480 / 340;
+  filter: drop-shadow(0 6px 16px rgba(28, 24, 19, 0.12));
+}
+.blank-workbook .wb-frame {
+  fill: var(--l-surface);
+  stroke: var(--l-ink);
+  stroke-width: 3;
+}
+.blank-workbook .wb-title-bar {
+  fill: rgba(28, 24, 19, 0.05);
+  stroke: none;
+}
+.blank-workbook .wb-title-divider {
+  stroke: var(--l-ink);
+  stroke-width: 1.5;
+}
+.blank-workbook .wb-title-ph {
+  stroke: var(--l-hair-strong);
+  stroke-width: 2.5;
+}
+.blank-workbook .wb-header-strip {
+  fill: rgba(28, 24, 19, 0.025);
+  stroke: none;
+}
+.blank-workbook .wb-header-divider {
+  stroke: var(--l-hair-strong);
+  stroke-width: 1.2;
+}
+.blank-workbook .wb-grid-h,
+.blank-workbook .wb-grid-v {
+  stroke: var(--l-hair-strong);
+  stroke-width: 1;
+}
+
+/* Workbook caption — names the architectural failure point in teal */
+.wb-caption {
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+
+/* ── Key line: the diagnosis (lands at click 3, in ink) ────────────── */
+
+.zero-key-line {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--l-ink);
+  text-align: center;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.zero-slide.key-shown .zero-key-line {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   04.2 · Building Platform Memory
+   ----------------------------------------------------------------------------
+   Payoff slide for section 04. Past RFQs/packages/workbooks converge into a
+   structured PLATFORM MEMORY store, which delivers a briefing when a new
+   package arrives. Visual opposite of 04.1's blank workbook. STRICT
+   hierarchy rule (per spec):
+     - MAIN FLOW = the hero (sharp, drop shadow, full strength)
+     - FUTURE PAYOFF CLUSTER = visibly subordinate (dashed border, muted)
+     - GROUNDING LINE = small, factual (the only present-tense built claim)
+   Section 04 = TEAL accent (distinct from §05's amber). 3 clicks.
+   ============================================================================ */
+
+.memory-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 40px;
+}
+
+.memory-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ── MAIN FLOW (the visual hero) ───────────────────────────────────── */
+
+.memory-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.memory-slide.flow-shown .memory-flow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.flow-step {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.flow-arrow {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--teal-700);
+  line-height: 1;
+  align-self: center;
+}
+
+/* Source: 4 past artifacts in a 2×2 grid, label below */
+.flow-source { width: 220px; }
+.source-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+.source-tile {
+  width: 76px;
+  height: 76px;
+  justify-self: center;
+  color: var(--l-muted);
+}
+.source-tile svg { width: 100%; height: 100%; display: block; }
+.source-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* MEMORY STORE — the hero. Sharp ink frame, teal header, populated cells,
+   drop shadow for physical weight. Visual opposite of 04.1's blank workbook. */
+.memory-store {
+  width: 340px;
+  border: 2.6px solid var(--l-ink);
+  background: var(--l-surface);
+  box-shadow: 0 6px 18px rgba(28, 24, 19, 0.12);
+}
+.store-header {
+  background: var(--teal-700);
+  color: var(--l-surface);
+  padding: 11px 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+.store-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.store-row {
+  display: flex;
+  gap: 8px;
+}
+.store-cell {
+  flex: 1;
+  height: 16px;
+  background: rgba(60, 110, 61, 0.16);
+  border-radius: 2px;
+}
+/* Vary cell widths slightly per row for a "populated data" feel */
+.store-row:nth-child(1) .store-cell:nth-child(1) { flex: 1.3; }
+.store-row:nth-child(1) .store-cell:nth-child(3) { flex: 0.7; }
+.store-row:nth-child(2) .store-cell:nth-child(2) { flex: 1.4; }
+.store-row:nth-child(3) .store-cell:nth-child(1) { flex: 0.8; }
+.store-row:nth-child(3) .store-cell:nth-child(2) { flex: 1.2; }
+.store-row:nth-child(4) .store-cell:nth-child(2) { flex: 0.7; }
+.store-row:nth-child(4) .store-cell:nth-child(3) { flex: 1.3; }
+
+/* Output: BRIEFING CARD is the main element (what memory→arrow connects
+   to); the NEW PACKAGE chip floats above as a separate "arriving" input.
+   Causality: memory → briefing card (horizontal), package → briefing card
+   (vertical from above). The card is what gets produced FOR the package. */
+.flow-output {
+  width: 230px;
+  position: relative;
+}
+.output-package-tag {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.op-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.08);
+  border: 1px solid var(--teal-700);
+  padding: 4px 11px;
+  border-radius: 3px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.op-arrow {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--teal-700);
+  line-height: 0.9;
+}
+
+/* BRIEFING CARD — abstract placeholder (no specific content per honesty rule) */
+.briefing-card {
+  width: 100%;
+  border: 1.8px solid var(--l-ink);
+  background: var(--l-surface);
+  box-shadow: 0 4px 12px rgba(28, 24, 19, 0.08);
+}
+.briefing-header {
+  background: var(--teal-700);
+  color: var(--l-surface);
+  padding: 7px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+.briefing-body {
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.briefing-line {
+  height: 7px;
+  background: var(--l-hair-strong);
+  border-radius: 1.5px;
+}
+.briefing-line.short { width: 65%; }
+
+/* ── FUTURE PAYOFF CLUSTER (SUBORDINATE per spec) ──────────────────────
+   Dashed teal border explicitly signals "future, not present." Chips
+   are smaller, muted, neutral — visibly weaker than the main flow. */
+.memory-future {
+  border: 1.5px dashed var(--teal-700);
+  border-radius: 4px;
+  padding: 14px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  background: rgba(60, 110, 61, 0.025);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.memory-slide.future-shown .memory-future {
+  opacity: 1;
+  transform: translateY(0);
+}
+.future-header {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.future-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.future-chip {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--l-muted);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 3px;
+  padding: 6px 14px;
+  background: var(--l-surface);
+  line-height: 1.2;
+}
+
+/* ── GROUNDING LINE — small, factual, the only present-tense claim ──── */
+
+.memory-grounding {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.memory-slide.ground-shown .memory-grounding {
+  opacity: 1;
+  transform: translateY(0);
+}
+.grounding-prefix {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-right: 10px;
+  vertical-align: 1px;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .topo-lede, .cutaway-lede, .spine-lede, .live-lede, .gates-lede, .contract-lede,
@@ -4459,7 +6213,17 @@
   .spine-column, .attach, .spine-boundary,
   .live-workflow, .live-rfq, .stage-rail, .active-attaches,
   .gate-stage, .gate, .atomic-update,
-  .api-column, .contract-column, .contract-maturity {
+  .rail-card, .rail-arrow,
+  .api-column, .contract-column, .contract-maturity,
+  .api-card,
+  .naive-picture, .risk-tile, .trap-synthesis,
+  .inv-side, .inv-vs, .copilot-support,
+  .phase-box, .phase-arrow, .phase-code-wrap, .phase-tests, .phase-lock,
+  .closure-ticks .label-chip,
+  .failure-row, .esc-arrow, .escalation-gate, .escalation-exit, .failure-principle,
+  .scatter-tile, .scatter-label, .workbook-zone, .zero-key-line,
+  .memory-flow, .memory-future, .memory-grounding,
+  .mw-zone {
     transition: opacity 0.2s linear;
     transform: none;
     transition-delay: 0s !important;
@@ -4477,4 +6241,5 @@
   .erd-slide.pointer-shown .live-pointer,
   .erd-slide.attaches-shown .live-attach,
   .wf-exec-slide.beam-shown .beam-line { opacity: 1; }
+  .naive-row::after { transition: none; }
 }

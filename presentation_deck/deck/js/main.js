@@ -844,6 +844,55 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('contract-shown'); return; }
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('maturity-shown'); return; }
 
+  // §05.1 · The Chatbot Trap — 3 clicks (picture → risks → synthesis).
+  if (trigger.matches('[data-trap-picture]'))   { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('picture-shown'); return; }
+  if (trigger.matches('[data-trap-risks]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('risks-shown'); return; }
+  if (trigger.matches('[data-trap-synthesis]')) { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('synthesis-shown'); return; }
+
+  // §05.2 · The Copilot Inversion — 3 clicks (chatbot → copilot → support).
+  if (trigger.matches('[data-inv-before]'))  { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.add('chatbot-shown'); return; }
+  if (trigger.matches('[data-inv-after]'))   { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.add('copilot-shown'); return; }
+  if (trigger.matches('[data-inv-support]')) { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.add('support-shown'); return; }
+
+  // §05.3 · The Trust-Boundary Architecture — 5 clicks
+  //   1-4: pipeline appears + active phase walks 1→4 (keystone extras reveal at phase 2)
+  //   5: closure ticks land (cascade), active highlight clears
+  if (trigger.matches('[data-pipe-phase]')) {
+    const s = trigger.closest('.pipeline-slide');
+    if (!s) return;
+    const phase = trigger.dataset.pipePhase;
+    s.classList.add('pipeline-shown');
+    s.dataset.activePhase = phase;
+    if (phase === '2') s.classList.add('phase-2-key');
+    return;
+  }
+  if (trigger.matches('[data-pipe-closure]')) {
+    const s = trigger.closest('.pipeline-slide');
+    if (!s) return;
+    delete s.dataset.activePhase;
+    s.classList.add('closure-shown');
+    return;
+  }
+
+  // §05.4 · Failure Is Also Designed — 2 clicks (table set → gate + principle).
+  if (trigger.matches('[data-failure-table]')) { const s = trigger.closest('.failure-slide'); if (s) s.classList.add('table-shown'); return; }
+  if (trigger.matches('[data-failure-gate]'))  { const s = trigger.closest('.failure-slide'); if (s) s.classList.add('gate-shown');  return; }
+
+  // §04.1 · Every RFQ Starts From Zero — 3 clicks (scatter → workbook → key).
+  if (trigger.matches('[data-zero-scatter]'))  { const s = trigger.closest('.zero-slide'); if (s) s.classList.add('scatter-shown');  return; }
+  if (trigger.matches('[data-zero-workbook]')) { const s = trigger.closest('.zero-slide'); if (s) s.classList.add('workbook-shown'); return; }
+  if (trigger.matches('[data-zero-key]'))      { const s = trigger.closest('.zero-slide'); if (s) s.classList.add('key-shown');      return; }
+
+  // §04.2 · Building Platform Memory — 3 clicks (flow → future → ground).
+  if (trigger.matches('[data-memory-flow]'))   { const s = trigger.closest('.memory-slide'); if (s) s.classList.add('flow-shown');   return; }
+  if (trigger.matches('[data-memory-future]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.add('future-shown'); return; }
+  if (trigger.matches('[data-memory-ground]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.add('ground-shown'); return; }
+
+  // §03.2.b · Manager Lifecycle Model — 3 clicks (template → instance → context).
+  if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('template-shown'); return; }
+  if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('instance-shown'); return; }
+  if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('context-shown');  return; }
+
   // Title-slide cascade — first click on slide 0.1 plays the intro reveal.
   if (trigger.matches('[data-title-intro-trigger]')) {
     const scope = trigger.closest('.title-slide');
@@ -1145,6 +1194,55 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-api-families]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('families-shown'); return; }
   if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('contract-shown'); return; }
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('maturity-shown'); return; }
+
+  if (trigger.matches('[data-trap-picture]'))   { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('picture-shown'); return; }
+  if (trigger.matches('[data-trap-risks]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('risks-shown'); return; }
+  if (trigger.matches('[data-trap-synthesis]')) { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('synthesis-shown'); return; }
+
+  if (trigger.matches('[data-inv-before]'))  { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.remove('chatbot-shown'); return; }
+  if (trigger.matches('[data-inv-after]'))   { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.remove('copilot-shown'); return; }
+  if (trigger.matches('[data-inv-support]')) { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.remove('support-shown'); return; }
+
+  // §05.3 · backward navigation — undo state to previous click.
+  if (trigger.matches('[data-pipe-phase]')) {
+    const s = trigger.closest('.pipeline-slide');
+    if (!s) return;
+    const phase = trigger.dataset.pipePhase;
+    if (phase === '1') {
+      s.classList.remove('pipeline-shown');
+      delete s.dataset.activePhase;
+    } else if (phase === '2') {
+      s.dataset.activePhase = '1';
+      s.classList.remove('phase-2-key');
+    } else if (phase === '3') {
+      s.dataset.activePhase = '2';
+    } else if (phase === '4') {
+      s.dataset.activePhase = '3';
+    }
+    return;
+  }
+  if (trigger.matches('[data-pipe-closure]')) {
+    const s = trigger.closest('.pipeline-slide');
+    if (!s) return;
+    s.dataset.activePhase = '4';
+    s.classList.remove('closure-shown');
+    return;
+  }
+
+  if (trigger.matches('[data-failure-table]')) { const s = trigger.closest('.failure-slide'); if (s) s.classList.remove('table-shown'); return; }
+  if (trigger.matches('[data-failure-gate]'))  { const s = trigger.closest('.failure-slide'); if (s) s.classList.remove('gate-shown');  return; }
+
+  if (trigger.matches('[data-zero-scatter]'))  { const s = trigger.closest('.zero-slide'); if (s) s.classList.remove('scatter-shown');  return; }
+  if (trigger.matches('[data-zero-workbook]')) { const s = trigger.closest('.zero-slide'); if (s) s.classList.remove('workbook-shown'); return; }
+  if (trigger.matches('[data-zero-key]'))      { const s = trigger.closest('.zero-slide'); if (s) s.classList.remove('key-shown');      return; }
+
+  if (trigger.matches('[data-memory-flow]'))   { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('flow-shown');   return; }
+  if (trigger.matches('[data-memory-future]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('future-shown'); return; }
+  if (trigger.matches('[data-memory-ground]')) { const s = trigger.closest('.memory-slide'); if (s) s.classList.remove('ground-shown'); return; }
+
+  if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('template-shown'); return; }
+  if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('instance-shown'); return; }
+  if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('context-shown');  return; }
 
   // Title-slide — going back (left arrow on slide 0.1 from the shown state)
   // resets to the blank pre-anim state so the next forward press replays.
@@ -1480,6 +1578,58 @@ Reveal.on('slidechanged', (event) => {
     apiSlide.classList.toggle('families-shown', !!slide.querySelector('[data-api-families].visible'));
     apiSlide.classList.toggle('contract-shown', !!slide.querySelector('[data-api-contract].visible'));
     apiSlide.classList.toggle('maturity-shown', !!slide.querySelector('[data-api-maturity].visible'));
+  }
+  const chatbotTrapSlide = slide.querySelector('.chatbot-trap-slide');
+  if (chatbotTrapSlide) {
+    chatbotTrapSlide.classList.toggle('picture-shown',   !!slide.querySelector('[data-trap-picture].visible'));
+    chatbotTrapSlide.classList.toggle('risks-shown',     !!slide.querySelector('[data-trap-risks].visible'));
+    chatbotTrapSlide.classList.toggle('synthesis-shown', !!slide.querySelector('[data-trap-synthesis].visible'));
+  }
+  const copilotInversionSlide = slide.querySelector('.copilot-inversion-slide');
+  if (copilotInversionSlide) {
+    copilotInversionSlide.classList.toggle('chatbot-shown', !!slide.querySelector('[data-inv-before].visible'));
+    copilotInversionSlide.classList.toggle('copilot-shown', !!slide.querySelector('[data-inv-after].visible'));
+    copilotInversionSlide.classList.toggle('support-shown', !!slide.querySelector('[data-inv-support].visible'));
+  }
+  const pipelineSlide = slide.querySelector('.pipeline-slide');
+  if (pipelineSlide) {
+    const p1 = !!slide.querySelector('[data-pipe-phase="1"].visible');
+    const p2 = !!slide.querySelector('[data-pipe-phase="2"].visible');
+    const p3 = !!slide.querySelector('[data-pipe-phase="3"].visible');
+    const p4 = !!slide.querySelector('[data-pipe-phase="4"].visible');
+    const pc = !!slide.querySelector('[data-pipe-closure].visible');
+    pipelineSlide.classList.toggle('pipeline-shown', p1);
+    pipelineSlide.classList.toggle('phase-2-key',    p2);
+    pipelineSlide.classList.toggle('closure-shown',  pc);
+    if (pc)      delete pipelineSlide.dataset.activePhase;
+    else if (p4) pipelineSlide.dataset.activePhase = '4';
+    else if (p3) pipelineSlide.dataset.activePhase = '3';
+    else if (p2) pipelineSlide.dataset.activePhase = '2';
+    else if (p1) pipelineSlide.dataset.activePhase = '1';
+    else         delete pipelineSlide.dataset.activePhase;
+  }
+  const failureSlide = slide.querySelector('.failure-slide');
+  if (failureSlide) {
+    failureSlide.classList.toggle('table-shown', !!slide.querySelector('[data-failure-table].visible'));
+    failureSlide.classList.toggle('gate-shown',  !!slide.querySelector('[data-failure-gate].visible'));
+  }
+  const zeroSlide = slide.querySelector('.zero-slide');
+  if (zeroSlide) {
+    zeroSlide.classList.toggle('scatter-shown',  !!slide.querySelector('[data-zero-scatter].visible'));
+    zeroSlide.classList.toggle('workbook-shown', !!slide.querySelector('[data-zero-workbook].visible'));
+    zeroSlide.classList.toggle('key-shown',      !!slide.querySelector('[data-zero-key].visible'));
+  }
+  const memorySlide = slide.querySelector('.memory-slide');
+  if (memorySlide) {
+    memorySlide.classList.toggle('flow-shown',   !!slide.querySelector('[data-memory-flow].visible'));
+    memorySlide.classList.toggle('future-shown', !!slide.querySelector('[data-memory-future].visible'));
+    memorySlide.classList.toggle('ground-shown', !!slide.querySelector('[data-memory-ground].visible'));
+  }
+  const managerWorkflowSlide = slide.querySelector('.manager-workflow-slide');
+  if (managerWorkflowSlide) {
+    managerWorkflowSlide.classList.toggle('template-shown', !!slide.querySelector('[data-mw-template].visible'));
+    managerWorkflowSlide.classList.toggle('instance-shown', !!slide.querySelector('[data-mw-instance].visible'));
+    managerWorkflowSlide.classList.toggle('context-shown',  !!slide.querySelector('[data-mw-context].visible'));
   }
 
   // Agenda re-entry — if any agenda fragment is already shown, jump to
