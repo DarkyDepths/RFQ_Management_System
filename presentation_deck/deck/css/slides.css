@@ -4519,8 +4519,22 @@
   letter-spacing: -0.01em;
   line-height: 1.15;
   text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
 }
-.trap-headline .trap-gpt-mark { color: var(--amber-on-light); }
+.chatbot-trap-slide.headline-shown .trap-headline {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* "AI model" carries the same amber accent the previous "GPT" mark had —
+   visually flags the technology being interrogated, without making it
+   feel branded. Inline span in the headline. */
+.trap-headline .trap-ai-mark {
+  color: var(--amber-on-light);
+}
 
 /* ── The rejected anti-pattern picture ────────────────────────────────── */
 
@@ -4528,7 +4542,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 32px;            /* more breathing room around the red rejection eyebrow */
   padding: 4px 60px;
   margin: 0 auto;
   max-width: 1300px;
@@ -4556,13 +4570,13 @@
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--l-muted);
+  color: var(--sem-risk);           /* red — this is the rejection stamp */
   line-height: 1;
 }
 .naive-eyebrow .naive-x {
   font-size: 1.65em;
   line-height: 0.7;
-  color: var(--l-muted);
+  color: var(--sem-risk);
   font-weight: 500;
 }
 
@@ -4578,7 +4592,7 @@
   opacity: 0.6;
   transition: opacity 0.55s ease-out;
 }
-.chatbot-trap-slide.synthesis-shown .naive-row { opacity: 0.45; }
+.chatbot-trap-slide.cause-shown .naive-row { opacity: 0.45; }
 
 /* Strike-line at synthesis — draws across the row L→R */
 .naive-row::after {
@@ -4594,7 +4608,7 @@
   pointer-events: none;
   z-index: 2;
 }
-.chatbot-trap-slide.synthesis-shown .naive-row::after { transform: scaleX(1); }
+.chatbot-trap-slide.cause-shown .naive-row::after { transform: scaleX(1); }
 
 .naive-tile {
   flex: 0 0 auto;
@@ -4627,12 +4641,12 @@
 }
 .naive-arrow svg line {
   stroke: var(--l-muted);
-  stroke-width: 1.5;
+  stroke-width: 2;
   stroke-dasharray: 6 5;
 }
 .naive-arrow svg polyline {
   stroke: var(--l-muted);
-  stroke-width: 1.5;
+  stroke-width: 2;
   fill: none;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -4640,7 +4654,7 @@
 .naive-arrow-caption {
   font-family: var(--font-mono);
   font-size: var(--t-caption);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--l-muted);
@@ -4662,32 +4676,31 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 34px 30px 28px;
+  padding: 34px 30px 28px 26px;     /* slightly tighter left padding to
+                                       compensate for the 4px red stripe */
   background: var(--l-surface);
-  border: 1px solid var(--l-hair-strong);
+  border-top:    1px solid var(--l-hair-strong);
+  border-right:  1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  border-left:   4px solid var(--sem-risk);   /* permanent red rejection
+                                                 stripe — risk semantic */
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2,.7,.2,1),
-              border-color 0.4s ease-out;
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
 }
 
-/* Cascade-then-finale: each tile fades up with stagger; ~1000ms after click
-   all three border-colors shift to amber together (the "group light-up"). */
+/* Cascade reveal — each tile fades up with stagger. The red left stripe is
+   permanent (always red); no amber border pulse on this slide — "in red,
+   not orange" per the slide's risk identity. The cascade timing IS the
+   active-beat signal. */
 .chatbot-trap-slide.risks-shown .risk-tile {
   opacity: 1;
   transform: translateY(0);
-  border-color: var(--amber-on-light);
 }
-.chatbot-trap-slide.risks-shown .risk-tile:nth-child(1) { transition-delay: 0ms,   0ms,   1000ms; }
-.chatbot-trap-slide.risks-shown .risk-tile:nth-child(2) { transition-delay: 120ms, 120ms, 1000ms; }
-.chatbot-trap-slide.risks-shown .risk-tile:nth-child(3) { transition-delay: 240ms, 240ms, 1000ms; }
-
-/* Synthesis click — speaker has moved on, clear the active highlight */
-.chatbot-trap-slide.synthesis-shown .risk-tile {
-  border-color: var(--l-hair-strong);
-  transition-delay: 0ms;
-}
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(1) { transition-delay: 0ms;   }
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(2) { transition-delay: 120ms; }
+.chatbot-trap-slide.risks-shown .risk-tile:nth-child(3) { transition-delay: 240ms; }
 
 .risk-title {
   font-family: var(--font-display);
@@ -4704,7 +4717,9 @@
   line-height: 1.35;
 }
 
-/* The label-chip primitive — frozen visual; recurs in 05.3 closure ticks */
+/* The label-chip primitive — frozen visual; recurs in 05.3 closure ticks
+   where the same TRUTH/ISOLATION/AUTHORITY chips appear as fulfilled
+   guarantees (amber). Default = amber for the fulfilled context. */
 .label-chip {
   display: inline-flex;
   align-items: center;
@@ -4722,8 +4737,21 @@
   align-self: flex-start;
 }
 
-/* ── The synthesis line ──────────────────────────────────────────────── */
+/* In 05.1 (risk context), the SAME chips render in red — these are the
+   principles being VIOLATED, not fulfilled. Same primitive, different
+   semantic: BROKEN (red, 05.1) → FULFILLED (amber, 05.3). The colour
+   change carries the narrative inversion across the section. */
+.risk-tile .label-chip {
+  color: var(--sem-risk);
+  border-color: var(--sem-risk);
+}
 
+/* ── The synthesis line — split into two beats ───────────────────────
+   Click 3 ("synthesis-shown") → "Three problems," lands.
+   Click 4 ("cause-shown")     → "one cause." lands in red.
+   The container stays mounted from the start; spans control their own
+   visibility so the layout is reserved up front and the second beat
+   lands without reflow. */
 .trap-synthesis {
   text-align: center;
   font-family: var(--font-display);
@@ -4732,12 +4760,961 @@
   color: var(--l-ink);
   letter-spacing: -0.005em;
   line-height: 1.1;
+}
+
+.syn-part {
+  display: inline-block;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.55s ease-out,
               transform 0.55s cubic-bezier(.2,.7,.2,1);
 }
-.chatbot-trap-slide.synthesis-shown .trap-synthesis {
+
+/* Reserve the weight-600 width on .syn-cause from the start so the layout
+   doesn't reflow when it lands. Color stays invisible until cause-shown. */
+.syn-cause {
+  font-weight: 600;
+}
+
+.chatbot-trap-slide.synthesis-shown .syn-first {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chatbot-trap-slide.cause-shown .syn-cause {
+  opacity: 1;
+  transform: translateY(0);
+  color: var(--sem-risk);
+}
+
+
+/* ============================================================================
+   05.2 · From Chatbot to Controlled Copilot  (merged from old 05.2 + 05.3)
+   ----------------------------------------------------------------------------
+   Single before/after comparison: BASIC CHATBOT (Q -> Model -> Answer,
+   muted, the rejected path) on the LEFT vs. PLATFORM COPILOT (Q -> Scope
+   -> Ground -> Verified answer, with a DESIGNED protected-exit branch in
+   red) on the RIGHT. The right column is intentionally LONGER and more
+   rigorous than the left — the visual asymmetry IS the argument. Protected
+   exit reads as a safe, designed path (not an error). Closes with a
+   payoff line and TRUTH/ISOLATION/AUTHORITY tick chips that echo 05.1's
+   broken-principle chips (red there, amber-fulfilled here).
+   5 clicks: headline · chatbot · copilot main · protected exit · payoff.
+   ============================================================================ */
+
+.controlled-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.ctrl-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.controlled-slide.headline-shown .ctrl-headline {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* "controlled answer" picks up the teal success accent — visually pre-stages
+   the Verified answer step in the right column. */
+.ctrl-headline-success {
+  color: var(--teal-700);
+}
+
+/* ── Compare layout · two columns + vertical hair divider ─────────── */
+
+.ctrl-compare {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: 1500px;
+  padding: 0 24px;
+  margin-top: 36px;          /* breathing room between headline and the table */
+}
+
+.ctrl-side {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 36px;
+}
+
+.ctrl-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  align-self: stretch;
+  background: var(--l-hair-strong);
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+/* Divider appears once at least one side has revealed; staying visible
+   from the second click onward — it frames the comparison. */
+.controlled-slide.chatbot-shown .ctrl-divider,
+.controlled-slide.copilot-shown .ctrl-divider {
+  opacity: 1;
+}
+
+.ctrl-tag {
+  font-family: var(--font-mono);
+  font-size: 18px;                /* up from 15 — table titles must read */
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--l-hair-strong);
+  opacity: 0;                     /* hidden until its column reveals */
+  transition: opacity 0.5s ease-out;
+}
+.ctrl-tag-muted { color: var(--l-muted); }
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-tag { opacity: 1; }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-tag { opacity: 1; }
+
+/* ── Steps · vertical stack of icon + title + sub rows ────────────── */
+
+.ctrl-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ctrl-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 4px 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+
+.ctrl-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--l-bg);
+  border: 1.2px solid var(--l-hair-strong);
+  color: var(--l-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ctrl-icon svg { width: 22px; height: 22px; }
+.ctrl-icon-amber { color: var(--amber-on-light); }
+.ctrl-icon-teal  { color: var(--teal-700); }
+.ctrl-icon-risk  { color: var(--sem-risk); border-color: var(--sem-risk); }
+
+.ctrl-step-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.ctrl-step-title {
+  font-family: var(--font-body);
+  font-size: 26px;                /* up from 19 — primary step labels */
+  font-weight: 600;
+  color: var(--l-ink);
+  line-height: 1.2;
+}
+
+.ctrl-step-sub {
+  font-family: var(--font-body);
+  font-size: 20px;                /* up from 15 — at the deck legibility floor */
+  font-weight: 400;
+  color: var(--l-muted);
+  line-height: 1.35;
+}
+
+.ctrl-arrow {
+  color: var(--l-muted);
+  font-weight: 400;
+  padding: 0 4px;
+}
+
+/* Variants — muted (chatbot anti-pattern), success (verified), exit (protected) */
+.ctrl-step-muted .ctrl-step-title { color: var(--l-muted); }
+.ctrl-step-muted .ctrl-step-sub   { opacity: 0.75; }
+.ctrl-step-muted .ctrl-icon       { color: var(--l-muted); }
+
+.ctrl-step-success .ctrl-step-title { color: var(--teal-700); }
+.ctrl-step-success .ctrl-arrow      { color: var(--teal-700); }
+
+.ctrl-step-exit .ctrl-step-title { color: var(--sem-risk); }
+.ctrl-step-exit .ctrl-arrow      { color: var(--sem-risk); }
+
+/* Vertical connector line between steps */
+.ctrl-connector {
+  width: 1px;
+  height: 18px;
+  background: var(--l-hair-strong);
+  margin-left: 22px;          /* aligns to icon center (44px / 2) */
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+/* "or, if missing" label · sits between Verified answer and Protected exit
+   to make explicit that the exit is a DESIGNED alternate path, not an
+   error fallthrough. */
+.ctrl-alt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 8px;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.alt-dash {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--l-hair-strong);
+}
+.alt-text {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 16px;                /* up from 12 — small annotation but legible */
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+/* ── Captions · one quiet summary line per column ────────────────── */
+
+.ctrl-caption {
+  margin-top: 22px;
+  padding-left: 4px;
+  font-family: var(--font-body);
+  font-size: 20px;                /* up from 16 — floor */
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+.ctrl-caption-warn {
+  color: var(--l-muted);
+  font-style: italic;
+}
+
+/* ── Bottom · payoff line + closure tick chips ────────────────────── */
+
+.ctrl-payoff {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  text-align: center;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.controlled-slide.payoff-shown .ctrl-payoff {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ctrl-ticks {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+  transition-delay: 200ms;
+}
+.controlled-slide.payoff-shown .ctrl-ticks {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Reveal triggers · per-click cascades ──────────────────────────
+   Click 2: chatbot column · tight cascade Q -> Model -> Answer + caption */
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-step,
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-connector,
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-caption {
+  opacity: 1;
+}
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-step,
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-caption {
+  transform: translateY(0);
+}
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-step:nth-of-type(1)     { transition-delay: 0ms;   }
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-step:nth-of-type(3)     { transition-delay: 100ms; }
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-step:nth-of-type(5)     { transition-delay: 200ms; }
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-connector               { transition-delay: 80ms;  }
+.controlled-slide.chatbot-shown .ctrl-chatbot .ctrl-caption                 { transition-delay: 320ms; }
+
+/* Click 3: copilot main path · Q -> Scope -> Ground -> Verified + caption
+   (exit-elements stay hidden until click 4) */
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:not(.ctrl-exit-element),
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-connector,
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-caption {
+  opacity: 1;
+}
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:not(.ctrl-exit-element),
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-caption {
+  transform: translateY(0);
+}
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:nth-of-type(1)     { transition-delay: 0ms;   }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:nth-of-type(3)     { transition-delay: 100ms; }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:nth-of-type(5)     { transition-delay: 200ms; }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-step:nth-of-type(7)     { transition-delay: 300ms; }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-connector               { transition-delay: 80ms;  }
+.controlled-slide.copilot-shown .ctrl-copilot .ctrl-caption                 { transition-delay: 460ms; }
+
+/* Click 4: protected exit branch · alt-label first, then exit step */
+.controlled-slide.exit-shown .ctrl-exit-element {
+  opacity: 1;
+  transform: translateY(0);
+}
+.controlled-slide.exit-shown .ctrl-alt-label { transition-delay: 0ms;   }
+.controlled-slide.exit-shown .ctrl-step-exit { transition-delay: 200ms; }
+
+
+/* ============================================================================
+   05.3 · Grounding Is Not Enough
+   ----------------------------------------------------------------------------
+   Bridge slide. Establishes: grounding is necessary (safer) but NOT
+   sufficient. Visualizes the rejected approach — ONE GENERIC PIPELINE
+   that all questions go through — surrounded by 4 risk cards (pressure
+   points). The pipeline reads heavy and overloaded; the cards press on
+   it from above and below. Prepares the next slide (Mixture of Paths)
+   without naming it. 4 clicks: headline · pipeline · risks · bottom.
+   ============================================================================ */
+
+.grounding-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+}
+
+.ground-headline {
+  margin-top: 0;
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.grounding-slide.headline-shown .ground-headline {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* "safer" picks up teal from 05.2's Verified-answer accent; "not enough"
+   takes red — the section's risk colour. The headline carries the whole
+   argument in two coloured beats. */
+.ground-safer      { color: var(--teal-700); }
+.ground-not-enough { color: var(--sem-risk); }
+
+
+/* ── Frame · vertical stack of risk-rows + central pipeline ──────── */
+
+.ground-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+  max-width: 1620px;
+}
+
+.ground-risks {
+  display: flex;
+  justify-content: space-between;
+  gap: 60px;
+  width: 100%;
+}
+
+/* ── Risk cards · 4 pressure points pressing on the pipeline ─────── */
+
+.ground-risk {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 20px 26px 20px 28px;
+  background: var(--l-surface);
+  border-top:    1px solid var(--l-hair-strong);
+  border-right:  1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  border-left:   3px solid var(--sem-risk);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+.risk-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.risk-title {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sem-risk);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}
+
+.risk-line {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--l-ink);
+  line-height: 1.4;
+}
+
+/* Cascade · 4 cards fade up in sequence (TL → TR → BL → BR) */
+.grounding-slide.risks-shown .ground-risk {
+  opacity: 1;
+  transform: translateY(0);
+}
+.grounding-slide.risks-shown .ground-risks-top    .ground-risk:nth-child(1) { transition-delay: 0ms;   }
+.grounding-slide.risks-shown .ground-risks-top    .ground-risk:nth-child(2) { transition-delay: 100ms; }
+.grounding-slide.risks-shown .ground-risks-bottom .ground-risk:nth-child(1) { transition-delay: 200ms; }
+.grounding-slide.risks-shown .ground-risks-bottom .ground-risk:nth-child(2) { transition-delay: 300ms; }
+
+/* ── Pipeline · the heavy generic one-size-fits-all path ─────────── */
+
+.ground-pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.grounding-slide.pipeline-shown .ground-pipeline {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pipe-box {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 30px 22px;
+  background: var(--l-surface);
+  border: 1.6px solid var(--l-hair-strong);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.25;
+  box-shadow: 0 4px 12px rgba(28, 24, 19, 0.06);
+}
+
+.pipe-arrow {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+/* ── Bottom synthesis line ────────────────────────────────────────── */
+
+.ground-bottom {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-ink);
+  text-align: center;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.grounding-slide.bottom-shown .ground-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   05.4 · Mixture of Paths · MoP
+   ----------------------------------------------------------------------------
+   The innovation reveal slide. Two-beat reveal:
+     - Click 1: "Mixture of Paths" appears HUGE at the centre (the hero
+       reveal — the moment the idea is named).
+     - Click 2: the hero title fades out as a compact MoP badge appears
+       up top; the subtitle, decision-tree skeleton, and structure of the
+       layout all land.
+     - Click 3: the four path cards cascade in (Simple, RFQ truth,
+       Intelligence, Protected exit), each in its own semantic accent
+       (neutral / amber / teal / red).
+     - Click 4: the bottom principle lands.
+   No GSAP — the morph is a clean fade between two elements (hero title
+   absolute-centred fading out, badge in flow fading in). Internal class
+   names (ExecutionPlanFactory, Path Registry, Escalation Gate) are not
+   on the slide — those stay in Q&A backup.
+   ============================================================================ */
+
+.mop-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  /* No position override — base .slide-content has position:absolute with
+     inset margins, which both fills the slide AND creates the positioning
+     context for the absolute-centred title + badge. */
+}
+
+/* ── The morphing title · click 1 hero -> click 2 MoP scramble ─────
+   Same 140px display AMBER at the same centre through BOTH states.
+   Parent owns the amber colour so it's always orange — even after
+   scrambleTo destroys the spans on click 2. The per-letter spans
+   cascade in via opacity + translateY only (no color shift).
+   Selector is .mop-slide .mop-title (specificity 0,0,2,0) to beat the
+   base .reveal h2 { color: var(--l-ink) } rule (specificity 0,0,1,1)
+   that was rendering this element in black ink. */
+.mop-slide .mop-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 140px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+  transition: top 0.7s cubic-bezier(.4,0,.6,1),
+              transform 0.7s cubic-bezier(.4,0,.6,1),
+              font-size 0.7s cubic-bezier(.4,0,.6,1);
+}
+
+/* On click 3 (layout-shown), MoP shrinks and moves to the top of the slide
+   to make room for the subtitle + diagram + principle stack below.
+   top:4% keeps MoP clearly separated from the subtitle (which sits at
+   the top of the centred flex group below). */
+.mop-slide.layout-shown .mop-title {
+  top: 4%;
+  font-size: 60px;
+  transform: translate(-50%, 0);
+}
+
+/* Per-letter cascade on click 1. Spans inherit amber from parent —
+   they only animate opacity + translateY, so even if a transition is
+   missed the colour is guaranteed correct. */
+.mop-title span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.mop-slide.title-shown .mop-title span {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--n, 1) * 35ms);
+}
+
+/* Morph state intentionally has NO style changes — scrambleTo IS the
+   morph. The element stays at 140px display amber centre throughout. */
+
+/* ── Subtitle · one-line thesis under the (shrunk) MoP title ─────── */
+.mop-subtitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-muted);
+  text-align: center;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+  transition-delay: 400ms;
+}
+.mop-slide.layout-shown .mop-subtitle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Diagram · User query -> Path router -> 7 lanes -> Answer ──────
+   The diagram is split across THREE clicks:
+     · Click 4 (user-shown):   User query alone appears
+     · Click 5 (router-shown): Path router + zone + middle 5 lanes appear
+     · Click 6 (answer-shown): Answer (and the convergent arrow) appears
+   Top (Quick answer) and Bottom (Protected exit) lanes are reserved
+   in the DOM but collapsed (max-height:0) until their own clicks. */
+.mop-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 1820px;
+  margin-top: 8px;
+}
+
+/* All diagram pieces start hidden — individual transitions per state class */
+.mop-d-input,
+.mop-d-router,
+.mop-d-output,
+.mop-d-arrow,
+.mop-d-zone {
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+
+/* Click 4 · User query alone (no arrows yet — nothing to point to) */
+.mop-slide.user-shown .mop-d-input {
+  opacity: 1;
+}
+
+/* Click 5 · Router + first arrow + fan arrow + zone (lanes cascade inside) */
+.mop-slide.router-shown .mop-d-arrow:not(.mop-d-arrow-conv),
+.mop-slide.router-shown .mop-d-router,
+.mop-slide.router-shown .mop-d-zone {
+  opacity: 1;
+}
+
+/* Click 6 · Convergent arrow + Answer */
+.mop-slide.answer-shown .mop-d-arrow-conv,
+.mop-slide.answer-shown .mop-d-output {
+  opacity: 1;
+}
+
+.mop-d-input,
+.mop-d-output {
+  flex: 0 0 auto;
+}
+.mop-d-input .mop-d-card,
+.mop-d-output .mop-d-card {
+  padding: 18px 22px;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.2;
+  min-width: 130px;
+}
+
+.mop-d-router {
+  flex: 0 0 auto;
+  padding: 18px 24px;
+  background: var(--l-surface);
+  border: 1.6px solid var(--amber-on-light);
+  border-radius: 6px;
+  text-align: center;
+  min-width: 200px;
+}
+.mop-d-router-title {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--amber-on-light);
+  line-height: 1.2;
+}
+.mop-d-router-sub {
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--l-muted);
+  line-height: 1.3;
+}
+
+.mop-d-arrow {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--l-muted);
+  line-height: 1;
+}
+
+/* ── Protected routing layer · soft enclosing zone around the lanes ─
+   Top: lock icon + "PROTECTED ROUTING LAYER" mono caps label.
+   Bottom: "Privacy hardening" strip with the full
+   "Personally Identifiable Information (PII)" wording.
+   Visual: hair border, subtle background, amber lock + label.
+   Stays subordinate — never dominates the routing message. */
+.mop-d-zone {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  background: rgba(160, 106, 24, 0.025);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 8px;
+  max-width: 1000px;        /* wide enough for the privacy footer line */
+}
+
+.mop-d-zone-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--l-hair-strong);
+}
+
+.mop-d-zone-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  color: var(--amber-on-light);
+}
+.mop-d-zone-icon svg { width: 100%; height: 100%; }
+
+.mop-d-zone-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* The 6-lane stack inside the zone */
+.mop-d-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mop-d-zone-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--l-hair-strong);
+}
+
+.mop-d-zone-foot-title {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.mop-d-zone-foot-desc {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.4;
+  white-space: nowrap;       /* force the PII sentence onto a single line */
+}
+
+.mop-d-lane {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px 10px 20px;
+  background: var(--l-surface);
+  border-top: 1px solid var(--l-hair-strong);
+  border-right: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  border-left: 3px solid var(--l-hair-strong);
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Middle lanes appear at click 5 (router-shown) with cascade inside the zone */
+.mop-slide.router-shown .mop-lane-middle {
+  opacity: 1;
+  transform: translateX(0);
+}
+.mop-slide.router-shown .mop-lane-middle:nth-of-type(2) { transition-delay: 200ms; }
+.mop-slide.router-shown .mop-lane-middle:nth-of-type(3) { transition-delay: 280ms; }
+.mop-slide.router-shown .mop-lane-middle:nth-of-type(4) { transition-delay: 360ms; }
+.mop-slide.router-shown .mop-lane-middle:nth-of-type(5) { transition-delay: 440ms; }
+.mop-slide.router-shown .mop-lane-middle:nth-of-type(6) { transition-delay: 520ms; }
+
+/* Top + bottom lanes start COLLAPSED — no max-height, no padding, no
+   border, no opacity. They appear at click 5 (top) and click 6 (bottom)
+   via simultaneous max-height + padding + border + opacity transitions. */
+.mop-lane-top,
+.mop-lane-bottom {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-right-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(0);
+  transition: max-height 0.55s cubic-bezier(.2,.7,.2,1),
+              padding 0.55s cubic-bezier(.2,.7,.2,1),
+              border-width 0.4s ease-out,
+              opacity 0.5s ease-out;
+}
+.mop-slide.top-shown .mop-lane-top,
+.mop-slide.bottom-shown .mop-lane-bottom {
+  max-height: 80px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+  border-left-width: 3px;
+  opacity: 1;
+}
+
+.mop-lane-tag {
+  flex: 0 0 56px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.mop-lane-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mop-lane-title {
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--l-ink);
+  line-height: 1.2;
+}
+
+.mop-lane-sub {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--l-muted);
+  line-height: 1.3;
+}
+
+/* Lane accent colours · semantic per route. Left stripe + title hue. */
+.mop-lane-simple    { border-left-color: var(--l-muted); }
+
+.mop-lane-rfq       { border-left-color: var(--amber-on-light); }
+.mop-lane-rfq       .mop-lane-title { color: var(--amber-on-light); }
+
+.mop-lane-portfolio { border-left-color: var(--amber-on-light); }
+.mop-lane-portfolio .mop-lane-title { color: var(--amber-on-light); }
+
+.mop-lane-intel     { border-left-color: var(--teal-700); }
+.mop-lane-intel     .mop-lane-title { color: var(--teal-700); }
+
+.mop-lane-compare   { border-left-color: var(--amber-on-light); }
+.mop-lane-compare   .mop-lane-title { color: var(--amber-on-light); }
+
+.mop-lane-other {
+  border-style: dashed;
+  border-left-color: var(--l-hair-strong);
+  background: transparent;
+}
+.mop-lane-other .mop-lane-title {
+  color: var(--l-muted);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.mop-lane-exit      { border-left-color: var(--sem-risk); }
+.mop-lane-exit      .mop-lane-title { color: var(--sem-risk); }
+
+/* ── Bottom principle · the section's payoff line ────────────────── */
+.mop-principle {
+  margin: 18px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-ink);
+  text-align: center;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.mop-slide.principle-shown .mop-principle {
   opacity: 1;
   transform: translateY(0);
 }
@@ -6724,7 +7701,10 @@
   .rail-card, .rail-arrow,
   .api-column, .contract-column, .contract-maturity,
   .api-card,
-  .naive-picture, .risk-tile, .trap-synthesis,
+  .trap-headline, .naive-picture, .risk-tile, .trap-synthesis, .syn-part,
+  .ctrl-headline, .ctrl-tag, .ctrl-divider, .ctrl-step, .ctrl-connector, .ctrl-alt-label, .ctrl-caption, .ctrl-payoff, .ctrl-ticks,
+  .ground-headline, .ground-pipeline, .ground-risk, .ground-bottom,
+  .mop-title, .mop-subtitle, .mop-diagram, .mop-d-lane, .mop-principle,
   .inv-side, .inv-vs, .copilot-support,
   .phase-box, .phase-arrow, .phase-code-wrap, .phase-tests, .phase-lock,
   .closure-ticks .label-chip,

@@ -845,9 +845,45 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('maturity-shown'); return; }
 
   // §05.1 · The Chatbot Trap — 3 clicks (picture → risks → synthesis).
+  if (trigger.matches('[data-trap-headline]'))  { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('headline-shown'); return; }
   if (trigger.matches('[data-trap-picture]'))   { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('picture-shown'); return; }
   if (trigger.matches('[data-trap-risks]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('risks-shown'); return; }
   if (trigger.matches('[data-trap-synthesis]')) { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('synthesis-shown'); return; }
+  if (trigger.matches('[data-trap-cause]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('cause-shown'); return; }
+
+  // §05.2 · From Chatbot to Controlled Copilot — 5 clicks (headline → chatbot → copilot main → exit → payoff).
+  if (trigger.matches('[data-ctrl-headline]')) { const s = trigger.closest('.controlled-slide'); if (s) s.classList.add('headline-shown'); return; }
+  if (trigger.matches('[data-ctrl-chatbot]'))  { const s = trigger.closest('.controlled-slide'); if (s) s.classList.add('chatbot-shown');  return; }
+  if (trigger.matches('[data-ctrl-copilot]'))  { const s = trigger.closest('.controlled-slide'); if (s) s.classList.add('copilot-shown');  return; }
+  if (trigger.matches('[data-ctrl-exit]'))     { const s = trigger.closest('.controlled-slide'); if (s) s.classList.add('exit-shown');     return; }
+  if (trigger.matches('[data-ctrl-payoff]'))   { const s = trigger.closest('.controlled-slide'); if (s) s.classList.add('payoff-shown');   return; }
+
+  // §05.3 · Grounding Is Not Enough — 4 clicks (headline → pipeline → risks → bottom).
+  if (trigger.matches('[data-ground-headline]')) { const s = trigger.closest('.grounding-slide'); if (s) s.classList.add('headline-shown'); return; }
+  if (trigger.matches('[data-ground-pipeline]')) { const s = trigger.closest('.grounding-slide'); if (s) s.classList.add('pipeline-shown'); return; }
+  if (trigger.matches('[data-ground-risks]'))    { const s = trigger.closest('.grounding-slide'); if (s) s.classList.add('risks-shown');    return; }
+  if (trigger.matches('[data-ground-bottom]'))   { const s = trigger.closest('.grounding-slide'); if (s) s.classList.add('bottom-shown');   return; }
+
+  // §05.4 · Mixture of Paths (MoP) — 7 clicks:
+  //  1 title cascade · 2 scramble · 3 layout (MoP shrinks + subtitle) ·
+  //  4 diagram (User query + Router + middle 5 lanes + Answer) ·
+  //  5 top (Quick answer) · 6 bottom (Protected exit) · 7 principle.
+  if (trigger.matches('[data-mop-title]')) { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('title-shown'); return; }
+  if (trigger.matches('[data-mop-morph]')) {
+    const s = trigger.closest('.mop-slide');
+    if (s) {
+      s.classList.add('morph-shown');
+      scrambleTo(s.querySelector('.mop-title'), 'MoP');
+    }
+    return;
+  }
+  if (trigger.matches('[data-mop-layout]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('layout-shown');    return; }
+  if (trigger.matches('[data-mop-user]'))      { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('user-shown');      return; }
+  if (trigger.matches('[data-mop-router]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('router-shown');    return; }
+  if (trigger.matches('[data-mop-answer]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('answer-shown');    return; }
+  if (trigger.matches('[data-mop-top]'))       { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('top-shown');       return; }
+  if (trigger.matches('[data-mop-bottom]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('bottom-shown');    return; }
+  if (trigger.matches('[data-mop-principle]')) { const s = trigger.closest('.mop-slide'); if (s) s.classList.add('principle-shown'); return; }
 
   // §05.2 · The Copilot Inversion — 3 clicks (chatbot → copilot → support).
   if (trigger.matches('[data-inv-before]'))  { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.add('chatbot-shown'); return; }
@@ -1204,9 +1240,39 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('contract-shown'); return; }
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('maturity-shown'); return; }
 
+  if (trigger.matches('[data-trap-headline]'))  { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('headline-shown'); return; }
   if (trigger.matches('[data-trap-picture]'))   { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('picture-shown'); return; }
   if (trigger.matches('[data-trap-risks]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('risks-shown'); return; }
   if (trigger.matches('[data-trap-synthesis]')) { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('synthesis-shown'); return; }
+  if (trigger.matches('[data-trap-cause]'))     { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('cause-shown'); return; }
+
+  if (trigger.matches('[data-ctrl-headline]')) { const s = trigger.closest('.controlled-slide'); if (s) s.classList.remove('headline-shown'); return; }
+  if (trigger.matches('[data-ctrl-chatbot]'))  { const s = trigger.closest('.controlled-slide'); if (s) s.classList.remove('chatbot-shown');  return; }
+  if (trigger.matches('[data-ctrl-copilot]'))  { const s = trigger.closest('.controlled-slide'); if (s) s.classList.remove('copilot-shown');  return; }
+  if (trigger.matches('[data-ctrl-exit]'))     { const s = trigger.closest('.controlled-slide'); if (s) s.classList.remove('exit-shown');     return; }
+  if (trigger.matches('[data-ctrl-payoff]'))   { const s = trigger.closest('.controlled-slide'); if (s) s.classList.remove('payoff-shown');   return; }
+
+  if (trigger.matches('[data-ground-headline]')) { const s = trigger.closest('.grounding-slide'); if (s) s.classList.remove('headline-shown'); return; }
+  if (trigger.matches('[data-ground-pipeline]')) { const s = trigger.closest('.grounding-slide'); if (s) s.classList.remove('pipeline-shown'); return; }
+  if (trigger.matches('[data-ground-risks]'))    { const s = trigger.closest('.grounding-slide'); if (s) s.classList.remove('risks-shown');    return; }
+  if (trigger.matches('[data-ground-bottom]'))   { const s = trigger.closest('.grounding-slide'); if (s) s.classList.remove('bottom-shown');   return; }
+
+  if (trigger.matches('[data-mop-title]')) { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('title-shown'); return; }
+  if (trigger.matches('[data-mop-morph]')) {
+    const s = trigger.closest('.mop-slide');
+    if (s) {
+      s.classList.remove('morph-shown');
+      scrambleTo(s.querySelector('.mop-title'), 'Mixture of Paths');
+    }
+    return;
+  }
+  if (trigger.matches('[data-mop-layout]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('layout-shown');    return; }
+  if (trigger.matches('[data-mop-user]'))      { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('user-shown');      return; }
+  if (trigger.matches('[data-mop-router]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('router-shown');    return; }
+  if (trigger.matches('[data-mop-answer]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('answer-shown');    return; }
+  if (trigger.matches('[data-mop-top]'))       { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('top-shown');       return; }
+  if (trigger.matches('[data-mop-bottom]'))    { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('bottom-shown');    return; }
+  if (trigger.matches('[data-mop-principle]')) { const s = trigger.closest('.mop-slide'); if (s) s.classList.remove('principle-shown'); return; }
 
   if (trigger.matches('[data-inv-before]'))  { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.remove('chatbot-shown'); return; }
   if (trigger.matches('[data-inv-after]'))   { const s = trigger.closest('.copilot-inversion-slide'); if (s) s.classList.remove('copilot-shown'); return; }
@@ -1596,9 +1662,52 @@ Reveal.on('slidechanged', (event) => {
   }
   const chatbotTrapSlide = slide.querySelector('.chatbot-trap-slide');
   if (chatbotTrapSlide) {
+    chatbotTrapSlide.classList.toggle('headline-shown',  !!slide.querySelector('[data-trap-headline].visible'));
     chatbotTrapSlide.classList.toggle('picture-shown',   !!slide.querySelector('[data-trap-picture].visible'));
     chatbotTrapSlide.classList.toggle('risks-shown',     !!slide.querySelector('[data-trap-risks].visible'));
     chatbotTrapSlide.classList.toggle('synthesis-shown', !!slide.querySelector('[data-trap-synthesis].visible'));
+    chatbotTrapSlide.classList.toggle('cause-shown',     !!slide.querySelector('[data-trap-cause].visible'));
+  }
+  const controlledSlide = slide.querySelector('.controlled-slide');
+  if (controlledSlide) {
+    controlledSlide.classList.toggle('headline-shown', !!slide.querySelector('[data-ctrl-headline].visible'));
+    controlledSlide.classList.toggle('chatbot-shown',  !!slide.querySelector('[data-ctrl-chatbot].visible'));
+    controlledSlide.classList.toggle('copilot-shown',  !!slide.querySelector('[data-ctrl-copilot].visible'));
+    controlledSlide.classList.toggle('exit-shown',     !!slide.querySelector('[data-ctrl-exit].visible'));
+    controlledSlide.classList.toggle('payoff-shown',   !!slide.querySelector('[data-ctrl-payoff].visible'));
+  }
+  const groundingSlide = slide.querySelector('.grounding-slide');
+  if (groundingSlide) {
+    groundingSlide.classList.toggle('headline-shown', !!slide.querySelector('[data-ground-headline].visible'));
+    groundingSlide.classList.toggle('pipeline-shown', !!slide.querySelector('[data-ground-pipeline].visible'));
+    groundingSlide.classList.toggle('risks-shown',    !!slide.querySelector('[data-ground-risks].visible'));
+    groundingSlide.classList.toggle('bottom-shown',   !!slide.querySelector('[data-ground-bottom].visible'));
+  }
+  const mopSlide = slide.querySelector('.mop-slide');
+  if (mopSlide) {
+    const morphShown = !!slide.querySelector('[data-mop-morph].visible');
+    mopSlide.classList.toggle('title-shown',     !!slide.querySelector('[data-mop-title].visible'));
+    mopSlide.classList.toggle('morph-shown',     morphShown);
+    mopSlide.classList.toggle('layout-shown',    !!slide.querySelector('[data-mop-layout].visible'));
+    mopSlide.classList.toggle('user-shown',      !!slide.querySelector('[data-mop-user].visible'));
+    mopSlide.classList.toggle('router-shown',    !!slide.querySelector('[data-mop-router].visible'));
+    mopSlide.classList.toggle('answer-shown',    !!slide.querySelector('[data-mop-answer].visible'));
+    mopSlide.classList.toggle('top-shown',       !!slide.querySelector('[data-mop-top].visible'));
+    mopSlide.classList.toggle('bottom-shown',    !!slide.querySelector('[data-mop-bottom].visible'));
+    mopSlide.classList.toggle('principle-shown', !!slide.querySelector('[data-mop-principle].visible'));
+    // Snap-set the title text ONLY when we need "MoP" plain text. If
+    // morphShown is false, leave the element alone — the initial HTML
+    // still has the per-letter spans the click-1 cascade depends on,
+    // OR it's plain "Mixture of Paths" left over from a back-nav scramble.
+    // Either is fine; touching it would destroy the spans on every
+    // slide entry and the cascade would never run.
+    const titleEl = mopSlide.querySelector('.mop-title');
+    if (titleEl) {
+      cancelScramble(titleEl);
+      if (morphShown) {
+        titleEl.textContent = 'MoP';
+      }
+    }
   }
   const copilotInversionSlide = slide.querySelector('.copilot-inversion-slide');
   if (copilotInversionSlide) {
