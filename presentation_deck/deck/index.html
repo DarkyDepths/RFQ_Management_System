@@ -118,15 +118,15 @@
             <div class="credits-row credits-5col">
               <div class="cell">
                 <span class="lab">President</span>
-                <span class="val">Mrs. Ines Ben Massoud</span>
+                <span class="val">Dr. Ines Ben Massoud</span>
               </div>
               <div class="cell">
                 <span class="lab">Examiner</span>
-                <span class="val">Mrs. Molka Rekik</span>
+                <span class="val">Dr. Molka Rekik</span>
               </div>
               <div class="cell">
                 <span class="lab">Academic supervisor</span>
-                <span class="val">Mr. Boukthir Haddar</span>
+                <span class="val">Dr. Boukthir Haddar</span>
               </div>
               <div class="cell">
                 <span class="lab">Industrial supervisors</span>
@@ -216,7 +216,7 @@
         <div class="storm-hook">
           <div class="scrim-pool"></div>
           <h2 class="phrase">
-            <span class="phrase-eyebrow">Industrial Intelligence</span>
+            <span class="phrase-eyebrow">From request to quotation</span>
             The real RFQ risk is losing <span class="accent">control</span>
             <br>before the quotation is ready.
           </h2>
@@ -384,7 +384,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">04</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">04</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -401,47 +401,121 @@
 
         <div class="slide-content center-band">
           <div class="rfq-canvas">
-            <!-- Top row: 2x2 artifact clusters flanking a spacer matching the
-                 centre block's footprint. Hidden until click 3. -->
-            <div class="artifacts-row">
-              <div class="artifact-cluster cluster-left" data-artifact-side="left">
-                <div class="artifact-tile">Technical specs</div>
-                <div class="artifact-tile">Drawings</div>
-                <div class="artifact-tile">BOQ</div>
-                <div class="artifact-tile">Deadline</div>
-              </div>
-              <div class="artifacts-spacer" aria-hidden="true"></div>
-              <div class="artifact-cluster cluster-right" data-artifact-side="right">
-                <div class="artifact-tile">Technical offer</div>
-                <div class="artifact-tile">Commercial offer</div>
-                <div class="artifact-tile">Price</div>
-                <div class="artifact-tile">Submission</div>
-              </div>
-            </div>
 
-            <!-- 3-block flow: Client Request → RFQ → Company Quotation -->
+            <!-- Horizontal flow: [LEFT card stack] → RFQ box (morph) → [RIGHT card stack] -->
             <div class="rfq-flow">
-              <div class="flow-block flow-block-side">
-                <span class="flow-label">Client Request</span>
+
+              <!-- LEFT · what the client provides (4 cards, deadline = red) -->
+              <div class="flow-side flow-side-left">
+                <div class="flow-side-label">The client provides</div>
+                <div class="flow-cards">
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Technical specs</span>
+                  </div>
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Drawings</span>
+                  </div>
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="3" width="14" height="18" rx="2"/>
+                        <line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="9" y1="12" x2="15" y2="12"/>
+                        <line x1="9" y1="16" x2="13" y2="16"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Bill of quantities (BoQ)</span>
+                  </div>
+                  <div class="flow-card flow-card-deadline">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">A deadline</span>
+                  </div>
+                </div>
               </div>
-              <span class="flow-arrow" aria-hidden="true">→</span>
+
+              <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+
+              <!-- CENTRE · RFQ box (scrambleTo morphs RFQ &harr; Demande de devis) -->
               <div class="flow-block flow-block-center" data-rfq-anchor>
                 <span class="flow-title"    data-rfq-title>RFQ</span>
                 <span class="flow-subtitle" data-rfq-subtitle>Request for Quotation</span>
               </div>
-              <span class="flow-arrow" aria-hidden="true">→</span>
-              <div class="flow-block flow-block-side">
-                <span class="flow-label">Company Quotation</span>
+
+              <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+
+              <!-- RIGHT · what the company returns (4 cards, neutral) -->
+              <div class="flow-side flow-side-right">
+                <div class="flow-side-label">The company returns</div>
+                <div class="flow-cards">
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <polyline points="9 14 11 16 15 12"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Technical offer</span>
+                  </div>
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="6" x2="12" y2="18"/>
+                        <path d="M16 9.5c-1.5-1-3-1.5-4-1.5-2.5 0-3 1-3 2s.5 2 3 2 3 1 3 2-.5 2-3 2c-1 0-2.5-.5-4-1.5"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Commercial offer</span>
+                  </div>
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <circle cx="7" cy="7" r="1"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">A price</span>
+                  </div>
+                  <div class="flow-card">
+                    <span class="flow-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                    </span>
+                    <span class="flow-card-label">Submission</span>
+                  </div>
+                </div>
               </div>
+
             </div>
 
-            <!-- Final landing sentence — fades up on click 4. Two phrases get
-                 amber-bold emphasis (option A): the deliverables and the constraint. -->
+            <!-- Final landing sentence — "a deadline" now in RED (sem-risk) -->
             <div class="rfq-synthesis">
               A client asks the company to prepare
               <span class="emph">a technical and commercial offer</span>
               before
-              <span class="emph">a deadline</span>.
+              <span class="emph-risk">a deadline</span>.
             </div>
           </div>
         </div>
@@ -483,25 +557,106 @@
         <div class="slide-content center-band">
           <div class="lifecycle-canvas">
 
-            <!-- The 7-stage rail. Each stage appears on its own click and
-                 gets a pulsing amber highlight while the speaker is on it;
-                 previous stages stay visible at normal style. The 3-column
-                 context band below names categorical examples of WHAT each
-                 stage touches (inputs / contributors / control points). -->
+            <!-- The 7-stage rail. New style: each stage is a vertical
+                 trio — icon-card on top, MONO CAPS label, italic sub-line.
+                 Connectors between stages are dashed hair lines (replacing
+                 the old solid arrows). Per-stage reveal + amber pulse on
+                 .current are preserved (JS toggles .revealed / .current). -->
             <div class="lifecycle-rail">
-              <div class="rail-stage">Intake</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Technical Review</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Estimation</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Inputs</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Validation</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Submission</div>
-              <span class="rail-arrow" aria-hidden="true">→</span>
-              <div class="rail-stage">Outcome</div>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Intake</div>
+                <div class="rail-sub">Client package arrives</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Technical Review</div>
+                <div class="rail-sub">Scope &amp; feasibility</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    <path d="M12 11h4"/><path d="M12 16h4"/>
+                    <path d="M8 11h.01"/><path d="M8 16h.01"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Estimation</div>
+                <div class="rail-sub">BoQ &amp; pricing</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Inputs</div>
+                <div class="rail-sub">Vendors &amp; suppliers</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Validation</div>
+                <div class="rail-sub">Approvals &amp; checks</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Submission</div>
+                <div class="rail-sub">Quotation issued</div>
+              </div>
+
+              <span class="rail-arrow" aria-hidden="true">&rarr;</span>
+
+              <div class="rail-stage">
+                <div class="rail-icon-card" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                  </svg>
+                </div>
+                <div class="rail-label">Outcome</div>
+                <div class="rail-sub">Win / loss capture</div>
+              </div>
+
             </div>
 
             <!-- 3-column context band — iconic pillars. Each column = a
@@ -647,11 +802,11 @@
                    The diagram dimensions are unchanged (1280×400); the box
                    gives it ~22px breathing room on each side. -->
               <div class="audit-box glass-box">
-                <div class="box-eyebrow">The Audit</div>
+                <div class="box-eyebrow">The 5-day on-site audit</div>
                 <div class="audit-badge">
-                  <span>5-day on-site audit</span>
+                  <span>Gulf Heavy Industries Co. (GHI)</span>
                   <span class="sep" aria-hidden="true">·</span>
-                  <span>Saudi Arabia</span>
+                  <span>Kingdom of Saudi Arabia</span>
                   <span class="sep" aria-hidden="true">·</span>
                   <span>BACAB host context</span>
                 </div>
@@ -785,7 +940,7 @@
           control gaps before quotation — is what 01.3 walks through.
         </aside>
 
-        <div class="page-num"><span class="num">08</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">08</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -954,7 +1109,7 @@
           pivot: lifecycle control must come before quotation automation.
         </aside>
 
-        <div class="page-num"><span class="num">09</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">09</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -969,7 +1124,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">09</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">09</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -987,62 +1142,77 @@
         <div class="slide-content center-band">
           <div class="pivot-canvas">
 
-            <!-- Main statement · names the conceptual shift. Strong amber
-                 on the contrasting verbs ("generating" vs. "controlling")
-                 so the pivot reads as a substitution of objective. -->
+            <!-- Click 2 · the headline phrase fades in ABOVE the now-rejected
+                 left box. Amber emphasis on the contrasting verbs marks the
+                 substitution of objective. -->
             <p class="pivot-lede">
               The audit shifted the objective from
               <span class="emph">generating the quotation</span>
               to <span class="emph">controlling the lifecycle</span> that prepares it.
             </p>
 
-            <!-- 3-column pivot map · before → decision → after. The center
-                 box carries the rejection reasons compacted to two tags
-                 (Tacit expertise · No safe error margin) — detailed
-                 reasoning lives in speaker notes / backup material. -->
+            <!-- 2-box pivot: LEFT (Original Request, rejected on click 2)
+                 -> PIVOT connector -> RIGHT (New Direction, click 3). -->
             <div class="pivot-map">
-              <div class="map-box">
-                <div class="box-eyebrow">Original Request</div>
-                <div class="map-main">AI-generated BOQ</div>
-                <div class="map-sub">Autonomous estimation target</div>
-                <div class="map-tags">
+
+              <!-- LEFT · Original Request (click 1, transforms on click 2) -->
+              <div class="map-box map-box-original">
+                <div class="map-box-head">
+                  <div class="box-eyebrow">Original Request</div>
+                  <div class="rejected-badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="5" y1="5" x2="19" y2="19"/>
+                    </svg>
+                    <span>Rejected</span>
+                  </div>
+                </div>
+                <div class="map-main">AI-generated Bill of Quantities (BoQ)</div>
+
+                <div class="map-tags map-tags-original">
                   <span class="map-tag">Encode expert reasoning</span>
                   <span class="map-tag">Generate final values</span>
-                  <span class="map-tag">High contractual risk</span>
+                </div>
+
+                <!-- New chips revealed on click 2 — the REASONS for rejection -->
+                <div class="map-tags map-tags-rejection">
+                  <span class="map-tag map-tag-risk">Tacit expertise</span>
+                  <span class="map-tag map-tag-risk">No safe error margin</span>
+                  <span class="map-tag map-tag-risk">Customized products</span>
                 </div>
               </div>
 
-              <span class="map-arrow" aria-hidden="true">→</span>
-
-              <div class="map-box">
-                <div class="box-eyebrow">Audit Decision</div>
-                <div class="map-main">Rejected as autonomous target</div>
-                <div class="map-sub">Estimation remains expert-owned</div>
-                <div class="map-tags">
-                  <span class="map-tag">Tacit expertise</span>
-                  <span class="map-tag">No safe error margin</span>
-                </div>
+              <!-- Click 3 · pivot connector + arrow into the new direction -->
+              <div class="pivot-connector" aria-hidden="true">
+                <span class="pivot-connector-arrow">&rarr;</span>
+                <span class="pivot-connector-label">Pivot</span>
               </div>
 
-              <span class="map-arrow" aria-hidden="true">→</span>
-
-              <div class="map-box">
-                <div class="box-eyebrow">New Direction</div>
+              <!-- RIGHT · New Direction (click 3) -->
+              <div class="map-box map-box-new">
+                <div class="map-box-head">
+                  <div class="box-eyebrow">
+                    <span class="tick-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </span>
+                    New Direction
+                  </div>
+                </div>
                 <div class="map-main">RFQ Lifecycle Intelligence</div>
-                <div class="map-sub">Control · evidence · coordination · learning</div>
+
                 <div class="map-tags">
-                  <span class="map-tag">Track stages</span>
-                  <span class="map-tag">Structure evidence</span>
-                  <span class="map-tag">Coordinate actors</span>
-                  <span class="map-tag">Support decisions</span>
-                  <span class="map-tag">Reuse history</span>
+                  <span class="map-tag map-tag-new">Track stages</span>
+                  <span class="map-tag map-tag-new">Structure evidence</span>
+                  <span class="map-tag map-tag-new">Coordinate actors</span>
+                  <span class="map-tag map-tag-new">Support decisions</span>
+                  <span class="map-tag map-tag-new">Reuse history</span>
                 </div>
               </div>
             </div>
 
-            <!-- Bottom line · seals the positioning in one continuous
-                 sentence. Itqān is NOT named here — 02.2 is the platform
-                 reveal. -->
+            <!-- Click 4 · bottom positioning line. Forced onto one line. -->
             <div class="pivot-bottom">
               <span class="emph">Human estimation remains authoritative</span>;
               the platform controls the lifecycle around it.
@@ -1050,17 +1220,21 @@
           </div>
         </div>
 
-        <!-- Fragments — 4 reveals total. The main statement reveals
-             together with click 1 (the Original Request box) so the
-             speaker frames the pivot and the starting state as one
-             coherent opening beat, without an extra click for prose.
-             1) main statement + ORIGINAL REQUEST box (amber pulse)
-             2) AUDIT DECISION box (pulse); left arrow draws; box 1 clears
-             3) NEW DIRECTION box (pulse); right arrow draws; box 2 clears
-             4) bottom principle lands; box 3 pulse clears -->
-        <span class="fragment storm-resolve-trigger" data-pivot-box="1"  aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-pivot-box="2"  aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-pivot-box="3"  aria-hidden="true"></span>
+        <!-- 4-click reveal:
+             1) original-shown : LEFT box (Original Request) appears
+             2) reject-shown   : headline phrase fades in above; LEFT box
+                                  blinks red twice + settles with red top
+                                  border; REJECTED badge appears; original
+                                  chips get strikethrough; rejection chips
+                                  (Tacit expertise / No safe error margin)
+                                  fade in below
+             3) new-shown      : PIVOT connector appears; RIGHT box (New
+                                  Direction, teal accent) reveals with
+                                  check icon + 5 simplified chips
+             4) bottom-shown   : bottom one-line positioning sentence -->
+        <span class="fragment storm-resolve-trigger" data-pivot-original aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-pivot-reject   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-pivot-new      aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-pivot-bottom   aria-hidden="true"></span>
 
         <aside class="notes">
@@ -1083,7 +1257,7 @@
           Rejected" reasoning (now folded into this slide).
         </aside>
 
-        <div class="page-num"><span class="num">11</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">11</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1110,35 +1284,48 @@
               <span class="emph">expert estimation</span>.
             </p>
 
-            <!-- Central core + 4 orbiting foundations. Grid-positioned
-                 at the 4 corners with the core in the middle row. No
-                 boxes on the orbits — light icon + name + service chip.
-                 The arrangement echoes the opening hook's scattered
-                 layout but in ORDER (4 cardinal foundations around a
-                 stable core). -->
+            <!-- Central core + 4 user-facing platform pillars + cross-
+                 cutting BOUNDED COPILOT ring. The 4 pillars are the
+                 business capabilities Itqān delivers; the dashed teal
+                 ring around them is the copilot, present as a layer
+                 that supports every pillar but isn't one itself. The
+                 architectural service breakdown (rfq_manager_ms, etc.)
+                 lives on the next slide (§02.2.b), not here. -->
             <div class="itqan-system">
-              <div class="orbit-label orbit-nw">
-                <span class="orbit-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+
+              <!-- Cross-cutting copilot label · sits on top of the ring -->
+              <div class="copilot-ring-label" aria-hidden="true">
+                <span class="copilot-ring-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/>
+                    <polyline points="9 12 11 14 15 10"/>
                   </svg>
                 </span>
-                <div class="orbit-name">Operational Backbone</div>
-                <div class="orbit-service">rfq_manager_ms</div>
+                <span>The Copilot &middot; cross-cutting layer</span>
+              </div>
+
+              <div class="orbit-label orbit-nw">
+                <span class="orbit-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2"  y="2"  width="7" height="7" rx="1"/>
+                    <rect x="15" y="2"  width="7" height="7" rx="1"/>
+                    <rect x="2"  y="15" width="7" height="7" rx="1"/>
+                    <rect x="15" y="15" width="7" height="7" rx="1"/>
+                    <line x1="9"  y1="5.5"  x2="15" y2="5.5"/>
+                    <line x1="5.5" y1="9"   x2="5.5" y2="15"/>
+                    <line x1="9"  y1="18.5" x2="15" y2="18.5"/>
+                  </svg>
+                </span>
+                <div class="orbit-name">Workflow &amp; Tracking</div>
               </div>
 
               <div class="orbit-label orbit-ne">
                 <span class="orbit-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                    <path d="M12 11h4"/><path d="M12 16h4"/>
-                    <path d="M8 11h.01"/><path d="M8 16h.01"/>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                   </svg>
                 </span>
-                <div class="orbit-name">Structured Evidence</div>
-                <div class="orbit-service">rfq_intelligence_ms</div>
+                <div class="orbit-name">Communication Automation</div>
               </div>
 
               <!-- Central core — the system identity -->
@@ -1149,26 +1336,24 @@
 
               <div class="orbit-label orbit-sw">
                 <span class="orbit-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
-                    <path d="M20 3v4"/><path d="M22 5h-4"/>
-                    <path d="M4 17v2"/><path d="M5 18H3"/>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                    <polyline points="16 7 22 7 22 13"/>
                   </svg>
                 </span>
-                <div class="orbit-name">Bounded Copilot</div>
-                <div class="orbit-service">rfq_copilot_ms</div>
+                <div class="orbit-name">Predictive Analytics &amp; Historical Learning</div>
               </div>
 
               <div class="orbit-label orbit-se">
                 <span class="orbit-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="20" height="14" x="2" y="3" rx="2"/>
-                    <line x1="8" x2="16" y1="21" y2="21"/>
-                    <line x1="12" x2="12" y1="17" y2="21"/>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3"  y1="20" x2="21" y2="20"/>
+                    <line x1="6"  y1="20" x2="6"  y2="14"/>
+                    <line x1="12" y1="20" x2="12" y2="8"/>
+                    <line x1="18" y1="20" x2="18" y2="10"/>
                   </svg>
                 </span>
-                <div class="orbit-name">Platform Experience</div>
-                <div class="orbit-service">rfq_ui_ms + IAM</div>
+                <div class="orbit-name">Business Intelligence &amp; Executive Visibility</div>
               </div>
             </div>
 
@@ -1215,7 +1400,7 @@
           on lifecycle (observable, traceable, intelligent).
         </aside>
 
-        <div class="page-num"><span class="num">12</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">12</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1240,36 +1425,72 @@
               <span class="emph">step by step</span>.
             </p>
 
-            <!-- Thin roadmap rail — 4 section markers connected by
-                 hairline + arrows. Section number above, foundation
-                 name below. Light, transition-map feel, NOT cards. -->
+            <!-- 4 architectural foundations (the OLD orbital names),
+                 each with its microservice subtitle. Icon + name + service
+                 stacked vertically; connected by → arrows. -->
             <div class="roadmap-rail">
+
               <div class="roadmap-stage">
-                <div class="stage-num">03</div>
+                <span class="stage-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+                  </svg>
+                </span>
                 <div class="stage-name">Operational Backbone</div>
+                <div class="stage-service">rfq_manager_ms</div>
               </div>
-              <span class="roadmap-arrow" aria-hidden="true">→</span>
+
+              <span class="roadmap-arrow" aria-hidden="true">&rarr;</span>
+
               <div class="roadmap-stage">
-                <div class="stage-num">04</div>
-                <div class="stage-name">Intelligence Layer</div>
+                <span class="stage-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    <path d="M12 11h4"/><path d="M12 16h4"/>
+                    <path d="M8 11h.01"/><path d="M8 16h.01"/>
+                  </svg>
+                </span>
+                <div class="stage-name">Structured Evidence</div>
+                <div class="stage-service">rfq_intelligence_ms</div>
               </div>
-              <span class="roadmap-arrow" aria-hidden="true">→</span>
+
+              <span class="roadmap-arrow" aria-hidden="true">&rarr;</span>
+
               <div class="roadmap-stage">
-                <div class="stage-num">05</div>
-                <div class="stage-name">RFQ Copilot Layer</div>
+                <span class="stage-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                    <path d="M20 3v4"/><path d="M22 5h-4"/>
+                    <path d="M4 17v2"/><path d="M5 18H3"/>
+                  </svg>
+                </span>
+                <div class="stage-name">Bounded Copilot</div>
+                <div class="stage-service">rfq_copilot_ms</div>
               </div>
-              <span class="roadmap-arrow" aria-hidden="true">→</span>
+
+              <span class="roadmap-arrow" aria-hidden="true">&rarr;</span>
+
               <div class="roadmap-stage">
-                <div class="stage-num">06</div>
+                <span class="stage-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="3" rx="2"/>
+                    <line x1="8" x2="16" y1="21" y2="21"/>
+                    <line x1="12" x2="12" y1="17" y2="21"/>
+                  </svg>
+                </span>
                 <div class="stage-name">Platform Experience</div>
+                <div class="stage-service">rfq_ui_ms + rfq_iam_ms</div>
               </div>
+
             </div>
 
             <!-- Bottom line · seals the microservice framing. Each
                  foundation = one service boundary. -->
             <div class="roadmap-bottom">
               <span class="strong-noun">Four foundations</span>,
-              <span class="strong-noun">four service boundaries</span>,
+              <span class="strong-noun">five microservices</span>,
               one controlled RFQ lifecycle.
             </div>
           </div>
@@ -1297,7 +1518,7 @@
           other services).
         </aside>
 
-        <div class="page-num"><span class="num">13</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">13</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1312,7 +1533,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">14</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">14</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1335,9 +1556,9 @@
           <div class="topo-canvas">
 
             <p class="topo-lede">
-              One <span class="emph">entry layer</span>,
-              one <span class="emph">access seam</span>,
-              three <span class="emph">backend services</span>.
+              <span class="lede-part lede-entry">One <span class="emph">entry layer</span>,</span>
+              <span class="lede-part lede-access">one <span class="emph">access gateway</span>,</span>
+              <span class="lede-part lede-backends">three <span class="emph">backend services</span>.</span>
             </p>
 
             <!-- Layered topology · strict top-down flow inspired by the
@@ -1372,9 +1593,9 @@
                 <span class="edge-label">All API calls authorized through</span>
               </div>
 
-              <!-- Layer 2 · IAM (access boundary, future) -->
+              <!-- Layer 2 · IAM (access gateway, future) -->
               <div class="topo-layer topo-layer-iam">
-                <div class="layer-tag">Access boundary <span class="future-tag">future</span></div>
+                <div class="layer-tag">Access gateway <span class="future-tag">future</span></div>
                 <div class="topo-tile tile-iam tile-future">
                   <span class="tile-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1383,7 +1604,7 @@
                     </svg>
                   </span>
                   <div class="tile-name">rfq_iam_ms</div>
-                  <div class="tile-role">Access boundary · future seam</div>
+                  <div class="tile-role">Access gateway · future</div>
                 </div>
               </div>
 
@@ -1409,12 +1630,6 @@
                     </span>
                     <div class="tile-name">rfq_manager_ms</div>
                     <div class="tile-role">Operational lifecycle truth</div>
-                    <div class="svc-chips">
-                      <span class="svc-chip">RFQs</span>
-                      <span class="svc-chip">workflows</span>
-                      <span class="svc-chip">stages</span>
-                      <span class="svc-chip">reminders</span>
-                    </div>
                   </div>
                   <div class="topo-tile tile-svc tile-intel">
                     <span class="tile-icon" aria-hidden="true">
@@ -1432,11 +1647,6 @@
                     </span>
                     <div class="tile-name">rfq_intelligence_ms</div>
                     <div class="tile-role">Structured evidence</div>
-                    <div class="svc-chips">
-                      <span class="svc-chip">workbooks</span>
-                      <span class="svc-chip">MR packages</span>
-                      <span class="svc-chip">briefings</span>
-                    </div>
                   </div>
                   <div class="topo-tile tile-svc tile-copilot">
                     <span class="tile-icon" aria-hidden="true">
@@ -1448,11 +1658,6 @@
                     </span>
                     <div class="tile-name">rfq_copilot_ms</div>
                     <div class="tile-role">Bounded conversation</div>
-                    <div class="svc-chips">
-                      <span class="svc-chip">sessions</span>
-                      <span class="svc-chip">safe answers</span>
-                      <span class="svc-chip">manager context</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1533,23 +1738,17 @@
           </div>
         </div>
 
-        <!-- Reveal sequence — 8 clicks:
-             1) title (centered)
-             2) UI box appears (just the box + name + icon, no eyebrow / role yet)
-             3) IAM box appears (same: bare box)
-             4) 3 backend boxes appear staggered (bare boxes)
-             5) context fills in — eyebrows, role text, chips, arrows all
-                fade in across every revealed layer
-             6) data tiles stagger in
-             7) ownership connectors fade in (dashed lines + chevrons)
-             8) external LLM strip -->
-        <span class="fragment storm-resolve-trigger" data-svc-sentence aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-svc-ui      aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-svc-iam     aria-hidden="true"></span>
+        <!-- Reveal sequence — 5 clicks:
+             1) ENTRY · "One entry layer" + rfq_ui_ms tile + edge↓
+             2) ACCESS · "one access gateway" + rfq_iam_ms tile + edge↓
+             3) BACKENDS · "three backend services" + 3 backend tiles
+             4) DATA · 4 storage tiles cascade + ownership connectors
+             5) EXTERNAL · Azure OpenAI strip lands -->
+        <span class="fragment storm-resolve-trigger" data-svc-entry    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-access   aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-svc-backends aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-svc-context aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-svc-data    aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-svc-links   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-data     aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-svc-ext      aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-svc-ext     aria-hidden="true"></span>
 
         <aside class="notes">
@@ -1567,7 +1766,7 @@
           is a future seam, not yet implemented.
         </aside>
 
-        <div class="page-num"><span class="num">16</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">16</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1575,145 +1774,9 @@
          Reachable via #/03-1-b during Q&A. Not part of §03 linear flow. -->
 
     <!-- ─────────────────────────────────────────────────────────────────
-         §03.2.a · Manager as Operational Core — service grid with
-                   manager highlighted + orbital ownership labels. -->
-    <section data-slide="03.2.a">
-      <div class="slide mgr-core-slide" data-section="3">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Manager Core</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
-          </div>
-        </div>
-
-        <div class="slide-content center-band">
-          <div class="spine-canvas">
-
-            <!-- Manager spine · vertical focal column with attached
-                 ownership domains. Hierarchy in attachments: core
-                 (RFQs / Workflows / Stages) more prominent, support
-                 (Subtasks / Files / Notes / Reminders) regular, Stats
-                 quietest (derived visibility, not core lifecycle). -->
-            <div class="spine-stage">
-
-              <!-- Core lifecycle entities (RFQs · Workflows · Stages) -->
-              <div class="attach attach-left attach-l1 attach-core">
-                <div class="attach-name">RFQs</div>
-                <div class="attach-role">lifecycle records</div>
-              </div>
-              <div class="attach attach-left attach-l2 attach-core">
-                <div class="attach-name">Workflows</div>
-                <div class="attach-role">templates · current pointer</div>
-              </div>
-              <div class="attach attach-left attach-l3 attach-core">
-                <div class="attach-name">Stages</div>
-                <div class="attach-role">progress · blockers</div>
-              </div>
-              <!-- Support concern (Subtasks, left bottom) -->
-              <div class="attach attach-left attach-l4 attach-support">
-                <div class="attach-name">Subtasks</div>
-                <div class="attach-role">checklist items</div>
-              </div>
-
-              <!-- Central spine column · eyebrow + name + short tagline -->
-              <div class="spine-column">
-                <div class="spine-eyebrow">Operational backbone</div>
-                <div class="spine-name">rfq_manager_ms</div>
-                <div class="spine-tagline">Lifecycle state authority</div>
-              </div>
-
-              <!-- Support concerns (right column) -->
-              <div class="attach attach-right attach-r1 attach-support">
-                <div class="attach-name">Files</div>
-                <div class="attach-role">local storage</div>
-              </div>
-              <div class="attach attach-right attach-r2 attach-support">
-                <div class="attach-name">Notes</div>
-                <div class="attach-role">append-only history</div>
-              </div>
-              <div class="attach attach-right attach-r3 attach-support">
-                <div class="attach-name">Reminders</div>
-                <div class="attach-role">deadlines · processing</div>
-              </div>
-              <!-- Derived visibility (Stats — quietest) -->
-              <div class="attach attach-right attach-r4 attach-derived">
-                <div class="attach-name">Stats</div>
-                <div class="attach-role">analytics · export</div>
-              </div>
-
-              <!-- SVG connector overlay · viewBox matches stage 580px
-                   exactly, no preserveAspectRatio stretch — coordinates
-                   land on attach centers (top: 60/180/300/420 + 40px
-                   half-height = centres at 100/220/340/460). Hairline
-                   connectors with small amber anchor dots where each
-                   line meets the spine edge (x=670 left, x=1030 right). -->
-              <svg class="spine-connectors" viewBox="0 0 1700 580" preserveAspectRatio="none" aria-hidden="true">
-                <!-- Lines grouped by TIER (not by side) so each reveal beat
-                     shows the connectors for that tier. -->
-                <!-- Core tier (RFQs, Workflows, Stages — all on left) -->
-                <path class="spine-line conn-core conn-l1" d="M 460 100 L 670 100"/>
-                <path class="spine-line conn-core conn-l2" d="M 460 220 L 670 220"/>
-                <path class="spine-line conn-core conn-l3" d="M 460 340 L 670 340"/>
-                <!-- Support tier (Subtasks left + Files/Notes/Reminders right) -->
-                <path class="spine-line conn-support conn-l4" d="M 460 460 L 670 460"/>
-                <path class="spine-line conn-support conn-r1" d="M 1030 100 L 1240 100"/>
-                <path class="spine-line conn-support conn-r2" d="M 1030 220 L 1240 220"/>
-                <path class="spine-line conn-support conn-r3" d="M 1030 340 L 1240 340"/>
-                <!-- Derived tier (Stats only) -->
-                <path class="spine-line conn-derived conn-r4" d="M 1030 460 L 1240 460"/>
-                <!-- Amber anchor dots, grouped by tier -->
-                <circle class="spine-anchor anc-core anc-l1" cx="670"  cy="100" r="3"/>
-                <circle class="spine-anchor anc-core anc-l2" cx="670"  cy="220" r="3"/>
-                <circle class="spine-anchor anc-core anc-l3" cx="670"  cy="340" r="3"/>
-                <circle class="spine-anchor anc-support anc-l4" cx="670"  cy="460" r="3"/>
-                <circle class="spine-anchor anc-support anc-r1" cx="1030" cy="100" r="3"/>
-                <circle class="spine-anchor anc-support anc-r2" cx="1030" cy="220" r="3"/>
-                <circle class="spine-anchor anc-support anc-r3" cx="1030" cy="340" r="3"/>
-                <circle class="spine-anchor anc-derived anc-r4" cx="1030" cy="460" r="3"/>
-              </svg>
-            </div>
-
-            <div class="spine-boundary">
-              <span class="bound-eyebrow">Boundary</span>
-              <span class="bound-text">
-                Owns lifecycle truth —
-                <span class="emph-strike">not estimation logic</span>,
-                <span class="emph-strike">not document parsing</span>,
-                <span class="emph-strike">not chatbot reasoning</span>.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reveal sequence — 5 clicks, tier-based not spatial:
-             1) spine column lifts in (the focal central object)
-             2) CORE lifecycle entities: RFQs · Workflows · Stages
-             3) SUPPORT concerns: Subtasks · Files · Notes · Reminders
-             4) DERIVED: Stats (analytics — quietest)
-             5) boundary statement lands -->
-        <span class="fragment storm-resolve-trigger" data-mgr-spine    aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mgr-core     aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mgr-support  aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mgr-derived  aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mgr-boundary aria-hidden="true"></span>
-
-        <aside class="notes">
-          Among these services, rfq_manager_ms is the first foundation
-          because it owns the operational truth. If the platform needs to
-          know where an RFQ is, what stage is active, what is blocked,
-          what files are attached, or what reminders exist, the answer
-          comes from the manager.
-        </aside>
-
-        <div class="page-num"><span class="num">17</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────────────────
          §03.2.b · Lifecycle Data Model — simplified ERD: Workflow →
-                   RFQ → RFQ_Stage with children + current_stage_id link. -->
+                   RFQ → RFQ_Stage with children + current_stage_id link.
+                   (Moved to slot 15, was previously at slot 16.) -->
     <section data-slide="03.2.b">
       <div class="slide manager-workflow-slide" data-section="3">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
@@ -1721,81 +1784,278 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Controlled Lifecycle</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content">
+
+          <!-- Top message slot. Holds three messages that swap by state:
+               (state 0) red BEFORE eyebrow — chaotic coordination
+               (state 1) green AFTER eyebrow — one source of truth
+               (state 2+) the headline — controlled workflow promise -->
+          <div class="mw-msg-slot">
+            <div class="mw-eb mw-eb-before">
+              <span class="mw-eb-tag">Without Itqān</span>
+              <span class="mw-eb-text">Visibility, coordination &amp; traceability are poor &mdash; oral handoffs and email threads, no single source of truth.</span>
+            </div>
+            <div class="mw-eb mw-eb-after">
+              <span class="mw-eb-tag">With Itqān</span>
+              <span class="mw-eb-text">One source of truth &mdash; every contributor works against the same active stage.</span>
+            </div>
+            <h2 class="mw-headline">
+              The manager turns each RFQ into a <span class="emph">controlled workflow</span>,
+              with <span class="emph">one active stage</span> at a time.
+            </h2>
+          </div>
+
+          <!-- Stage area: workflow rail + 10 user dots + RFQ Instance overlay.
+               Users move from scattered (state 0) → converged under Validation
+               (state 1) → wrapped by the RFQ Instance box (state 2). -->
+          <div class="mw-stage">
+            <div class="mw-rail">
+              <div class="mw-tile">Intake</div>
+              <div class="mw-tile">Review</div>
+              <div class="mw-tile">Estimation</div>
+              <div class="mw-tile mw-tile-active">
+                Validation
+                <span class="mw-active-chip">Active</span>
+              </div>
+              <div class="mw-tile">Submission</div>
+              <div class="mw-tile">Outcome</div>
+            </div>
+
+            <!-- Users layer. 10 dots, each with two homes (scattered/converged).
+                 CEO is leftmost and labeled to stay distinct after convergence. -->
+            <div class="mw-users">
+              <div class="mw-u mw-u-ceo"><span class="mw-u-tag">CEO</span></div>
+              <div class="mw-u mw-u-est1"></div>
+              <div class="mw-u mw-u-est2"></div>
+              <div class="mw-u mw-u-est3"></div>
+              <div class="mw-u mw-u-val1"></div>
+              <div class="mw-u mw-u-val2"></div>
+              <div class="mw-u mw-u-val3"></div>
+              <div class="mw-u mw-u-val4"></div>
+              <div class="mw-u mw-u-val5"></div>
+              <div class="mw-u mw-u-val6"></div>
+            </div>
+
+            <!-- RFQ Instance box: fades in on state 2, wraps the converged
+                 user cluster under the Validation column. -->
+            <div class="mw-rfq-box" aria-hidden="true">
+              <span class="mw-rfq-tag">RFQ Instance</span>
+              <span class="mw-rfq-cur">current stage: <strong>Validation</strong></span>
+            </div>
+          </div>
+
+          <!-- Active Stage Context: chips + supporting subline, state 3 only. -->
+          <div class="mw-context-wrap">
+            <div class="mw-ctx-label">Active Stage Context <span class="mw-ctx-sub">attaches to the active stage</span></div>
+            <div class="mw-ctx-chips">
+              <div class="mw-ctx-chip">Progress</div>
+              <div class="mw-ctx-chip">Blockers</div>
+              <div class="mw-ctx-chip">Subtasks</div>
+              <div class="mw-ctx-chip">Notes</div>
+              <div class="mw-ctx-chip">Files</div>
+              <div class="mw-ctx-chip">Reminders</div>
+            </div>
+            <p class="mw-subline">A stage advances only after the manager validates the transition.</p>
+          </div>
+        </div>
+
+        <!-- 4-click reveal:
+             1) before   — rail + scattered users + red BEFORE eyebrow appear
+             2) merged   — users converge to active stage, eyebrow swaps to AFTER
+             3) instance — RFQ Instance box wraps the cluster, headline lands
+             4) context  — Active Stage Context chips + subline -->
+        <span class="fragment storm-resolve-trigger" data-mw-before   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mw-merged   aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mw-instance aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-mw-context  aria-hidden="true"></span>
+
+        <aside class="notes">
+          BEFORE: contributors scatter across stages — engineers still poking
+          at Estimation, CEO weighing in at Review, six reviewers crowded on
+          Validation. Coordination is oral; nothing is authoritative.
+          CLICK 1: Itqān converges everyone on the active stage — one source
+          of truth.
+          CLICK 2: that gathering becomes an RFQ Instance — a controlled
+          workflow with one active stage at a time.
+          CLICK 3: the active stage carries its own context (progress,
+          blockers, subtasks, notes, files, reminders) — it advances only
+          after the manager validates the transition.
+        </aside>
+
+        <div class="page-num"><span class="num">18</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         §03.2.a · Domain Model — rfq_manager_ms ERD. Three-entity chain
+                   Workflow → RFQ → Stage with 1—N cardinality, then a
+                   stack of stage-children (Subtask · Note · File · Reminder)
+                   fanning off the Stage. Boundary line carries the
+                   "lifecycle truth, not estimation/parsing/reasoning" cut.
+                   (Replaces the previous Manager-Core spine layout.) -->
+    <section data-slide="03.2.a">
+      <div class="slide dm-slide" data-section="3">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">03</span><span>—</span><span class="name">The Backbone</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Domain Model</span></span>
             <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
           </div>
         </div>
 
         <div class="slide-content">
-          <h2 class="mw-headline">
-            The manager turns each RFQ into a <span class="emph">controlled workflow</span>,<br>
-            with <span class="emph">one active stage</span> at a time.
-          </h2>
-          <p class="mw-subline">A stage advances only after the manager validates the transition.</p>
 
-          <div class="mw-zones">
+          <!-- Canvas: 3-entity main chain on the left, a fan-out bridge
+               in the middle, and a 4-entity stack on the right.
+               No header — the section slider already says "Domain Model". -->
+          <div class="dm-canvas">
 
-            <!-- Zone 1: Workflow Template — the reusable stage sequence -->
-            <div class="mw-zone mw-template">
-              <div class="zone-label">Workflow Template <span class="zone-sub">reusable stage sequence</span></div>
-              <div class="template-stages">
-                <div class="t-stage">Intake</div>
-                <div class="t-stage">Review</div>
-                <div class="t-stage t-stage-active">
-                  Estimation
-                  <span class="t-active-chip">Active</span>
+            <!-- Main horizontal chain: Workflow → RFQ → Stage -->
+            <div class="dm-chain">
+
+              <div class="dm-entity" data-dm-e="wf">
+                <div class="dm-e-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="6" cy="6" r="2.5"/>
+                    <circle cx="6" cy="18" r="2.5"/>
+                    <circle cx="18" cy="12" r="2.5"/>
+                    <path d="M6 8.5v7"/>
+                    <path d="M6 12c0-3 0-6 6-6h.5"/>
+                    <path d="M6 12c0 3 0 6 6 6h.5"/>
+                  </svg>
                 </div>
-                <div class="t-stage">Validation</div>
-                <div class="t-stage">Submission</div>
-                <div class="t-stage">Outcome</div>
+                <div class="dm-e-name">Workflow</div>
+                <div class="dm-e-sub">Template</div>
+              </div>
+
+              <div class="dm-conn">
+                <span class="dm-card">1 &mdash; N</span>
+                <span class="dm-arrow" aria-hidden="true"></span>
+              </div>
+
+              <div class="dm-entity dm-entity-core" data-dm-e="rfq">
+                <div class="dm-e-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 3.5h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/>
+                    <path d="M14 3.5v4h4"/>
+                    <path d="M9 12h6"/>
+                    <path d="M9 15.5h6"/>
+                  </svg>
+                </div>
+                <div class="dm-e-name">RFQ</div>
+                <div class="dm-e-sub">Lifecycle Record</div>
+              </div>
+
+              <div class="dm-conn">
+                <span class="dm-card">1 &mdash; N</span>
+                <span class="dm-arrow" aria-hidden="true"></span>
+              </div>
+
+              <div class="dm-entity" data-dm-e="stage">
+                <div class="dm-e-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3l9 4.5L12 12 3 7.5 12 3z"/>
+                    <path d="M3 12.5l9 4.5 9-4.5"/>
+                    <path d="M3 17l9 4.5 9-4.5"/>
+                  </svg>
+                </div>
+                <div class="dm-e-name">Stage</div>
+                <div class="dm-e-sub">Progress · Blockers</div>
               </div>
             </div>
 
-            <!-- Zone 2: RFQ Instance — created from template, has an active stage -->
-            <div class="mw-zone mw-instance">
-              <div class="zone-label">RFQ Instance <span class="zone-sub">created from template</span></div>
-              <div class="instance-state">
-                <span class="i-label">Current stage:</span>
-                <span class="i-value">Estimation</span>
-              </div>
+            <!-- Bridge: SVG fan-out from Stage's right edge to the four
+                 child entities. Sized to match the children stack height
+                 so paths land on each child's vertical centre. -->
+            <div class="dm-bridge">
+              <span class="dm-bridge-card">1 &mdash; N</span>
+              <svg class="dm-bridge-svg" viewBox="0 0 100 410" preserveAspectRatio="none" aria-hidden="true">
+                <path class="dm-fan" d="M 0 205 C 45 205 55 48  100 48" />
+                <path class="dm-fan" d="M 0 205 C 45 205 55 150 100 150"/>
+                <path class="dm-fan" d="M 0 205 C 45 205 55 260 100 260"/>
+                <path class="dm-fan" d="M 0 205 C 45 205 55 362 100 362"/>
+              </svg>
             </div>
 
-            <!-- Zone 3: Active Stage Context — what attaches to the active stage -->
-            <div class="mw-zone mw-context">
-              <div class="zone-label">Active Stage Context <span class="zone-sub">attaches to the active stage</span></div>
-              <div class="context-chips">
-                <div class="c-chip">Progress</div>
-                <div class="c-chip">Blockers</div>
-                <div class="c-chip">Subtasks</div>
-                <div class="c-chip">Notes</div>
-                <div class="c-chip">Files</div>
-                <div class="c-chip">Reminders</div>
+            <!-- Children stack: 4 entities attached to Stage. -->
+            <div class="dm-children">
+              <div class="dm-child" data-dm-c="subtask">
+                <div class="dm-c-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="16" rx="2"/>
+                    <path d="M7 9.5l2 2 5-5"/>
+                    <path d="M7 16h10"/>
+                  </svg>
+                </div>
+                <div class="dm-c-name">Subtask</div>
+              </div>
+              <div class="dm-child" data-dm-c="note">
+                <div class="dm-c-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 4V5a1 1 0 0 1 1-1z"/>
+                    <path d="M9 9h6"/>
+                    <path d="M9 12h4"/>
+                  </svg>
+                </div>
+                <div class="dm-c-name">Note</div>
+              </div>
+              <div class="dm-child" data-dm-c="file">
+                <div class="dm-c-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
+                    <path d="M14 3v4h4"/>
+                  </svg>
+                </div>
+                <div class="dm-c-name">File</div>
+              </div>
+              <div class="dm-child" data-dm-c="reminder">
+                <div class="dm-c-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 17V10a6 6 0 0 1 12 0v7l1.5 2H4.5L6 17z"/>
+                    <path d="M10 20a2 2 0 0 0 4 0"/>
+                  </svg>
+                </div>
+                <div class="dm-c-name">Reminder</div>
               </div>
             </div>
 
           </div>
 
-          <!-- Small technical strip — data model relationships (2 lines). -->
-          <div class="mw-tech-strip">
-            <div class="tech-line">Workflow → RFQ → RFQ_Stage</div>
-            <div class="tech-line">RFQ.current_stage_id → active RFQ_Stage</div>
+          <!-- Boundary footer — re-uses the old .spine-boundary style
+               (top/bottom hairlines, no box, "BOUNDARY" eyebrow + amber
+               negatives). The text is identical to the old slide. -->
+          <div class="spine-boundary">
+            <span class="bound-eyebrow">Boundary</span>
+            <span class="bound-text">
+              Owns lifecycle truth &mdash;
+              <span class="emph-strike">not estimation logic</span>,
+              <span class="emph-strike">not document parsing</span>,
+              <span class="emph-strike">not chatbot reasoning</span>.
+            </span>
           </div>
         </div>
 
-        <!-- 3-click reveal: template → instance → context.
-             Technical strip is present from empty as a small reference footer. -->
-        <span class="fragment storm-resolve-trigger" data-mw-template aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mw-instance aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-mw-context  aria-hidden="true"></span>
+        <!-- 2-click reveal:
+             1) model    — every entity + connector lands at once
+             2) boundary — ownership boundary statement -->
+        <span class="fragment storm-resolve-trigger" data-dm-model    aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-dm-boundary aria-hidden="true"></span>
 
         <aside class="notes">
-          A workflow template defines the possible stages. When an RFQ is
-          created, the manager creates stage instances for that RFQ. At
-          any moment, one stage is active. Files, notes, subtasks,
-          reminders, progress, and blockers attach to that active stage.
-          That is why the manager can control the RFQ lifecycle.
+          rfq_manager_ms owns the lifecycle data model. A Workflow defines
+          a reusable stage template; each RFQ is one lifecycle record; each
+          Stage carries progress and blockers; and the operational context
+          (Subtask, Note, File, Reminder) attaches to the active Stage.
+          The boundary is the cut: the manager owns lifecycle truth, but
+          not estimation logic, not document parsing, not chatbot reasoning.
         </aside>
 
-        <div class="page-num"><span class="num">18</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">17</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1816,7 +2076,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">20</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">20</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1832,7 +2092,7 @@
         </div>
 
         <div class="slide-content">
-          <h2 class="zero-headline">Every RFQ starts from zero.</h2>
+          <h2 class="zero-headline">Every RFQ starts <span class="emph-risk">from zero</span>.</h2>
 
           <div class="zero-stage">
             <!-- LEFT: scattered past — small, faded, disconnected.
@@ -1945,9 +2205,13 @@
             </div>
           </div>
 
-          <!-- The diagnosis. Lands in ink — the slide's takeaway. -->
+          <!-- The diagnosis. Customization is the constraint that
+               buries patterns under variability — a human can't extract
+               them across hundreds of past projects. Sets up §04.2,
+               which delivers the intelligence layer that does. -->
           <div class="zero-key-line">
-            The problem is not experience. The platform cannot reuse it.
+            Each product is <span class="emph-risk">customized</span> &mdash; patterns exist in past work.<br>
+            <span class="emph-risk">Humans can&rsquo;t find them by hand.</span>
           </div>
         </div>
 
@@ -1959,7 +2223,7 @@
         <span class="fragment storm-resolve-trigger" data-zero-workbook aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-zero-key      aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">22</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">22</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -1975,7 +2239,7 @@
         </div>
 
         <div class="slide-content">
-          <h2 class="memory-headline">Building platform memory.</h2>
+          <h2 class="memory-headline">Building memory. Extracting insights.</h2>
 
           <!-- MAIN FLOW (the HERO) — past artifacts converge into a structured
                memory store, which provides a briefing when a new package
@@ -2057,7 +2321,13 @@
               </div>
             </div>
 
-            <div class="flow-arrow" aria-hidden="true">→</div>
+            <!-- Labeled arrow — names the intelligence step that turns
+                 memory into briefings. Makes the "we extract insights,
+                 not just store data" point visible in the flow. -->
+            <div class="flow-arrow flow-arrow-labeled" aria-hidden="true">
+              <span class="arrow-tag">Insights</span>
+              <span class="arrow-symbol">&rarr;</span>
+            </div>
 
             <!-- RIGHT: new package arrives with a briefing emerging from
                  memory. Abstract briefing card (no specific content — stays
@@ -2080,37 +2350,77 @@
 
           </div>
 
+          <!-- BENEFITS RIBBON — adjectives describing the team's
+               estimating decisions once memory + insights are in place.
+               Ribbon header frames them as decision attributes, not
+               standalone features. -->
+          <div class="memory-benefits-wrap">
+            <div class="benefits-header">Estimates become:</div>
+            <div class="memory-benefits">
+              <div class="benefit-chip">
+                <div class="benefit-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 7v5l3 3"/>
+                  </svg>
+                </div>
+                <span class="benefit-name">Faster</span>
+              </div>
+              <div class="benefit-chip">
+                <div class="benefit-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <circle cx="12" cy="12" r="5"/>
+                    <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+                  </svg>
+                </div>
+                <span class="benefit-name">More accurate</span>
+              </div>
+              <div class="benefit-chip">
+                <div class="benefit-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/>
+                    <path d="M12 8v5"/>
+                    <path d="M12 16v.5"/>
+                  </svg>
+                </div>
+                <span class="benefit-name">Risk-aware</span>
+              </div>
+              <div class="benefit-chip">
+                <div class="benefit-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 4h14v17l-7-4-7 4V4z"/>
+                    <path d="M9 10l2 2 4-4"/>
+                  </svg>
+                </div>
+                <span class="benefit-name">Evidence-backed</span>
+              </div>
+            </div>
+          </div>
+
           <!-- FUTURE PAYOFF CLUSTER (SUBORDINATE per spec).
                Dashed teal border + lighter chips signal "designed next,
                not running today." MUST NOT compete with the main flow. -->
           <div class="memory-future">
             <div class="future-header">Designed next, as data grows:</div>
             <div class="future-chips">
-              <span class="future-chip">expected case</span>
-              <span class="future-chip">best case</span>
-              <span class="future-chip">worst case</span>
-              <span class="future-chip">client &amp; project signals</span>
-              <span class="future-chip">worth bidding?</span>
+              <span class="future-chip">Expected case</span>
+              <span class="future-chip">Best case</span>
+              <span class="future-chip">Worst case</span>
+              <span class="future-chip">Client &amp; Project signals</span>
+              <span class="future-chip">Worth bidding?</span>
             </div>
           </div>
 
-          <!-- GROUNDING LINE — the ONLY present-tense built claim allowed
-               in section 04 per spec. Small, factual, anchors the vision. -->
-          <div class="memory-grounding">
-            <span class="grounding-prefix">Working foundation:</span>
-            workbook data is already read and structured.
-          </div>
         </div>
 
-        <!-- 3-click reveal:
-             1) MAIN FLOW lands as ONE composition (the hero)
-             2) FUTURE PAYOFF cluster fades up (subordinate)
-             3) GROUNDING LINE lands (factual, present-tense anchor) -->
+        <!-- 2-click reveal:
+             1) MAIN FLOW + benefits ribbon land together (the hero)
+             2) FUTURE PAYOFF cluster fades up (subordinate) -->
         <span class="fragment storm-resolve-trigger" data-memory-flow   aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-memory-future aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-memory-ground aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">23</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">23</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2131,7 +2441,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">24</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">24</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2142,7 +2452,7 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">The Chatbot Trap</span></span>
-            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
           </div>
         </div>
 
@@ -2206,7 +2516,7 @@
         <span class="fragment storm-resolve-trigger" data-trap-synthesis aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-trap-cause aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">26</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">26</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2217,7 +2527,7 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">From Chatbot to Controlled Copilot</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
           </div>
         </div>
 
@@ -2400,7 +2710,7 @@
         <span class="fragment storm-resolve-trigger" data-ctrl-exit     aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-ctrl-payoff   aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">27</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">27</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2411,7 +2721,7 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Grounding Is Not Enough</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
           </div>
         </div>
 
@@ -2476,7 +2786,7 @@
         <span class="fragment storm-resolve-trigger" data-ground-risks    aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-ground-bottom   aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">28</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">28</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2487,7 +2797,7 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Mixture of Paths</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
           </div>
         </div>
 
@@ -2500,7 +2810,7 @@
                to "MoP" — same 140px display amber, just fewer letters. -->
           <h2 class="mop-title" data-mop-title-el><span style="--n:1">M</span><span style="--n:2">i</span><span style="--n:3">x</span><span style="--n:4">t</span><span style="--n:5">u</span><span style="--n:6">r</span><span style="--n:7">e</span> <span style="--n:8">o</span><span style="--n:9">f</span> <span style="--n:10">P</span><span style="--n:11">a</span><span style="--n:12">t</span><span style="--n:13">h</span><span style="--n:14">s</span></h2>
 
-          <p class="mop-subtitle">One copilot. Multiple paths. Same control.</p>
+          <p class="mop-subtitle">One copilot. Different routes. Same control.</p>
 
           <!-- Left-to-right diagram · User query → Path router → 6 lanes → Answer.
                Lane order + semantic colour:
@@ -2611,7 +2921,7 @@
             <div class="mop-d-arrow mop-d-arrow-conv" aria-hidden="true">&rarr;</div>
 
             <div class="mop-d-output">
-              <div class="mop-d-card">Answer</div>
+              <div class="mop-d-card">Safe response</div>
             </div>
           </div>
 
@@ -2638,88 +2948,9 @@
         <span class="fragment storm-resolve-trigger" data-mop-bottom    aria-hidden="true"></span>
         <span class="fragment storm-resolve-trigger" data-mop-principle aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">29</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">29</span><span class="total">/ 39</span></div>
       </div>
     </section>
-
-    <section data-slide="05.5">
-      <div class="slide failure-slide" data-section="5">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">05</span><span>—</span><span class="name">The Boundary</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Failure Is Also Designed</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
-          </div>
-        </div>
-
-        <div class="slide-content">
-          <h2 class="failure-headline">When it cannot answer safely, it does not guess.</h2>
-
-          <!-- The 5 unsafe cases — appear together as ONE set at click 1.
-               These are already-handled cases, shown calm and equal.
-               Right column (responses) visually favored — the takeaway is
-               the controlled behaviors, not the problems. -->
-          <div class="failure-table">
-            <div class="failure-row">
-              <div class="row-when">When the request is not supported</div>
-              <div class="row-arrow" aria-hidden="true">→</div>
-              <div class="row-then">It says so clearly</div>
-            </div>
-            <div class="failure-row">
-              <div class="row-when">When outside the RFQ scope</div>
-              <div class="row-arrow" aria-hidden="true">→</div>
-              <div class="row-then">It says so and redirects</div>
-            </div>
-            <div class="failure-row">
-              <div class="row-when">When the target RFQ is not clear</div>
-              <div class="row-arrow" aria-hidden="true">→</div>
-              <div class="row-then">It asks one question</div>
-            </div>
-            <div class="failure-row">
-              <div class="row-when">When the RFQ is missing or not allowed</div>
-              <div class="row-arrow" aria-hidden="true">→</div>
-              <div class="row-then">It stops</div>
-            </div>
-            <div class="failure-row">
-              <div class="row-when">When there are not enough facts</div>
-              <div class="row-arrow" aria-hidden="true">→</div>
-              <div class="row-then">It refuses to invent</div>
-            </div>
-          </div>
-
-          <!-- Escalation Gate — small collector node. The 5 rows above
-               funnel through this single gate to "one safe answer." This
-               is the architectural insight made visible (table ↓ gate ↓
-               exit), not asserted. Lightly labeled per spec.
-               Path 8 / build_from_escalation / reason codes 8.1–8.5 live
-               on the Q&A backup slide, not here. -->
-          <div class="escalation-section">
-            <div class="esc-arrow esc-arrow-in" aria-hidden="true">↓</div>
-            <div class="escalation-gate">ESCALATION GATE</div>
-            <div class="esc-arrow esc-arrow-out" aria-hidden="true">↓</div>
-            <div class="escalation-exit">planned safe answer</div>
-          </div>
-
-          <!-- Principle takeaway — "every case" ties the line to the
-               5-row funnel; plural matches the table set. -->
-          <div class="failure-principle">
-            One gate catches every case. The answer is planned.
-          </div>
-        </div>
-
-        <!-- 2-click reveal:
-             1) full table appears as a SET (rows cascade tightly so they
-                read as one reveal, not a sequential problem list)
-             2) gate funnel + principle line land together — the
-                resolution moment, "all cases route to one safe answer" -->
-        <span class="fragment storm-resolve-trigger" data-failure-table aria-hidden="true"></span>
-        <span class="fragment storm-resolve-trigger" data-failure-gate  aria-hidden="true"></span>
-
-        <div class="page-num"><span class="num">30</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
 
     <!-- ═══════════════════════════════════════════════════════════════════
          SECTION 6 · PLATFORM EXPERIENCE — green theme
@@ -2731,7 +2962,7 @@
         <span class="tick bl"></span><span class="tick br"></span>
         <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
         <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">31</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">30</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2742,7 +2973,7 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Unified Workspace</span></span>
-            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg current"></span><span class="seg"></span></div>
           </div>
         </div>
 
@@ -2761,56 +2992,99 @@
                 <span class="bf-tab-dot" aria-hidden="true"></span>
                 <span class="bf-tab-label">RFQ 042 · Estimation</span>
               </div>
-              <div class="bf-url">itqan / rfq / 042</div>
+              <div class="bf-url">itq&#257;n / rfq / 042</div>
             </div>
 
             <div class="bf-surface">
 
+              <!-- MANAGER · operational truth. Label/value rows mirror a
+                   real workspace surface — lifecycle, stage progress,
+                   open blockers, reminders — with semantic colour. -->
               <div class="ws-zone ws-manager">
                 <div class="ws-zone-head">
                   <span class="ws-zone-label">Manager</span>
-                  <span class="ws-zone-sub">truth</span>
+                  <span class="ws-zone-sub">owns the truth</span>
                 </div>
-                <div class="ws-zone-content">
-                  <div class="ws-item">lifecycle</div>
-                  <div class="ws-item">stages</div>
-                  <div class="ws-item">blockers</div>
-                  <div class="ws-item">reminders</div>
+                <div class="ws-rows">
+                  <div class="ws-row">
+                    <span class="ws-row-label">Lifecycle</span>
+                    <span class="ws-row-value ws-v-amber">Estimation</span>
+                  </div>
+                  <div class="ws-row">
+                    <span class="ws-row-label">Stages</span>
+                    <span class="ws-row-value">3 of 6</span>
+                  </div>
+                  <div class="ws-row">
+                    <span class="ws-row-label">Blockers</span>
+                    <span class="ws-row-value ws-v-risk">1 open</span>
+                  </div>
+                  <div class="ws-row">
+                    <span class="ws-row-label">Reminders</span>
+                    <span class="ws-row-value">2 due</span>
+                  </div>
                 </div>
               </div>
 
+              <!-- INTELLIGENCE · structured evidence. File-style values
+                   (mono) signal the artifacts the layer surfaces. -->
               <div class="ws-zone ws-intel">
                 <div class="ws-zone-head">
                   <span class="ws-zone-label">Intelligence</span>
-                  <span class="ws-zone-sub">evidence</span>
+                  <span class="ws-zone-sub">serves evidence</span>
                 </div>
-                <div class="ws-zone-content">
-                  <div class="ws-item">workbook</div>
-                  <div class="ws-item">package</div>
-                  <div class="ws-item">briefing</div>
+                <div class="ws-rows">
+                  <div class="ws-row">
+                    <span class="ws-row-label">Workbook</span>
+                    <span class="ws-row-value ws-v-file">IF-25144.xlsx</span>
+                  </div>
+                  <div class="ws-row">
+                    <span class="ws-row-label">Package</span>
+                    <span class="ws-row-value ws-v-file">MR &middot; SA-AYPP-6</span>
+                  </div>
+                  <div class="ws-row">
+                    <span class="ws-row-label">Briefing</span>
+                    <span class="ws-row-value">scope notes</span>
+                  </div>
                 </div>
               </div>
 
+              <!-- COPILOT · bounded support. Chat exchange shows the
+                   copilot answering an RFQ-scoped question with an
+                   evidence-cited reply (the bound-mode tag). -->
               <div class="ws-zone ws-copilot">
                 <div class="ws-zone-head">
-                  <span class="ws-zone-label">copilot</span>
-                  <span class="ws-zone-sub">support</span>
+                  <span class="ws-zone-label">Copilot</span>
+                  <span class="ws-zone-sub">bounded support</span>
                 </div>
-                <div class="ws-zone-content">
-                  <div class="ws-item">RFQ-bound assistance</div>
+                <div class="ws-chat">
+                  <div class="ws-chat-meta">scoped &middot; RFQ 042 &middot; rfq_bound_mode</div>
+                  <div class="ws-chat-msg ws-chat-user">Total flange count?</div>
+                  <div class="ws-chat-msg ws-chat-bot">
+                    172 welded flanges.
+                    <span class="ws-cite">
+                      <svg class="ws-cite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M8 12.5l3 3 5-6"/>
+                      </svg>
+                      MR SA-AYPP-6-022
+                    </span>
+                  </div>
                 </div>
               </div>
 
             </div>
           </div>
 
-          <p class="ws-footer">The interface presents the truth; the services own it.</p>
+          <p class="ws-footer">
+            The interface <strong class="ws-emph">presents</strong> the truth;
+            the services <strong class="ws-emph-amber">own</strong> it.
+          </p>
         </div>
 
         <!-- Single reveal: frame + zones + footer fade in together -->
         <span class="fragment storm-resolve-trigger" data-ws-show aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">33</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">32</span><span class="total">/ 39</span></div>
       </div>
     </section>
 
@@ -2821,58 +3095,195 @@
         <div class="slider-slot">
           <div class="subsection-slider">
             <span class="slider-label"><span class="current">Role-Aware Views</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span></div>
           </div>
         </div>
 
         <div class="slide-content">
-          <h2 class="lens-headline">One platform, different lenses.</h2>
+          <h2 class="lens-headline">One platform, <span class="lens-amber">different lenses</span>.</h2>
 
+          <!-- 3 role cards with semantic top accent, icon badge, title +
+               verb, "Sees" list. Manager amber, Estimator teal, Executive
+               neutral — visual hierarchy mirrors role authority. -->
           <div class="lens-platform">
-            <div class="lens-column">
+
+            <div class="lens-card lens-mgr">
+              <div class="lens-accent" aria-hidden="true"></div>
               <div class="lens-head">
-                <span class="lens-role">Estimation Manager</span>
-                <span class="lens-verb">supervises</span>
+                <div class="lens-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="7" y="4" width="10" height="4" rx="1"/>
+                    <path d="M5 6h2"/><path d="M17 6h2v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6h2"/>
+                    <path d="M9 13h6"/><path d="M9 17h4"/>
+                  </svg>
+                </div>
+                <div class="lens-title-block">
+                  <div class="lens-title">Estimation Manager</div>
+                  <div class="lens-verb">Supervises</div>
+                </div>
               </div>
-              <div class="lens-content">
-                <div class="lens-item">department lifecycle</div>
-                <div class="lens-item">RFQ queue</div>
-                <div class="lens-item">stage control</div>
-              </div>
+              <div class="lens-divider"></div>
+              <div class="lens-sees">Sees</div>
+              <ul class="lens-list">
+                <li>Department lifecycle</li>
+                <li>The full RFQ queue</li>
+                <li>Stage-level control</li>
+              </ul>
             </div>
 
-            <div class="lens-column">
+            <div class="lens-card lens-est">
+              <div class="lens-accent" aria-hidden="true"></div>
               <div class="lens-head">
-                <span class="lens-role">Estimator</span>
-                <span class="lens-verb">works on</span>
+                <div class="lens-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"/>
+                    <path d="M16 16l4 4"/>
+                  </svg>
+                </div>
+                <div class="lens-title-block">
+                  <div class="lens-title">Estimator</div>
+                  <div class="lens-verb">Works on</div>
+                </div>
               </div>
-              <div class="lens-content">
-                <div class="lens-item">assigned RFQs</div>
-                <div class="lens-item">stage work</div>
-                <div class="lens-item">evidence</div>
-              </div>
+              <div class="lens-divider"></div>
+              <div class="lens-sees">Sees</div>
+              <ul class="lens-list">
+                <li>Only assigned RFQs</li>
+                <li>Stage work &amp; evidence</li>
+                <li>RFQ-bound Copilot</li>
+              </ul>
             </div>
 
-            <div class="lens-column">
+            <div class="lens-card lens-exec">
+              <div class="lens-accent" aria-hidden="true"></div>
               <div class="lens-head">
-                <span class="lens-role">Executive</span>
-                <span class="lens-verb">observes</span>
+                <div class="lens-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </div>
+                <div class="lens-title-block">
+                  <div class="lens-title">Executive</div>
+                  <div class="lens-verb">Observes</div>
+                </div>
               </div>
-              <div class="lens-content">
-                <div class="lens-item">portfolio view</div>
-                <div class="lens-item">read-only visibility</div>
-              </div>
+              <div class="lens-divider"></div>
+              <div class="lens-sees">Sees</div>
+              <ul class="lens-list">
+                <li>Portfolio-level view</li>
+                <li>Outcomes &amp; trends</li>
+                <li>Read-only visibility</li>
+              </ul>
             </div>
           </div>
 
-          <p class="lens-boundary">Current scope: role-aware views. Dedicated IAM service remains future.</p>
+          <!-- Honest-scope footer: teal pill + clarifying sentence,
+               flags that IAM service is named as future work. -->
+          <div class="lens-honest">
+            <span class="lens-honest-tag">Honest scope</span>
+            <span class="lens-honest-text">
+              Today these are <strong>role-aware views</strong> in the UI &mdash; a dedicated IAM service is named, deliberately, as future work.
+            </span>
+          </div>
         </div>
 
         <span class="fragment storm-resolve-trigger" data-lens-show aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">34</span><span class="total">/ 40</span></div>
+        <div class="page-num"><span class="num">33</span><span class="total">/ 39</span></div>
       </div>
     </section>
+
+    <!-- §06.3 · Integrated User Path — moved to Q&A BACKUP ZONE at end of .slides.
+         Reachable via #/06-3 during Q&A. Not part of §06 linear flow. -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SECTION 7 · VALIDATION & PERSPECTIVES — green theme
+         ═══════════════════════════════════════════════════════════════════ -->
+
+    <section data-slide="cp.7">
+      <div class="slide checkpoint-slide" data-active-section="7">
+        <span class="tick tl"></span><span class="tick tr"></span>
+        <span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
+        <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
+        <div class="page-num"><span class="num">35</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <section data-slide="07.1">
+      <div class="slide" data-section="7">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Validation Evidence</span></span>
+            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
+          </div>
+        </div>
+        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+        <div class="page-num"><span class="num">37</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <section data-slide="07.2">
+      <div class="slide" data-section="7">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Implemented Scope &amp; Limits</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
+          </div>
+        </div>
+        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+        <div class="page-num"><span class="num">38</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+    <section data-slide="07.3">
+      <div class="slide" data-section="7">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Future Work</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
+          </div>
+        </div>
+        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
+        <div class="page-num"><span class="num">39</span><span class="total">/ 39</span></div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Q&A BACKUP ZONE — slides parked outside the linear flow.
+         Reachable via direct URL hash during Q&A. NOT part of the section
+         progress sliders. Build content as needed (workbook parser arch,
+         IF-25144 fixture, four-pillar vision, etc. per §04 spec).
+         ═══════════════════════════════════════════════════════════════════ -->
+
+    <section data-slide="04.3">
+      <div class="slide" data-section="4">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">04</span><span>—</span><span class="name">The Evidence</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Backup · Workbook Parser Detail</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span></div>
+          </div>
+        </div>
+        <div class="skeleton-body"><div class="placeholder">· · ·  Q&amp;A Backup · TBD  · · ·</div></div>
+        <div class="page-num"><span class="num">B1</span><span class="total">/ Backup</span></div>
+      </div>
+    </section>
+
+
+    <!-- §06.3 backup — Integrated User Path. Moved out of §06 linear flow
+         2026-06-09: §06 cut from 3 linear slides to 2. Content preserved
+         verbatim (only slider label + page-num updated). -->
 
     <section data-slide="06.3">
       <div class="slide journey-slide" data-section="6">
@@ -2880,8 +3291,8 @@
         <div class="section-label"><span class="bracket">[</span><span class="index">06</span><span>—</span><span class="name">The Experience</span><span class="bracket">]</span></div>
         <div class="slider-slot">
           <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Integrated User Path</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
+            <span class="slider-label"><span class="current">Backup &middot; Integrated User Path</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span></div>
           </div>
         </div>
 
@@ -2900,7 +3311,7 @@
                 </div>
                 <div class="js-label">Open RFQ</div>
               </div>
-              <div class="js-arrow" style="--n: 1" aria-hidden="true">→</div>
+              <div class="js-arrow" style="--n: 1" aria-hidden="true">&rarr;</div>
 
               <div class="journey-step" style="--n: 2">
                 <div class="js-icon" aria-hidden="true">
@@ -2911,7 +3322,7 @@
                 </div>
                 <div class="js-label">Work active stage</div>
               </div>
-              <div class="js-arrow" style="--n: 2" aria-hidden="true">→</div>
+              <div class="js-arrow" style="--n: 2" aria-hidden="true">&rarr;</div>
 
               <div class="journey-step" style="--n: 3">
                 <div class="js-icon" aria-hidden="true">
@@ -2924,7 +3335,7 @@
                 </div>
                 <div class="js-label">Review available evidence</div>
               </div>
-              <div class="js-arrow" style="--n: 3" aria-hidden="true">→</div>
+              <div class="js-arrow" style="--n: 3" aria-hidden="true">&rarr;</div>
 
               <div class="journey-step" style="--n: 4">
                 <div class="js-icon" aria-hidden="true">
@@ -2934,7 +3345,7 @@
                 </div>
                 <div class="js-label">Ask the copilot in context</div>
               </div>
-              <div class="js-arrow" style="--n: 4" aria-hidden="true">→</div>
+              <div class="js-arrow" style="--n: 4" aria-hidden="true">&rarr;</div>
 
               <div class="journey-step" style="--n: 5">
                 <div class="js-icon" aria-hidden="true">
@@ -2968,90 +3379,7 @@
 
         <span class="fragment storm-resolve-trigger" data-journey-show aria-hidden="true"></span>
 
-        <div class="page-num"><span class="num">35</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         SECTION 7 · VALIDATION & PERSPECTIVES — green theme
-         ═══════════════════════════════════════════════════════════════════ -->
-
-    <section data-slide="cp.7">
-      <div class="slide checkpoint-slide" data-active-section="7">
-        <span class="tick tl"></span><span class="tick tr"></span>
-        <span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="name">Agenda</span><span class="bracket">]</span></div>
-        <div class="slide-content below-chrome"><div class="agenda-block"></div></div>
-        <div class="page-num"><span class="num">36</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-    <section data-slide="07.1">
-      <div class="slide" data-section="7">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Validation Evidence</span></span>
-            <div class="slider-track"><span class="seg current"></span><span class="seg"></span><span class="seg"></span></div>
-          </div>
-        </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">38</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-    <section data-slide="07.2">
-      <div class="slide" data-section="7">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Implemented Scope &amp; Limits</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg current"></span><span class="seg"></span></div>
-          </div>
-        </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">39</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-    <section data-slide="07.3">
-      <div class="slide" data-section="7">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">07</span><span>—</span><span class="name">The Proof</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Future Work</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span><span class="seg current"></span></div>
-          </div>
-        </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Content TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">40</span><span class="total">/ 40</span></div>
-      </div>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         Q&A BACKUP ZONE — slides parked outside the linear flow.
-         Reachable via direct URL hash during Q&A. NOT part of the section
-         progress sliders. Build content as needed (workbook parser arch,
-         IF-25144 fixture, four-pillar vision, etc. per §04 spec).
-         ═══════════════════════════════════════════════════════════════════ -->
-
-    <section data-slide="04.3">
-      <div class="slide" data-section="4">
-        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-        <div class="section-label"><span class="bracket">[</span><span class="index">04</span><span>—</span><span class="name">The Evidence</span><span class="bracket">]</span></div>
-        <div class="slider-slot">
-          <div class="subsection-slider">
-            <span class="slider-label"><span class="current">Backup · Workbook Parser Detail</span></span>
-            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span></div>
-          </div>
-        </div>
-        <div class="skeleton-body"><div class="placeholder">· · ·  Q&amp;A Backup · TBD  · · ·</div></div>
-        <div class="page-num"><span class="num">B1</span><span class="total">/ Backup</span></div>
+        <div class="page-num"><span class="num">B2</span><span class="total">/ Backup</span></div>
       </div>
     </section>
 
@@ -3330,6 +3658,71 @@
         </aside>
 
         <div class="page-num"><span class="num">B4</span><span class="total">/ Backup</span></div>
+      </div>
+    </section>
+
+    <!-- §05.5 backup — Failure Is Also Designed moved out of the linear
+         §05 flow (which now ends at MoP). Kept here for Q&A in case the
+         jury asks how unsafe / unsupported cases are handled. -->
+
+    <section data-slide="05.5">
+      <div class="slide failure-slide" data-section="5">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="section-label"><span class="bracket">[</span><span class="index">05</span><span>—</span><span class="name">The Boundary</span><span class="bracket">]</span></div>
+        <div class="slider-slot">
+          <div class="subsection-slider">
+            <span class="slider-label"><span class="current">Backup &middot; Failure Is Also Designed</span></span>
+            <div class="slider-track"><span class="seg done"></span><span class="seg done"></span></div>
+          </div>
+        </div>
+
+        <div class="slide-content">
+          <h2 class="failure-headline">When it cannot answer safely, it does not guess.</h2>
+
+          <div class="failure-table">
+            <div class="failure-row">
+              <div class="row-when">When the request is not supported</div>
+              <div class="row-arrow" aria-hidden="true">&rarr;</div>
+              <div class="row-then">It says so clearly</div>
+            </div>
+            <div class="failure-row">
+              <div class="row-when">When outside the RFQ scope</div>
+              <div class="row-arrow" aria-hidden="true">&rarr;</div>
+              <div class="row-then">It says so and redirects</div>
+            </div>
+            <div class="failure-row">
+              <div class="row-when">When the target RFQ is not clear</div>
+              <div class="row-arrow" aria-hidden="true">&rarr;</div>
+              <div class="row-then">It asks one question</div>
+            </div>
+            <div class="failure-row">
+              <div class="row-when">When the RFQ is missing or not allowed</div>
+              <div class="row-arrow" aria-hidden="true">&rarr;</div>
+              <div class="row-then">It stops</div>
+            </div>
+            <div class="failure-row">
+              <div class="row-when">When there are not enough facts</div>
+              <div class="row-arrow" aria-hidden="true">&rarr;</div>
+              <div class="row-then">It refuses to invent</div>
+            </div>
+          </div>
+
+          <div class="escalation-section">
+            <div class="esc-arrow esc-arrow-in" aria-hidden="true">&darr;</div>
+            <div class="escalation-gate">ESCALATION GATE</div>
+            <div class="esc-arrow esc-arrow-out" aria-hidden="true">&darr;</div>
+            <div class="escalation-exit">planned safe answer</div>
+          </div>
+
+          <div class="failure-principle">
+            One gate catches every case. The answer is planned.
+          </div>
+        </div>
+
+        <span class="fragment storm-resolve-trigger" data-failure-table aria-hidden="true"></span>
+        <span class="fragment storm-resolve-trigger" data-failure-gate  aria-hidden="true"></span>
+
+        <div class="page-num"><span class="num">B5</span><span class="total">/ Backup</span></div>
       </div>
     </section>
 

@@ -348,16 +348,33 @@ function maybePlayTitleIntro(scope) {
 // ──────────────────────────────────────────────────────────────────────────
 
 // ──────────────────────────────────────────────────────────────────────────
-// Page numbering — populate `.page-num` on every slide from Reveal's
-// slide index. Pad to two digits. Total updates if the deck grows.
+// Page numbering — populate `.page-num` on every slide.
+//   Main flow:   01, 02, ... N  (where N = count of non-backup slides)
+//                total displayed as "/ NN"
+//   Backup zone: keeps its hardcoded "B1 / Backup", "B2 / Backup", ...
+//                untouched, so it doesn't inflate the main total. A
+//                section is treated as backup if its hardcoded .num
+//                already starts with "B".
 // ──────────────────────────────────────────────────────────────────────────
 function updatePageNums() {
-  const total = Reveal.getTotalSlides();
-  const totalStr = '/ ' + String(total).padStart(2, '0');
-  document.querySelectorAll('.reveal .slides > section').forEach((slide, i) => {
-    const num   = slide.querySelector('.page-num .num');
-    const totEl = slide.querySelector('.page-num .total');
-    if (num)   num.textContent   = String(i + 1).padStart(2, '0');
+  const sections = Array.from(document.querySelectorAll('.reveal .slides > section'));
+
+  // First pass — identify backup vs main and count the mains.
+  const info = sections.map((slide) => {
+    const num    = slide.querySelector('.page-num .num');
+    const totEl  = slide.querySelector('.page-num .total');
+    const isBack = !!(num && num.textContent.trim().startsWith('B'));
+    return { num, totEl, isBack };
+  });
+  const mainCount = info.filter(i => !i.isBack).length;
+  const totalStr  = '/ ' + String(mainCount).padStart(2, '0');
+
+  // Second pass — number only the main slides; leave backups alone.
+  let mainIndex = 0;
+  info.forEach(({ num, totEl, isBack }) => {
+    if (isBack) return;
+    mainIndex++;
+    if (num)   num.textContent   = String(mainIndex).padStart(2, '0');
     if (totEl) totEl.textContent = totalStr;
   });
 }
@@ -729,24 +746,27 @@ Reveal.on('fragmentshown', (event) => {
   }
 
   // ── Slide 02.1 · From BOQ Automation to Lifecycle Intelligence ───────
-  // 4-click sequence: 1) lede + Original Request box (combined opening
-  // beat) · 2-3) Audit Decision + New Direction boxes with per-box amber
-  // pulse (arrows draw alongside their target box) · 4) bottom principle.
-  if (trigger.matches('[data-pivot-box]')) {
-    const slide = trigger.closest('.pivot-slide');
-    if (!slide) return;
-    const n = parseInt(trigger.dataset.pivotBox, 10);
-    setPivotBox(slide, n);
-    // First box click also reveals the main statement (combined beat).
-    if (n >= 1) slide.classList.add('sentence-shown');
-    return;
+  // 4-click sequence (restructured to 2-box):
+  //   1) data-pivot-original · LEFT box (Original Request) appears
+  //   2) data-pivot-reject   · headline phrase + REJECTED badge + chips
+  //                             strikethrough + rejection-reason chips
+  //                             reveal; box blinks red twice + settles
+  //   3) data-pivot-new      · PIVOT connector + RIGHT box (New Direction,
+  //                             teal accent) reveal
+  //   4) data-pivot-bottom   · bottom positioning line lands
+  if (trigger.matches('[data-pivot-original]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.add('original-shown'); return;
+  }
+  if (trigger.matches('[data-pivot-reject]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.add('reject-shown');   return;
+  }
+  if (trigger.matches('[data-pivot-new]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.add('new-shown');      return;
   }
   if (trigger.matches('[data-pivot-bottom]')) {
     const slide = trigger.closest('.pivot-slide');
     if (!slide) return;
     slide.classList.add('bottom-shown');
-    // Speaker lands the positioning — clear the last box's pulse.
-    slide.querySelectorAll('.map-box.current').forEach((b) => b.classList.remove('current'));
     return;
   }
 
@@ -801,14 +821,17 @@ Reveal.on('fragmentshown', (event) => {
   // §03.1.a · Service Topology — 8 clicks: lede → UI box → IAM box →
   // 3 backend boxes (staggered) → context fill-in (eyebrows, roles, chips,
   // arrows) → data tiles → ownership connectors → external LLM.
-  if (trigger.matches('[data-svc-sentence]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('sentence-shown'); return; }
-  if (trigger.matches('[data-svc-ui]'))       { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('ui-shown'); return; }
-  if (trigger.matches('[data-svc-iam]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('iam-shown'); return; }
+  // §03.1.a · Platform Service Boundaries · 5-click reveal:
+  // 1) entry-shown    · ENTRY layer + UI box + edge
+  // 2) access-shown   · ACCESS GATEWAY layer + IAM box + edge
+  // 3) backends-shown · 3 backend boxes
+  // 4) data-shown     · 4 data tiles + ownership connectors
+  // 5) ext-shown      · Azure OpenAI strip
+  if (trigger.matches('[data-svc-entry]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('entry-shown');    return; }
+  if (trigger.matches('[data-svc-access]'))   { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('access-shown');   return; }
   if (trigger.matches('[data-svc-backends]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('backends-shown'); return; }
-  if (trigger.matches('[data-svc-context]'))  { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('context-shown'); return; }
-  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('data-shown'); return; }
-  if (trigger.matches('[data-svc-links]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('links-shown'); return; }
-  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('ext-shown'); return; }
+  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('data-shown');     return; }
+  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.add('ext-shown');      return; }
 
   // §03.1.b · Service Cutaway — 5 clicks (lede → shell → flow → translators → support).
   if (trigger.matches('[data-bacab-sentence]')) { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('sentence-shown'); return; }
@@ -818,11 +841,9 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-bacab-support]'))  { const s = trigger.closest('.bacab-slide'); if (s) s.classList.add('support-shown'); return; }
 
   // §03.2.a · Manager Spine — 5 clicks tier-based: spine → core → support → derived → boundary.
-  if (trigger.matches('[data-mgr-spine]'))    { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('spine-shown'); return; }
-  if (trigger.matches('[data-mgr-core]'))     { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('core-shown'); return; }
-  if (trigger.matches('[data-mgr-support]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('support-shown'); return; }
-  if (trigger.matches('[data-mgr-derived]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('derived-shown'); return; }
-  if (trigger.matches('[data-mgr-boundary]')) { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.add('boundary-shown'); return; }
+  // §03.2.a · Domain Model — 2 clicks (model → boundary).
+  if (trigger.matches('[data-dm-model]'))    { const s = trigger.closest('.dm-slide'); if (s) s.classList.add('model-shown');    return; }
+  if (trigger.matches('[data-dm-boundary]')) { const s = trigger.closest('.dm-slide'); if (s) s.classList.add('boundary-shown'); return; }
 
   // §03.2.b · Live Workflow Object — 5 clicks (lede → rfq → rail → pointer → attaches).
   if (trigger.matches('[data-erd-sentence]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('sentence-shown'); return; }
@@ -933,8 +954,9 @@ Reveal.on('fragmentshown', (event) => {
   // §06.3 · Integrated User Path — single reveal (5-step cascade → services → synthesis).
   if (trigger.matches('[data-journey-show]')) { const s = trigger.closest('.journey-slide'); if (s) s.classList.add('show'); return; }
 
-  // §03.2.b · Manager Lifecycle Model — 3 clicks (template → instance → context).
-  if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('template-shown'); return; }
+  // §03.2.b · Controlled Lifecycle — 4 clicks (before → merged → instance → context).
+  if (trigger.matches('[data-mw-before]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('before-shown');   return; }
+  if (trigger.matches('[data-mw-merged]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('merged-shown');   return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('instance-shown'); return; }
   if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('context-shown');  return; }
 
@@ -1143,22 +1165,19 @@ Reveal.on('fragmenthidden', (event) => {
   }
 
   // ── Slide 02.1 · reverse navigation ──────────────────────────────────
-  if (trigger.matches('[data-pivot-box]')) {
-    const slide = trigger.closest('.pivot-slide');
-    if (!slide) return;
-    const n = parseInt(trigger.dataset.pivotBox, 10);
-    setPivotBox(slide, n - 1);
-    // Hiding box 1 also hides the lede (they reveal together).
-    if (n === 1) slide.classList.remove('sentence-shown');
-    return;
+  if (trigger.matches('[data-pivot-original]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.remove('original-shown'); return;
+  }
+  if (trigger.matches('[data-pivot-reject]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.remove('reject-shown');   return;
+  }
+  if (trigger.matches('[data-pivot-new]')) {
+    const s = trigger.closest('.pivot-slide'); if (s) s.classList.remove('new-shown');      return;
   }
   if (trigger.matches('[data-pivot-bottom]')) {
     const slide = trigger.closest('.pivot-slide');
     if (!slide) return;
     slide.classList.remove('bottom-shown');
-    // Restore .current on the last box (bottom only fires after all boxes).
-    const boxes = slide.querySelectorAll('.map-box');
-    if (boxes[2]) boxes[2].classList.add('current');
     return;
   }
 
@@ -1202,14 +1221,11 @@ Reveal.on('fragmenthidden', (event) => {
   }
 
   // ── SECTION 03 reverse navigation ─────────────────────────────────────
-  if (trigger.matches('[data-svc-sentence]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('sentence-shown'); return; }
-  if (trigger.matches('[data-svc-ui]'))       { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('ui-shown'); return; }
-  if (trigger.matches('[data-svc-iam]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('iam-shown'); return; }
+  if (trigger.matches('[data-svc-entry]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('entry-shown');    return; }
+  if (trigger.matches('[data-svc-access]'))   { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('access-shown');   return; }
   if (trigger.matches('[data-svc-backends]')) { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('backends-shown'); return; }
-  if (trigger.matches('[data-svc-context]'))  { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('context-shown'); return; }
-  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('data-shown'); return; }
-  if (trigger.matches('[data-svc-links]'))    { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('links-shown'); return; }
-  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('ext-shown'); return; }
+  if (trigger.matches('[data-svc-data]'))     { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('data-shown');     return; }
+  if (trigger.matches('[data-svc-ext]'))      { const s = trigger.closest('.svc-arch-slide'); if (s) s.classList.remove('ext-shown');      return; }
 
   if (trigger.matches('[data-bacab-sentence]')) { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('sentence-shown'); return; }
   if (trigger.matches('[data-bacab-shell]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('shell-shown'); return; }
@@ -1217,11 +1233,8 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-bacab-trans]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('trans-shown'); return; }
   if (trigger.matches('[data-bacab-support]'))  { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('support-shown'); return; }
 
-  if (trigger.matches('[data-mgr-spine]'))    { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('spine-shown'); return; }
-  if (trigger.matches('[data-mgr-core]'))     { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('core-shown'); return; }
-  if (trigger.matches('[data-mgr-support]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('support-shown'); return; }
-  if (trigger.matches('[data-mgr-derived]'))  { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('derived-shown'); return; }
-  if (trigger.matches('[data-mgr-boundary]')) { const s = trigger.closest('.mgr-core-slide'); if (s) s.classList.remove('boundary-shown'); return; }
+  if (trigger.matches('[data-dm-model]'))    { const s = trigger.closest('.dm-slide'); if (s) s.classList.remove('model-shown');    return; }
+  if (trigger.matches('[data-dm-boundary]')) { const s = trigger.closest('.dm-slide'); if (s) s.classList.remove('boundary-shown'); return; }
 
   if (trigger.matches('[data-erd-sentence]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('sentence-shown'); return; }
   if (trigger.matches('[data-erd-rfq]'))      { const s = trigger.closest('.erd-slide'); if (s) s.classList.remove('rfq-shown'); return; }
@@ -1321,7 +1334,8 @@ Reveal.on('fragmenthidden', (event) => {
 
   if (trigger.matches('[data-journey-show]')) { const s = trigger.closest('.journey-slide'); if (s) s.classList.remove('show'); return; }
 
-  if (trigger.matches('[data-mw-template]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('template-shown'); return; }
+  if (trigger.matches('[data-mw-before]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('before-shown');   return; }
+  if (trigger.matches('[data-mw-merged]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('merged-shown');   return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('instance-shown'); return; }
   if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('context-shown');  return; }
 
@@ -1575,21 +1589,14 @@ Reveal.on('slidechanged', (event) => {
 
   // Slide 02.1 re-entry — restore pivot boxes (+ arrows) to their deepest
   // visible state and snap the bottom flag. The lede tracks the first box
-  // (they reveal together as the opening beat).
+  // Slide 02.1 re-entry — toggle the 4 reveal state classes based on which
+  // fragments are currently .visible.
   const pivotSlide = slide.querySelector('.pivot-slide');
   if (pivotSlide) {
-    let maxBox = 0;
-    for (let n = 3; n >= 1; n--) {
-      if (slide.querySelector(`[data-pivot-box="${n}"].visible`)) { maxBox = n; break; }
-    }
-    setPivotBox(pivotSlide, maxBox);
-    pivotSlide.classList.toggle('sentence-shown', maxBox >= 1);
-
-    const bottomShown = !!slide.querySelector('[data-pivot-bottom].visible');
-    pivotSlide.classList.toggle('bottom-shown', bottomShown);
-    if (bottomShown) {
-      pivotSlide.querySelectorAll('.map-box.current').forEach((b) => b.classList.remove('current'));
-    }
+    pivotSlide.classList.toggle('original-shown', !!slide.querySelector('[data-pivot-original].visible'));
+    pivotSlide.classList.toggle('reject-shown',   !!slide.querySelector('[data-pivot-reject].visible'));
+    pivotSlide.classList.toggle('new-shown',      !!slide.querySelector('[data-pivot-new].visible'));
+    pivotSlide.classList.toggle('bottom-shown',   !!slide.querySelector('[data-pivot-bottom].visible'));
   }
 
   // Slide 02.2.a re-entry — snap the four Itqān-reveal flags.
@@ -1609,16 +1616,13 @@ Reveal.on('slidechanged', (event) => {
     roadmapSlide.classList.toggle('bottom-shown',   !!slide.querySelector('[data-roadmap-bottom].visible'));
   }
 
-  // ── SECTION 03 re-entry — snap all state-class flags by fragment visibility.
+  // ── SECTION 03.1.a re-entry · 5-click state-class snap.
   const svcArchSlide = slide.querySelector('.svc-arch-slide');
   if (svcArchSlide) {
-    svcArchSlide.classList.toggle('sentence-shown', !!slide.querySelector('[data-svc-sentence].visible'));
-    svcArchSlide.classList.toggle('ui-shown',       !!slide.querySelector('[data-svc-ui].visible'));
-    svcArchSlide.classList.toggle('iam-shown',      !!slide.querySelector('[data-svc-iam].visible'));
+    svcArchSlide.classList.toggle('entry-shown',    !!slide.querySelector('[data-svc-entry].visible'));
+    svcArchSlide.classList.toggle('access-shown',   !!slide.querySelector('[data-svc-access].visible'));
     svcArchSlide.classList.toggle('backends-shown', !!slide.querySelector('[data-svc-backends].visible'));
-    svcArchSlide.classList.toggle('context-shown',  !!slide.querySelector('[data-svc-context].visible'));
     svcArchSlide.classList.toggle('data-shown',     !!slide.querySelector('[data-svc-data].visible'));
-    svcArchSlide.classList.toggle('links-shown',    !!slide.querySelector('[data-svc-links].visible'));
     svcArchSlide.classList.toggle('ext-shown',      !!slide.querySelector('[data-svc-ext].visible'));
   }
   const bacabSlide = slide.querySelector('.bacab-slide');
@@ -1629,13 +1633,10 @@ Reveal.on('slidechanged', (event) => {
     bacabSlide.classList.toggle('trans-shown',    !!slide.querySelector('[data-bacab-trans].visible'));
     bacabSlide.classList.toggle('support-shown',  !!slide.querySelector('[data-bacab-support].visible'));
   }
-  const mgrCoreSlide = slide.querySelector('.mgr-core-slide');
-  if (mgrCoreSlide) {
-    mgrCoreSlide.classList.toggle('spine-shown',    !!slide.querySelector('[data-mgr-spine].visible'));
-    mgrCoreSlide.classList.toggle('core-shown',     !!slide.querySelector('[data-mgr-core].visible'));
-    mgrCoreSlide.classList.toggle('support-shown',  !!slide.querySelector('[data-mgr-support].visible'));
-    mgrCoreSlide.classList.toggle('derived-shown',  !!slide.querySelector('[data-mgr-derived].visible'));
-    mgrCoreSlide.classList.toggle('boundary-shown', !!slide.querySelector('[data-mgr-boundary].visible'));
+  const dmSlide = slide.querySelector('.dm-slide');
+  if (dmSlide) {
+    dmSlide.classList.toggle('model-shown',    !!slide.querySelector('[data-dm-model].visible'));
+    dmSlide.classList.toggle('boundary-shown', !!slide.querySelector('[data-dm-boundary].visible'));
   }
   const erdSlide = slide.querySelector('.erd-slide');
   if (erdSlide) {
@@ -1763,7 +1764,8 @@ Reveal.on('slidechanged', (event) => {
   }
   const managerWorkflowSlide = slide.querySelector('.manager-workflow-slide');
   if (managerWorkflowSlide) {
-    managerWorkflowSlide.classList.toggle('template-shown', !!slide.querySelector('[data-mw-template].visible'));
+    managerWorkflowSlide.classList.toggle('before-shown',   !!slide.querySelector('[data-mw-before].visible'));
+    managerWorkflowSlide.classList.toggle('merged-shown',   !!slide.querySelector('[data-mw-merged].visible'));
     managerWorkflowSlide.classList.toggle('instance-shown', !!slide.querySelector('[data-mw-instance].visible'));
     managerWorkflowSlide.classList.toggle('context-shown',  !!slide.querySelector('[data-mw-context].visible'));
   }

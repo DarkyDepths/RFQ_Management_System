@@ -1178,38 +1178,24 @@
    so each cluster sits centred above its corresponding side flow-block. */
 .artifacts-spacer { /* intentionally empty */ }
 
-/* ── 3-block flow ──────────────────────────────────────────────────────── */
+/* ── 3-part flow: [LEFT card stack] -> RFQ -> [RIGHT card stack] ──────── */
 .rfq-flow {
   display: grid;
-  grid-template-columns: 320px 80px 520px 80px 320px;   /* centre widened so
-                                                            "Demande de devis"
-                                                            fits comfortably */
+  grid-template-columns: 380px 70px 520px 70px 380px;   /* centre kept at 520px
+                                                            so "Demande de devis"
+                                                            morph still fits;
+                                                            sides widened to
+                                                            hold the new card
+                                                            stacks */
   align-items: center;
-  width: 1320px;
+  width: 1440px;
   position: relative;
   isolation: isolate;
 }
-/* Ambient amber halo behind the flow row (option C) — soft warmth centered
-   on the RFQ block, fades through the side blocks. Adds depth without
-   adding visual noise. */
-.rfq-flow::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140%;
-  height: 300%;
-  background: radial-gradient(
-    ellipse 55% 45% at center,
-    rgba(232, 160, 76, 0.20) 0%,
-    rgba(232, 160, 76, 0.06) 50%,
-    transparent 78%
-  );
-  filter: blur(34px);
-  pointer-events: none;
-  z-index: -1;
-}
+/* Ambient amber halo removed per design feedback — RFQ box now reads
+   cleanly without the glow underneath. (Keeping the selector commented
+   in case we want to A/B it back.)
+.rfq-flow::before { ... } */
 .flow-block {
   display: flex;
   flex-direction: column;
@@ -1223,26 +1209,124 @@
   padding: 24px 20px;
   position: relative;
 }
-.flow-block-side {
-  height: 110px;
-}
-.flow-block-side .flow-label {
-  font-family: var(--font-display);
-  font-size: var(--t-h3);
-  font-weight: 500;
-  color: var(--l-ink);
-  line-height: 1.1;
-  letter-spacing: -.01em;
-}
-/* Centre block — focal, slightly larger, amber-tinted border to mark it
-   as the term being defined */
+/* Centre block — focal, slightly larger, amber-tinted border + amber-wash
+   background to mark it as the term being defined. */
 .flow-block-center {
   height: 150px;
   border-color: var(--amber-on-light);
-  background: var(--l-surface);
+  background: rgba(232, 160, 76, 0.10);   /* warm amber wash */
   box-shadow: 0 14px 30px rgba(191, 122, 40, 0.16);
   gap: 8px;
 }
+
+/* ── Side card stacks (replace old flow-block-side blocks) ─────────────
+   Header label above + vertical stack of 4 icon cards. Cards cascade
+   in at click 4 (artifacts-shown), same trigger the old artifact tiles
+   used. */
+.flow-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: center;
+}
+
+.flow-side-label {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--l-hair-strong);
+}
+.flow-side-left  .flow-side-label { text-align: left;  }
+.flow-side-right .flow-side-label { text-align: right; }
+
+.flow-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flow-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 8px;
+  box-shadow: var(--sh-tile);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2, .7, .2, 1);
+}
+/* Right-side cards: icon sits on the right, label aligned right */
+.flow-side-right .flow-card {
+  flex-direction: row-reverse;
+}
+
+/* Icon badge — small rounded-square with teal border + light teal wash.
+   The icon SVG inside renders in teal-700. Deadline card overrides
+   to red (sem-risk) below. */
+.flow-card-icon {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 110, 61, 0.06);
+  border: 1px solid rgba(60, 110, 61, 0.35);
+  border-radius: 7px;
+  color: var(--teal-700);
+}
+.flow-card-icon svg { width: 17px; height: 17px; }
+
+.flow-card-label {
+  flex: 1 1 auto;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.2;
+}
+.flow-side-left  .flow-card-label { text-align: left;  }
+.flow-side-right .flow-card-label { text-align: right; }
+
+/* Deadline card · light-red highlight (semantic risk emphasis).
+   Overrides the default teal icon-badge with a red-themed badge so the
+   card reads consistently red end-to-end. */
+.flow-card-deadline {
+  background: rgba(192, 57, 43, 0.06);
+  border-color: rgba(192, 57, 43, 0.45);
+}
+.flow-card-deadline .flow-card-icon {
+  color: var(--sem-risk);
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.45);
+}
+.flow-card-deadline .flow-card-label {
+  color: var(--sem-risk);
+  font-weight: 600;
+}
+
+/* Cards reveal at click 4 (.artifacts-shown) with a tight L→R cascade */
+.rfq-def-slide.artifacts-shown .flow-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+.rfq-def-slide.artifacts-shown .flow-side-left  .flow-card:nth-child(1) { transition-delay: 0ms;   }
+.rfq-def-slide.artifacts-shown .flow-side-left  .flow-card:nth-child(2) { transition-delay: 60ms;  }
+.rfq-def-slide.artifacts-shown .flow-side-left  .flow-card:nth-child(3) { transition-delay: 120ms; }
+.rfq-def-slide.artifacts-shown .flow-side-left  .flow-card:nth-child(4) { transition-delay: 180ms; }
+.rfq-def-slide.artifacts-shown .flow-side-right .flow-card:nth-child(1) { transition-delay: 0ms;   }
+.rfq-def-slide.artifacts-shown .flow-side-right .flow-card:nth-child(2) { transition-delay: 60ms;  }
+.rfq-def-slide.artifacts-shown .flow-side-right .flow-card:nth-child(3) { transition-delay: 120ms; }
+.rfq-def-slide.artifacts-shown .flow-side-right .flow-card:nth-child(4) { transition-delay: 180ms; }
 .flow-block-center .flow-title {
   font-family: var(--font-display);
   font-size: 56px;
@@ -1264,7 +1348,7 @@
   font-family: var(--font-display);
   font-size: 40px;
   font-weight: 300;
-  color: var(--l-muted);
+  color: var(--teal-700);
   text-align: center;
   line-height: 1;
 }
@@ -1283,10 +1367,17 @@
   transform: translateY(16px);
   transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(.2, .7, .2, 1);
 }
-/* Amber-bold emphasis on the deliverables and the constraint — makes the
-   sentence skim-readable; color rhymes with the central RFQ block. */
+/* Amber-bold emphasis on the deliverables — color rhymes with the
+   central RFQ block. */
 .rfq-synthesis .emph {
   color: var(--amber-on-light);
+  font-weight: 700;
+}
+/* Red-bold emphasis on "a deadline" — the constraint is the risk in the
+   RFQ; colour rhymes with the deadline card's light-red highlight on
+   the left side. */
+.rfq-synthesis .emph-risk {
+  color: var(--sem-risk);
   font-weight: 700;
 }
 .rfq-def-slide.synthesis-shown .rfq-synthesis {
@@ -1340,69 +1431,120 @@
   height: 100%;
 }
 
-/* ── 7-stage lifecycle rail ──────────────────────────────────────────── */
+/* ── 7-stage lifecycle rail (new style: icon card + label + sub) ─────
+   Each .rail-stage is a vertical trio:
+     [icon card] -> mono caps label -> italic sub-line
+   Connectors between stages are dashed hair lines (replacing the old
+   solid arrows). Per-stage reveal cascade and amber-pulse on .current
+   are preserved (JS toggles .revealed / .current on .rail-stage). */
 .lifecycle-rail {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 0;
   width: 100%;
-  max-width: 1500px;
+  max-width: 1760px;        /* widened so each stage gets enough horizontal
+                                room for "TECHNICAL REVIEW" + sub on one line */
 }
+
 .rail-stage {
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 18px 12px;
-  background: var(--l-surface);
-  border: 1.5px solid var(--l-hair-strong);
-  border-radius: 12px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
-  font-weight: 500;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  line-height: 1.15;
-  color: var(--teal-900);
-  min-height: 72px;
+  flex: 0 0 auto;
+  width: 210px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  box-shadow: var(--sh-tile);
-  /* hidden initial state — JS adds .revealed when the matching stage
-     fragment fires, .current on the most recently revealed stage */
+  gap: 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  min-height: 0;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.5s ease-out,
-              transform 0.5s cubic-bezier(.2, .7, .2, 1),
-              border-color 0.4s ease-out,
+              transform 0.5s cubic-bezier(.2, .7, .2, 1);
+}
+
+.rail-icon-card {
+  position: relative;
+  z-index: 2;              /* sits ABOVE the arrow gradient so the dash
+                              line visually stops at the card edges */
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--l-surface);
+  border: 1.4px solid var(--l-hair-strong);
+  border-radius: 12px;
+  color: var(--teal-700);
+  box-shadow: var(--sh-tile);
+  transition: border-color 0.4s ease-out,
+              background 0.4s ease-out,
+              color 0.4s ease-out,
               box-shadow 0.4s ease-out;
 }
-.rail-arrow {
-  flex: 0 0 auto;
+.rail-icon-card svg { width: 30px; height: 30px; }
+
+.rail-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.15;
+  margin-top: 4px;
+  white-space: nowrap;       /* keep label on one line ("TECHNICAL REVIEW") */
+  transition: color 0.4s ease-out;
+}
+
+.rail-sub {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
   color: var(--l-muted);
+  text-align: center;
+  line-height: 1.25;
+  white-space: nowrap;       /* keep sub on one line ("Client package arrives") */
+}
+
+/* Connector · simple text arrow between stages (reverted from dashed
+   line — the dash gradient rendered too small at narrow flex widths).
+   Positioned vertically to align with the icon-card centre. */
+.rail-arrow {
+  flex: 1 1 auto;
+  align-self: flex-start;
+  margin-top: 14px;
+  text-align: center;
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 36px;
   font-weight: 300;
+  color: var(--teal-700);
   line-height: 1;
   opacity: 0;
   transition: opacity 0.5s ease-out;
 }
+
 .rail-stage.revealed,
 .rail-arrow.revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Active stage — amber border + pulsing glow. Speaker is on this stage now.
-   When the next stage clicks, this .current class is removed → border and
-   shadow return to neutral. When chips fragment fires, all .current are
-   cleared so the rail reads as "fully revealed, no longer being narrated". */
-.rail-stage.current {
+/* Active stage — amber icon card + amber label + pulsing glow.
+   Speaker is on this stage now. When the next stage clicks, .current is
+   removed and the icon card returns to neutral. */
+.rail-stage.current .rail-icon-card {
   border-color: var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.10);
   color: var(--amber-on-light);
   box-shadow: 0 8px 24px rgba(232, 160, 76, 0.22),
               0 0 0 4px rgba(232, 160, 76, 0.08);
   animation: rail-stage-pulse 2.2s ease-in-out infinite;
+}
+.rail-stage.current .rail-label {
+  color: var(--amber-on-light);
 }
 @keyframes rail-stage-pulse {
   0%, 100% {
@@ -1464,7 +1606,7 @@
 .ctx-eyebrow {
   font-family: var(--font-mono);
   font-size: var(--t-caption);
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--amber-on-light);
@@ -2022,16 +2164,16 @@
   align-items: center;
   gap: 8px;
   padding: 20px 40px;
-  border: 1.5px solid var(--amber-on-light);
+  border: 1.5px solid var(--sem-risk);
   border-radius: 14px;
-  background: rgba(232, 160, 76, 0.07);
-  box-shadow: 0 6px 18px rgba(232, 160, 76, 0.10);
+  background: rgba(192, 57, 43, 0.07);
+  box-shadow: 0 6px 18px rgba(192, 57, 43, 0.12);
 }
 .timeline-zone .zone-label {
   font-family: var(--font-display);
   font-size: var(--t-h3);
   font-weight: 600;
-  color: var(--l-ink);
+  color: var(--sem-risk);
   letter-spacing: -.008em;
   line-height: 1;
 }
@@ -2044,7 +2186,7 @@
   font-weight: 500;
   letter-spacing: .22em;
   text-transform: uppercase;
-  color: var(--amber-on-light);
+  color: var(--sem-risk);
   line-height: 1;
 }
 .timeline-zone .zone-caption .bracket {
@@ -2071,7 +2213,7 @@
   padding: 22px 24px 24px;
   background: var(--l-surface);
   border: 1.5px solid var(--l-hair);
-  border-top: 3px solid var(--amber-on-light);
+  border-top: 3px solid var(--sem-risk);
   border-radius: 10px;
   box-shadow: var(--sh-tile);
   opacity: 0;
@@ -2090,7 +2232,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--amber-on-light);
+  color: var(--sem-risk);
   flex-shrink: 0;
 }
 .gap-icon svg {
@@ -2106,7 +2248,7 @@
   line-height: 1.15;
 }
 .gap-title .gap-word {
-  color: var(--amber-on-light);
+  color: var(--sem-risk);
 }
 .gap-body {
   font-family: var(--font-body);
@@ -2131,10 +2273,22 @@
   transform: translateY(0);
 }
 .gap-card.current {
-  border-color: var(--amber-on-light);
-  box-shadow: 0 8px 24px rgba(232, 160, 76, 0.22),
-              0 0 0 4px rgba(232, 160, 76, 0.08);
-  animation: rail-stage-pulse 2.2s ease-in-out infinite;
+  border-color: var(--sem-risk);
+  box-shadow: 0 8px 24px rgba(192, 57, 43, 0.22),
+              0 0 0 4px rgba(192, 57, 43, 0.08);
+  animation: gap-card-pulse-risk 2.2s ease-in-out infinite;
+}
+/* Red pulse — dedicated to .gap-card.current so it doesn't share the
+   amber-coloured rail-stage-pulse keyframes used elsewhere. */
+@keyframes gap-card-pulse-risk {
+  0%, 100% {
+    box-shadow: 0 8px 24px rgba(192, 57, 43, 0.22),
+                0 0 0 4px rgba(192, 57, 43, 0.08);
+  }
+  50% {
+    box-shadow: 0 10px 32px rgba(192, 57, 43, 0.36),
+                0 0 0 8px rgba(192, 57, 43, 0.14);
+  }
 }
 
 /* ── Bottom diagnosis strip ──────────────────────────────────────────── */
@@ -2221,15 +2375,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 44px;
+  gap: 36px;
   width: 100%;
   height: 100%;
 }
 
-/* ── Main statement ──────────────────────────────────────────────────── */
+/* ── Headline phrase · fades in ABOVE the boxes on click 2 (reject) ─── */
 .pivot-lede {
   font-family: var(--font-display);
-  font-size: var(--t-h2);
+  font-size: var(--t-h3);
   font-weight: 500;
   color: var(--l-ink);
   line-height: 1.2;
@@ -2246,128 +2400,260 @@
   color: var(--amber-on-light);
   font-weight: 600;
 }
-.pivot-slide.sentence-shown .pivot-lede {
+.pivot-slide.reject-shown .pivot-lede {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ── 3-column pivot map ──────────────────────────────────────────────── */
-/* Boxes share visual grammar (3px amber top accent + hair border + tile
-   shadow). The center box is intentionally narrower — it holds the
-   decision moment, not a feature list. Arrows are static text glyphs
-   between boxes, revealed alongside their target box. */
+/* ── 2-box pivot · LEFT (rejected) | PIVOT connector | RIGHT (new) ─── */
 .pivot-map {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  gap: 18px;
+  gap: 24px;
   width: 100%;
+  max-width: 1640px;
 }
 .map-box {
   flex: 1 1 0;
+  max-width: 720px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 22px 26px 26px;
+  gap: 18px;
+  padding: 32px 36px 36px;
   background: var(--l-surface);
   border: 1.5px solid var(--l-hair);
-  border-top: 3px solid var(--amber-on-light);
-  border-radius: 10px;
+  border-top: 4px solid var(--amber-on-light);
+  border-radius: 12px;
   box-shadow: var(--sh-tile);
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.55s ease-out,
               transform 0.55s cubic-bezier(.2, .7, .2, 1),
               border-color 0.4s ease-out,
+              background 0.4s ease-out,
               box-shadow 0.4s ease-out;
 }
-/* Center box is narrower than the side boxes — it's the decision moment,
-   not a feature list. Uses :nth-child(3) because of the arrow siblings. */
-.pivot-map .map-box:nth-child(3) {
-  flex: 0 0 360px;
+
+.map-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
+
+.map-box .box-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .map-box .map-main {
   font-family: var(--font-display);
-  font-size: var(--t-sub);
+  font-size: 32px;
   font-weight: 600;
   color: var(--l-ink);
   letter-spacing: -.006em;
   line-height: 1.2;
-  margin-top: 4px;
 }
-.map-box .map-sub {
-  font-family: var(--font-body);
-  font-size: var(--t-caption);
-  font-weight: 400;
-  color: var(--l-muted);
-  line-height: 1.4;
-  letter-spacing: -.002em;
-}
+
 .map-box .map-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 6px;
 }
+
 .map-tag {
   display: inline-block;
-  padding: 5px 11px;
+  padding: 8px 14px;
   border: 1px solid var(--l-hair-strong);
   border-radius: 999px;
   background: rgba(232, 160, 76, 0.04);
   font-family: var(--font-mono);
-  font-size: var(--t-caption);
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--teal-900);
   line-height: 1;
+  transition: text-decoration 0.4s ease-out,
+              color 0.4s ease-out,
+              opacity 0.4s ease-out;
 }
 
-/* Arrows between boxes — static glyphs, revealed when the box they
-   point to lands. Vertically centred against the box stack. */
-.map-arrow {
-  align-self: center;
-  color: var(--l-muted);
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 300;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity 0.45s ease-out;
-}
-.map-arrow.revealed {
-  opacity: 1;
-  color: var(--amber-on-light);
-}
-
-/* Per-box reveal — the current box pulses, previous boxes stay normal.
-   Same animation grammar as the rail / limit cards. */
-.map-box.revealed {
+/* ── LEFT box · Original Request · click 1 reveals, click 2 transforms ─ */
+.pivot-slide.original-shown .map-box-original {
   opacity: 1;
   transform: translateY(0);
 }
-.map-box.current {
-  border-color: var(--amber-on-light);
-  box-shadow: 0 8px 24px rgba(232, 160, 76, 0.22),
-              0 0 0 4px rgba(232, 160, 76, 0.08);
-  animation: rail-stage-pulse 2.2s ease-in-out infinite;
+
+/* On rejection (click 2): top border RED, background red wash, blink
+   twice over ~900ms then settle. The blink animation overrides the
+   transition for the duration of the animation. */
+.pivot-slide.reject-shown .map-box-original {
+  border-top-color: var(--sem-risk);
+  background: rgba(192, 57, 43, 0.07);
+  animation: pivot-reject-blink 0.9s ease-in-out 1;
+}
+@keyframes pivot-reject-blink {
+  0%   { border-top-color: var(--amber-on-light); background: rgba(232, 160, 76, 0.04); }
+  20%  { border-top-color: var(--sem-risk);       background: rgba(192, 57, 43, 0.24); }
+  40%  { border-top-color: var(--amber-on-light); background: rgba(232, 160, 76, 0.04); }
+  60%  { border-top-color: var(--sem-risk);       background: rgba(192, 57, 43, 0.24); }
+  80%  { border-top-color: var(--amber-on-light); background: rgba(232, 160, 76, 0.04); }
+  100% { border-top-color: var(--sem-risk);       background: rgba(192, 57, 43, 0.07); }
 }
 
-/* ── Bottom positioning line ─────────────────────────────────────────── */
+/* REJECTED badge · sits next to "Original Request" eyebrow.
+   Hidden initially, fades in after the blink completes. */
+.rejected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px 4px 8px;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.45);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sem-risk);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.45s ease-out,
+              transform 0.45s cubic-bezier(.2, .7, .2, 1);
+}
+.rejected-badge svg { width: 14px; height: 14px; }
+.pivot-slide.reject-shown .rejected-badge {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.95s;     /* lands after the blink finishes */
+}
+
+/* Original chips · get strikethrough on rejection */
+.pivot-slide.reject-shown .map-tags-original .map-tag {
+  text-decoration: line-through;
+  text-decoration-color: var(--sem-risk);
+  text-decoration-thickness: 2px;
+  color: var(--l-muted);
+  opacity: 0.7;
+  transition-delay: 0.95s;
+}
+
+/* Rejection chips · the REASONS for rejection. Hidden initially;
+   the row expands (max-height) and the chips fade in after the blink. */
+.map-tags-rejection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(.2, .7, .2, 1),
+              margin-top 0.5s cubic-bezier(.2, .7, .2, 1),
+              opacity 0.4s ease-out;
+}
+.pivot-slide.reject-shown .map-tags-rejection {
+  max-height: 120px;
+  margin-top: 6px;
+  opacity: 1;
+  transition-delay: 1.05s;
+}
+.map-tag-risk {
+  border-color: rgba(192, 57, 43, 0.45);
+  background: rgba(192, 57, 43, 0.06);
+  color: var(--sem-risk);
+  font-weight: 700;
+}
+
+/* ── PIVOT connector · between LEFT and RIGHT boxes ─────────────────── */
+.pivot-connector {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.5s ease-out,
+              transform 0.5s cubic-bezier(.2, .7, .2, 1);
+}
+.pivot-connector-arrow {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 300;
+  color: var(--teal-700);
+  line-height: 1;
+}
+.pivot-connector-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.pivot-slide.new-shown .pivot-connector {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── RIGHT box · New Direction · teal accent, click 3 reveals ──────── */
+.map-box-new {
+  border-top-color: var(--teal-700);
+}
+.map-box-new .map-main { color: var(--teal-700); }
+
+.tick-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(60, 110, 61, 0.10);
+  border: 1px solid rgba(60, 110, 61, 0.45);
+  border-radius: 50%;
+  color: var(--teal-700);
+}
+.tick-icon svg { width: 14px; height: 14px; }
+
+.map-box-new .box-eyebrow {
+  color: var(--teal-700);
+}
+
+.map-tag-new {
+  border-color: rgba(60, 110, 61, 0.35);
+  background: rgba(60, 110, 61, 0.04);
+  color: var(--teal-700);
+}
+
+.pivot-slide.new-shown .map-box-new {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Bottom positioning line · ONE LINE on click 4 ───────────────── */
 .pivot-bottom {
   display: inline-block;
-  padding: 16px 32px;
+  padding: 14px 28px;
   border-top: 1px solid var(--l-hair-strong);
   border-bottom: 1px solid var(--l-hair-strong);
   font-family: var(--font-display);
-  font-size: var(--t-sub);
+  font-size: 26px;
   font-weight: 500;
   color: var(--l-ink);
-  line-height: 1.3;
+  line-height: 1.2;
   letter-spacing: -.005em;
   text-align: center;
-  max-width: 1200px;
+  white-space: nowrap;       /* forces ONE line as requested */
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.55s ease-out,
@@ -2420,7 +2706,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 90px;                /* was 40 — gives the ring breathing room
+                                from the lede above + bottom line below */
   width: 100%;
   height: 100%;
 }
@@ -2461,14 +2748,75 @@
    row, gaps create the orbital distance. The core is the visual anchor;
    the orbits are typographic, not boxed. */
 .itqan-system {
+  position: relative;
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: 320px 1fr 320px;
   grid-template-rows: auto 1fr auto;
-  gap: 28px 96px;
+  gap: 36px 96px;
   width: 100%;
-  max-width: 1280px;
+  max-width: 1380px;
   align-items: center;
   justify-items: center;
+}
+
+/* ── Cross-cutting BOUNDED COPILOT ring (Option A) ────────────────
+   Dashed teal pill enclosing the 4 pillars + the Itqān core. Reads:
+   "the copilot wraps around every pillar." The pseudo-element draws
+   the dashed border behind the grid; the label sits on top of the
+   ring (its background masks the dashed line behind the text). */
+.itqan-system::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: -52px;
+  right: -52px;
+  bottom: -40px;
+  border: 2.5px dashed var(--sem-valid);    /* was 1.8px teal-700 —
+                                                thicker + darker green
+                                                so the dashes read from
+                                                the back of the room */
+  border-radius: 96px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+/* Label sits on the BOTTOM edge of the ring (was top — was colliding
+   with the lede sentence above the grid). */
+.copilot-ring-label {
+  position: absolute;
+  bottom: -54px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 22px;
+  background: var(--l-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .20em;
+  text-transform: uppercase;
+  color: var(--teal-700);
+  white-space: nowrap;
+  line-height: 1;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.copilot-ring-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+}
+.copilot-ring-icon svg { width: 100%; height: 100%; }
+
+.itqan-slide.orbits-shown .itqan-system::before,
+.itqan-slide.orbits-shown .copilot-ring-label {
+  opacity: 1;
+  transition-delay: 480ms;       /* lands AFTER the 4 orbits cascade */
 }
 .orbit-nw { grid-column: 1; grid-row: 1; }
 .orbit-ne { grid-column: 3; grid-row: 1; }
@@ -2546,11 +2894,13 @@
 }
 .orbit-name {
   font-family: var(--font-display);
-  font-size: var(--t-sub);
+  font-size: 24px;
   font-weight: 600;
   color: var(--l-ink);
   letter-spacing: -.008em;
-  line-height: 1.15;
+  line-height: 1.18;
+  max-width: 290px;
+  text-align: center;
 }
 .orbit-service {
   font-family: var(--font-mono);
@@ -2567,10 +2917,10 @@
   opacity: 1;
   transform: translateY(0);
 }
-.itqan-slide.orbits-shown .orbit-nw { transition-delay:   0ms; animation: orbit-float 7s ease-in-out 1500ms infinite; }
-.itqan-slide.orbits-shown .orbit-ne { transition-delay: 130ms; animation: orbit-float 7s ease-in-out 1900ms infinite; }
-.itqan-slide.orbits-shown .orbit-se { transition-delay: 260ms; animation: orbit-float 7s ease-in-out 2300ms infinite; }
-.itqan-slide.orbits-shown .orbit-sw { transition-delay: 390ms; animation: orbit-float 7s ease-in-out 2700ms infinite; }
+.itqan-slide.orbits-shown .orbit-nw { transition-delay:   0ms; }
+.itqan-slide.orbits-shown .orbit-ne { transition-delay: 130ms; }
+.itqan-slide.orbits-shown .orbit-se { transition-delay: 260ms; }
+.itqan-slide.orbits-shown .orbit-sw { transition-delay: 390ms; }
 @keyframes orbit-float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-5px); }
@@ -2693,21 +3043,35 @@
   transition: opacity 0.55s ease-out,
               transform 0.55s cubic-bezier(.2, .7, .2, 1);
 }
-.roadmap-stage .stage-num {
-  font-family: var(--font-mono);
-  font-size: 56px;
-  font-weight: 500;
+.roadmap-stage .stage-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(232, 160, 76, 0.08);
+  border: 1.4px solid rgba(232, 160, 76, 0.45);
   color: var(--amber-on-light);
-  letter-spacing: -.02em;
-  line-height: 1;
 }
+.roadmap-stage .stage-icon svg { width: 32px; height: 32px; }
+
 .roadmap-stage .stage-name {
   font-family: var(--font-display);
-  font-size: var(--t-sub);
+  font-size: 28px;
   font-weight: 600;
   color: var(--l-ink);
   letter-spacing: -.006em;
   line-height: 1.15;
+}
+.roadmap-stage .stage-service {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: .04em;
+  line-height: 1;
+  margin-top: -4px;
 }
 .roadmap-arrow {
   flex: 0 0 auto;
@@ -2808,7 +3172,9 @@
 .topo-lede .brand-name { font-family: var(--font-mono); font-weight: 600; }
 .topo-lede .brand-name .ar { color: var(--amber-on-light); }
 
-.svc-arch-slide.sentence-shown .topo-lede,
+/* The lede container itself fades up on FIRST click (entry-shown).
+   Per-clause spans inside reveal with their own state classes below. */
+.svc-arch-slide.entry-shown .topo-lede,
 .bacab-slide.sentence-shown .cutaway-lede,
 .mgr-core-slide.sentence-shown .spine-lede,
 .erd-slide.sentence-shown .live-lede,
@@ -2862,8 +3228,19 @@
   transform: none;
 }
 
-/* Tile reveal: single tile inside its layer (UI / IAM) animates with
-   the corresponding `*-shown` class. Backends stagger inside. */
+/* Per-clause lede reveal — each emph-phrase fades in with its layer beat. */
+.lede-part {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.svc-arch-slide.entry-shown    .lede-entry    { opacity: 1; }
+.svc-arch-slide.access-shown   .lede-access   { opacity: 1; }
+.svc-arch-slide.backends-shown .lede-backends { opacity: 1; }
+
+/* Tile reveal · 3-click sequence
+   click 1 (entry-shown)    → UI tile + UI layer-tag + UI tile-role + UI tile-icon
+   click 2 (access-shown)   → IAM tile + IAM layer-tag + role + icon + future-tag + edge-1
+   click 3 (backends-shown) → 3 backend tiles + roles + icons + backend layer-tag + edge-2 + data row + external strip */
 .topo-layer-ui  .topo-tile,
 .topo-layer-iam .topo-tile {
   opacity: 0;
@@ -2871,50 +3248,57 @@
   transition: opacity 0.65s ease-out,
               transform 0.65s cubic-bezier(.2, .7, .2, 1);
 }
-.svc-arch-slide.ui-shown  .topo-layer-ui  .topo-tile  { opacity: 1; transform: translateY(0); }
-.svc-arch-slide.iam-shown .topo-layer-iam .topo-tile  { opacity: 1; transform: translateY(0); }
+.svc-arch-slide.entry-shown  .topo-layer-ui  .topo-tile { opacity: 1; transform: translateY(0); }
+.svc-arch-slide.access-shown .topo-layer-iam .topo-tile { opacity: 1; transform: translateY(0); }
 
-/* External LLM strip — its own layer fades in as a single beat */
+/* External LLM strip — its own beat (click 5, .ext-shown) */
 .topo-layer-ext {
   opacity: 0;
   transform: translateY(18px);
   transition: opacity 0.7s ease-out,
               transform 0.7s cubic-bezier(.2, .7, .2, 1);
-  margin-top: 36px;                   /* clear separation from the data row above */
+  margin-top: 36px;
 }
+.svc-arch-slide.ext-shown .topo-layer-ext { opacity: 1; transform: translateY(0); }
 
-/* CONTEXT fill-in beat — the eyebrows, role text, chips, future tags,
-   and connecting arrows are all hidden until the speaker has named the
-   service boxes (clicks 2-4), then context-shown reveals them together. */
+/* Layer-tags, tile-roles, tile-icons, future-tags, topo-edges — bound
+   to their PARENT LAYER's reveal click so context lands with each box. */
 .layer-tag,
 .tile-role,
 .tile-icon,
-.svc-chips,
-.svc-chip,
 .future-tag,
 .topo-edge {
   opacity: 0;
   transition: opacity 0.55s ease-out;
 }
-.svc-arch-slide.context-shown .layer-tag,
-.svc-arch-slide.context-shown .tile-role,
-.svc-arch-slide.context-shown .tile-icon,
-.svc-arch-slide.context-shown .svc-chips,
-.svc-arch-slide.context-shown .svc-chip,
-.svc-arch-slide.context-shown .future-tag,
-.svc-arch-slide.context-shown .topo-edge {
-  opacity: 1;
-}
+/* entry-shown (click 1) reveals UI context */
+.svc-arch-slide.entry-shown .topo-layer-ui .layer-tag,
+.svc-arch-slide.entry-shown .topo-layer-ui .tile-role,
+.svc-arch-slide.entry-shown .topo-layer-ui .tile-icon { opacity: 1; }
+/* access-shown (click 2) reveals IAM context + edge-1 (UI→IAM arrow) */
+.svc-arch-slide.access-shown .topo-layer-iam .layer-tag,
+.svc-arch-slide.access-shown .topo-layer-iam .tile-role,
+.svc-arch-slide.access-shown .topo-layer-iam .tile-icon,
+.svc-arch-slide.access-shown .topo-layer-iam .future-tag,
+.svc-arch-slide.access-shown .topo-edge.edge-1 { opacity: 1; }
+/* backends-shown (click 3) reveals backend context + edge-2 (IAM→backends arrow) */
+.svc-arch-slide.backends-shown .topo-layer-backends .layer-tag,
+.svc-arch-slide.backends-shown .topo-layer-backends .tile-role,
+.svc-arch-slide.backends-shown .topo-layer-backends .tile-icon,
+.svc-arch-slide.backends-shown .topo-edge.edge-2 { opacity: 1; }
+/* ext-shown (click 5) reveals the EXTERNAL DEPENDENCY layer-tag */
+.svc-arch-slide.ext-shown .topo-layer-ext .layer-tag { opacity: 1; }
+
 .layer-tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
-  font-size: 15px;                     /* up from 13 → more visible */
-  font-weight: 500;
+  font-size: 17px;                     /* up from 15 — bigger overall */
+  font-weight: 600;
   letter-spacing: .22em;
   text-transform: uppercase;
-  color: var(--teal-900);              /* up from muted → reads as a section marker */
+  color: var(--teal-900);
   line-height: 1;
 }
 .layer-tag .layer-sub {
@@ -2941,17 +3325,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   color: var(--l-muted);
 }
 .topo-tile .tile-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
 }
 .topo-tile .tile-name {
   font-family: var(--font-mono);
-  font-size: var(--t-caption);
+  font-size: 22px;            /* up from 20 (t-caption) */
   font-weight: 600;
   letter-spacing: .04em;
   color: var(--l-ink);
@@ -2959,7 +3343,7 @@
 }
 .topo-tile .tile-role {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 17px;            /* up from 15 */
   color: var(--l-muted);
   line-height: 1.4;
 }
@@ -3010,13 +3394,13 @@
 }
 .topo-layer-ui  .topo-tile .tile-name,
 .topo-layer-iam .topo-tile .tile-name {
-  font-size: 20px;
+  font-size: 24px;            /* up from 20 */
   font-weight: 600;
   letter-spacing: 0;
 }
 .topo-layer-ui  .topo-tile .tile-role,
 .topo-layer-iam .topo-tile .tile-role {
-  font-size: 14px;
+  font-size: 17px;            /* up from 14 */
   color: var(--l-muted);
 }
 
@@ -3076,7 +3460,7 @@
   gap: 12px;
   padding: 2px 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;            /* up from 12 */
   font-weight: 500;
   letter-spacing: .18em;
   text-transform: uppercase;
@@ -3087,7 +3471,7 @@
 .topo-edge .edge-arrow {
   color: var(--amber-on-light);
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 24px;            /* up from 18 */
   font-weight: 300;
 }
 
@@ -3125,7 +3509,7 @@
 }
 .ext-strip .ext-strip-name {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: 20px;            /* up from 17 */
   font-weight: 600;
   color: var(--l-ink);
   letter-spacing: .02em;
@@ -3193,17 +3577,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+.data-tile .data-icon svg {
   width: 26px;
   height: 26px;
 }
-.data-tile .data-icon svg {
-  width: 22px;
-  height: 22px;
-  /* colour follows the owner stripe via the .data-* selectors below */
-}
 .data-tile .data-name {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 17px;            /* up from 15 */
   font-weight: 600;
   letter-spacing: .04em;
   color: var(--l-ink);
@@ -3253,8 +3636,8 @@
   opacity: 0;
   transition: opacity 0.55s ease-out;
 }
-.svc-arch-slide.links-shown .data-tile::before,
-.svc-arch-slide.links-shown .data-tile::after { opacity: 1; }
+.svc-arch-slide.data-shown .data-tile::before,
+.svc-arch-slide.data-shown .data-tile::after { opacity: 1; transition-delay: 380ms; }
 .data-opdb::before,
 .data-files::before  { border-left-color: var(--amber-on-light); }
 .data-intdb::before  { border-left-color: var(--teal-700); }
@@ -3285,7 +3668,7 @@
    starts at opacity 0). The UI/IAM/backends tiles handle their own
    reveal animations above; context-shown reveals labels/arrows/chips;
    data-shown reveals the data tiles; links-shown reveals connectors. */
-.svc-arch-slide.ext-shown .topo-layer-ext { opacity: 1; transform: translateY(0); }
+/* External strip now reveals with .backends-shown — see rule earlier in this section. */
 
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -3746,6 +4129,257 @@
 .mgr-core-slide.boundary-shown .spine-boundary { opacity: 1; transform: translateY(0); }
 
 /* ══════════════════════════════════════════════════════════════════════
+   §03.2.a · Domain Model — rfq_manager_ms ERD
+   ──────────────────────────────────────────────────────────────────────
+   Three-entity chain (Workflow → RFQ → Stage) with 1—N cardinality,
+   then a 4-entity stack (Subtask · Note · File · Reminder) fanning off
+   Stage. RFQ is highlighted (amber border / amber-tinted fill) because
+   it is the lifecycle record the manager owns. Boundary line at the
+   bottom — kept verbatim from the previous Manager-Core slide.
+   3-click reveal: chain → children → boundary.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.dm-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 0 64px;
+}
+
+/* ── Canvas — chain | bridge | children, all in one flex row ───── */
+
+.dm-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  max-width: 1700px;
+}
+
+/* ── Main chain: Workflow → RFQ → Stage ──────────────────────────── */
+
+.dm-chain {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.dm-entity {
+  width: 240px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 26px 18px;
+  background: var(--l-surface);
+  border: 1.8px solid var(--l-hair-strong);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(28, 24, 19, 0.07);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+.dm-entity-core {
+  border-color: var(--amber-on-light);
+  border-width: 2.4px;
+  background: rgba(160, 106, 24, 0.08);
+  box-shadow: 0 6px 22px rgba(160, 106, 24, 0.18);
+}
+
+.dm-e-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 110, 61, 0.08);
+  border-radius: 12px;
+  color: var(--teal-700);
+  margin-bottom: 6px;
+}
+.dm-entity-core .dm-e-icon {
+  background: rgba(160, 106, 24, 0.14);
+  color: var(--amber-on-light);
+}
+.dm-e-icon svg { width: 36px; height: 36px; }
+
+.dm-e-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.dm-entity-core .dm-e-name { color: var(--amber-on-light); }
+
+.dm-e-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Connector between two entities — cardinality label + arrow line. */
+.dm-conn {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.dm-card {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.dm-arrow {
+  width: 100%;
+  height: 10px;
+  position: relative;
+}
+.dm-arrow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 12px;
+  height: 1.8px;
+  background: var(--l-hair-strong);
+  transform: translateY(-50%);
+}
+.dm-arrow::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid var(--l-hair-strong);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  transform: translateY(-50%);
+}
+
+/* ── Bridge — fan-out SVG between Stage and the 4 children ──────── */
+
+.dm-bridge {
+  position: relative;
+  width: 140px;
+  height: 410px;          /* matches children stack total height */
+  flex: 0 0 auto;
+}
+.dm-bridge-svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.dm-fan {
+  fill: none;
+  stroke: var(--l-hair-strong);
+  stroke-width: 1.8;
+  stroke-dasharray: 700;
+  stroke-dashoffset: 700;
+  transition: stroke-dashoffset 0.9s cubic-bezier(.2,.7,.2,1) 0.2s;
+}
+.dm-bridge-card {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--l-bg);
+  padding: 3px 8px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease-out 0.3s;
+  z-index: 2;
+}
+
+/* ── Children stack — Subtask · Note · File · Reminder ───────────── */
+
+.dm-children {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.dm-child {
+  width: 240px;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 22px;
+  background: var(--l-surface);
+  border: 1.6px solid var(--l-hair-strong);
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(28, 24, 19, 0.06);
+  opacity: 0;
+  transform: translateX(-14px);
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+.dm-c-icon {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 110, 61, 0.08);
+  border-radius: 9px;
+  color: var(--teal-700);
+}
+.dm-c-icon svg { width: 26px; height: 26px; }
+.dm-c-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--l-ink);
+  line-height: 1;
+}
+
+/* ── State 1 — model reveal: every entity + connector at once. ───── */
+.dm-slide.model-shown .dm-entity,
+.dm-slide.model-shown .dm-conn,
+.dm-slide.model-shown .dm-child {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dm-slide.model-shown .dm-child   { transform: translateX(0); }
+.dm-slide.model-shown .dm-fan     { stroke-dashoffset: 0; }
+.dm-slide.model-shown .dm-bridge-card { opacity: 1; }
+
+/* ── Boundary — re-uses the old .spine-boundary block style ──────── */
+
+.dm-slide.boundary-shown .spine-boundary {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
    §03.2.b · Live Workflow Object
    ══════════════════════════════════════════════════════════════════════ */
 .erd-slide .slide-content.center-band {
@@ -4082,7 +4716,9 @@
   margin: 0 auto;
 }
 
-.rail-arrow {
+/* Scoped to .wf-exec-slide so it doesn't clobber the 01.1.b lifecycle
+   rail's .rail-arrow rule (same selector specificity, later wins). */
+.wf-exec-slide .rail-arrow {
   align-self: center;
   flex: 0 0 auto;
   font-family: var(--font-mono);
@@ -6427,17 +7063,16 @@
 
 
 /* ============================================================================
-   03.2.b · Manager Lifecycle Model — Live Workflow Object (rebuilt)
+   03.2.b · Controlled Lifecycle — Before/After comparison (rebuilt)
    ----------------------------------------------------------------------------
-   New framing: "The manager turns each RFQ into a controlled workflow,
-   with one active stage at a time."
-   3 zones stacked vertically:
-     1) WORKFLOW TEMPLATE — reusable stage sequence (6 stages)
-     2) RFQ INSTANCE — created from template, has a current stage
-     3) ACTIVE STAGE CONTEXT — attachments to the active stage
-   Active stage (Estimation) gets amber treatment across all 3 zones.
-   Small technical strip at the bottom names the data model relationships.
-   3-click reveal: template → instance → context.
+   Narrative: BEFORE Itqān, contributors scatter across stages with no
+   single source of truth. AFTER Itqān, they converge on the active stage,
+   that gathering becomes a controlled RFQ instance, and the active stage
+   carries its own context.
+   3-click reveal:
+     1) merged-shown   — users converge to Validation, eyebrow swaps red→green
+     2) instance-shown — RFQ Instance box wraps the cluster, headline lands
+     3) context-shown  — Active Stage Context chips + supporting subline
    ============================================================================ */
 
 .manager-workflow-slide .slide-content {
@@ -6445,123 +7080,131 @@
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
-  gap: 28px;
+  gap: 22px;
 }
 
+/* ── Top message slot — eyebrow (state 0/1) overlaps headline (state 2+) ── */
+
+.mw-msg-slot {
+  position: relative;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Eyebrow message — pill-style state caption. */
+.mw-eb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-radius: 10px;
+  border: 1.4px solid currentColor;
+  background: var(--l-surface);
+  max-width: 1300px;
+  opacity: 0;
+  transition: opacity 0.45s ease-out;
+}
+.mw-eb-tag {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 7px 14px;
+  border-radius: 4px;
+  color: var(--l-surface);
+  line-height: 1;
+}
+.mw-eb-text {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.002em;
+  line-height: 1.35;
+  color: var(--l-ink);
+}
+
+.mw-eb-before {
+  color: var(--sem-risk);
+  background: rgba(192, 57, 43, 0.04);
+}
+.mw-eb-after {
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.04);
+}
+/* Tag pill background set per variant so currentColor on the parent
+   does not collapse against the tag's own color. */
+.mw-eb-before .mw-eb-tag { background: var(--sem-risk); }
+.mw-eb-after  .mw-eb-tag { background: var(--teal-700); }
+.mw-eb-before .mw-eb-text strong,
+.mw-eb-after  .mw-eb-text strong { font-weight: 700; }
+
+/* Empty entry: nothing visible until first click.
+   After before-shown: BEFORE eyebrow visible.
+   After merged-shown: AFTER eyebrow swaps in.
+   After instance-shown: both fade out, headline takes over. */
+.manager-workflow-slide.before-shown .mw-eb-before { opacity: 1; }
+.manager-workflow-slide.merged-shown .mw-eb-before { opacity: 0; }
+.manager-workflow-slide.merged-shown .mw-eb-after  { opacity: 1; }
+.manager-workflow-slide.instance-shown .mw-eb-after { opacity: 0; }
+
+/* Headline — only visible from state 2 onward. */
 .mw-headline {
-  margin-top: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
   font-size: var(--t-h3);
   color: var(--l-ink);
   font-weight: 500;
   letter-spacing: -0.005em;
   line-height: 1.25;
   text-align: center;
+  max-width: 1400px;
+  opacity: 0;
+  transition: opacity 0.5s ease-out 0.15s;
 }
 .mw-headline .emph {
   color: var(--amber-on-light);
   font-weight: 600;
 }
+.manager-workflow-slide.instance-shown .mw-headline { opacity: 1; }
 
-/* Small supporting line under the headline — the transition-validation
-   point. Modest, italic, muted — supports the headline without competing. */
-.mw-subline {
-  margin: -8px 0 0 0;
-  font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--l-muted);
-  font-style: italic;
-  text-align: center;
-  line-height: 1.4;
-}
+/* ── Stage area — rail + users layer + RFQ Instance overlay ──────── */
 
-/* ── 3 zones stacked vertically ───────────────────────────────────── */
-
-.mw-zones {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 1500px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.mw-zone {
+.mw-stage {
   position: relative;
-  background: var(--l-surface);
-  border: 1px solid var(--l-hair-strong);
-  border-radius: 6px;
-  padding: 18px 26px;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2,.7,.2,1);
+  width: 100%;
+  max-width: 1500px;
+  margin: 28px auto 0;
+  min-height: 260px;
 }
 
-/* Central lifecycle spine — a vertical amber thread descending through
-   the gaps between zones. Prominent between zones 1→2 (the "Estimation
-   is active" moment); subtler between zones 2→3 (the attachments flow). */
-.mw-template::after,
-.mw-instance::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 16px;
-  background: var(--amber-on-light);
-  pointer-events: none;
-}
-.mw-template::after {
-  width: 2.6px;
-}
-.mw-instance::after {
-  width: 1.6px;
-  opacity: 0.55;
-}
-
-.manager-workflow-slide.template-shown .mw-template,
-.manager-workflow-slide.instance-shown .mw-instance,
-.manager-workflow-slide.context-shown .mw-context {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.zone-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--teal-700);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-.zone-sub {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--l-muted);
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* ── Zone 1: Workflow Template (6 stages in a row) ────────────────── */
-
-.template-stages {
+/* The 6-stage workflow rail. Hidden on empty entry; fades in on click 1. */
+.mw-rail {
   display: flex;
   gap: 10px;
   align-items: stretch;
   justify-content: center;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
+.manager-workflow-slide.before-shown .mw-rail { opacity: 1; }
 
-.t-stage {
+.mw-tile {
   flex: 1;
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 500;
   color: var(--l-ink);
   background: var(--l-surface);
@@ -6572,7 +7215,7 @@
   line-height: 1.2;
 }
 
-.t-stage-active {
+.mw-tile-active {
   position: relative;
   border-color: var(--amber-on-light);
   border-width: 2.4px;
@@ -6582,84 +7225,288 @@
   box-shadow: 0 4px 14px rgba(28, 24, 19, 0.09);
 }
 
-/* Small ACTIVE chip — corner badge on the active stage tile */
-.t-active-chip {
+.mw-active-chip {
   position: absolute;
-  top: -9px;
+  top: -10px;
   right: -8px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--l-surface);
   background: var(--amber-on-light);
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
   line-height: 1;
   box-shadow: 0 2px 6px rgba(28, 24, 19, 0.16);
 }
 
-/* ── Zone 2: RFQ Instance (current stage state) ───────────────────── */
+/* ── Users layer — 10 silhouette dots positioned per stage ──────── */
 
-.instance-state {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 14px;
-  font-family: var(--font-display);
-  padding: 6px 0;
+.mw-users {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  margin-top: 60px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.5s ease-out 0.1s;
 }
+.manager-workflow-slide.before-shown .mw-users { opacity: 1; }
 
-.i-label {
-  font-size: 18px;
+.mw-u {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.4px solid var(--l-hair-strong);
+  background: var(--l-surface);
   color: var(--l-muted);
-  font-weight: 500;
+  transform: translateX(-50%);
+  transition: left 0.7s cubic-bezier(.2,.7,.2,1),
+              top 0.7s cubic-bezier(.2,.7,.2,1),
+              border-color 0.5s ease,
+              color 0.5s ease;
+}
+/* Head */
+.mw-u::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+}
+/* Shoulders */
+.mw-u::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 12px;
+  border-radius: 11px 11px 2px 2px;
+  background: currentColor;
 }
 
-.i-value {
-  font-size: 26px;
+/* CEO dot — risk-tinted in state 0, persists with a tag pill. */
+.mw-u-ceo {
+  border-color: var(--sem-risk);
+  background: rgba(192, 57, 43, 0.06);
+  color: var(--sem-risk);
+}
+.mw-u-tag {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  color: var(--sem-risk);
+  background: var(--l-surface);
+  padding: 3px 6px;
+  border-radius: 3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── State 0 positions — scattered across wrong stages ──────────── */
+/* Rail stage centers (1500px wide, 6 tiles): 8.33, 25, 41.67, 58.33, 75, 91.67 */
+
+/* CEO under Review (25%) */
+.mw-u-ceo  { left: 25%;    top: 8px; }
+
+/* 3 users under Estimation (cluster around 41.67%) */
+.mw-u-est1 { left: 37%;    top: 8px; }
+.mw-u-est2 { left: 41.67%; top: 8px; }
+.mw-u-est3 { left: 46.33%; top: 8px; }
+
+/* 6 users under Validation (2x3 grid around 58.33%) */
+.mw-u-val1 { left: 53.67%; top: 8px; }
+.mw-u-val2 { left: 58.33%; top: 8px; }
+.mw-u-val3 { left: 63%;    top: 8px; }
+.mw-u-val4 { left: 53.67%; top: 60px; }
+.mw-u-val5 { left: 58.33%; top: 60px; }
+.mw-u-val6 { left: 63%;    top: 60px; }
+
+/* ── State 1 positions — all 10 converge under Validation in 2×5 ─── */
+.manager-workflow-slide.merged-shown .mw-u-ceo  { left: 49.0%;  top: 8px; }
+.manager-workflow-slide.merged-shown .mw-u-est1 { left: 53.67%; top: 8px; }
+.manager-workflow-slide.merged-shown .mw-u-est2 { left: 58.33%; top: 8px; }
+.manager-workflow-slide.merged-shown .mw-u-est3 { left: 63.0%;  top: 8px; }
+.manager-workflow-slide.merged-shown .mw-u-val1 { left: 67.67%; top: 8px; }
+.manager-workflow-slide.merged-shown .mw-u-val2 { left: 49.0%;  top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val3 { left: 53.67%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val4 { left: 58.33%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val5 { left: 63.0%;  top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val6 { left: 67.67%; top: 60px; }
+
+/* After convergence, non-CEO dots warm to teal (single source of truth). */
+.manager-workflow-slide.merged-shown .mw-u:not(.mw-u-ceo) {
+  border-color: var(--teal-700);
+  color: var(--teal-700);
+}
+
+/* Once the cluster converges, the CEO dot turns into a solid red badge
+   with "CEO" centered inside (silhouette fades). The label stays visible
+   throughout but never crowds the box or row 2 of the cluster. */
+.mw-u-tag {
+  transition: bottom 0.5s ease, padding 0.5s ease,
+              background 0.5s ease, color 0.5s ease,
+              letter-spacing 0.5s ease, font-size 0.5s ease;
+}
+.mw-u-ceo::before,
+.mw-u-ceo::after {
+  transition: opacity 0.4s ease;
+}
+.manager-workflow-slide.merged-shown .mw-u-ceo {
+  background: var(--sem-risk);
+}
+.manager-workflow-slide.merged-shown .mw-u-ceo::before,
+.manager-workflow-slide.merged-shown .mw-u-ceo::after {
+  opacity: 0;
+}
+.manager-workflow-slide.merged-shown .mw-u-tag {
+  bottom: 11px;             /* centered inside the 38px dot */
+  background: transparent;
+  color: var(--l-surface);
+  padding: 0;
+  letter-spacing: 0.10em;
+  font-size: 10px;
+}
+
+/* ── RFQ Instance box — appears state 2, wraps the converged cluster.
+   Labels sit on the box's top edge (tab style) so they don't overlap dots. */
+
+.mw-rfq-box {
+  position: absolute;
+  top: 110px;
+  left: 40%;
+  width: 36%;
+  height: 112px;
+  border: 1.6px dashed var(--amber-on-light);
+  border-radius: 10px;
+  background: rgba(160, 106, 24, 0.05);
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: center top;
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(.2,.7,.2,1);
+  z-index: 1;
+  pointer-events: none;
+}
+.manager-workflow-slide.instance-shown .mw-rfq-box {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mw-rfq-tag {
+  position: absolute;
+  top: -24px;
+  left: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--l-surface);
+  background: var(--amber-on-light);
+  padding: 5px 12px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.mw-rfq-cur {
+  position: absolute;
+  top: -24px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--l-ink);
+  background: var(--l-surface);
+  border: 1.4px solid var(--amber-on-light);
+  padding: 5px 12px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.mw-rfq-cur strong {
   color: var(--amber-on-light);
   font-weight: 700;
-  letter-spacing: -0.005em;
 }
 
-/* ── Zone 3: Active Stage Context (6 attachment chips) ────────────── */
+/* ── Active Stage Context — state 3 ─────────────────────────────── */
 
-.context-chips {
+.mw-context-wrap {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(.2,.7,.2,1);
+}
+.manager-workflow-slide.context-shown .mw-context-wrap {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mw-ctx-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.mw-ctx-sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--l-muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.mw-ctx-chips {
+  display: flex;
+  gap: 14px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.c-chip {
+.mw-ctx-chip {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--teal-700);
   background: rgba(60, 110, 61, 0.05);
   border: 1px solid var(--teal-700);
-  padding: 8px 18px;
+  padding: 10px 22px;
   border-radius: 999px;
   line-height: 1;
 }
 
-/* ── Technical strip (data model — 2 lines, more readable) ──────────── */
-
-.mw-tech-strip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+.mw-subline {
+  margin: 6px 0 0 0;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
   color: var(--l-muted);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  line-height: 1.3;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
 }
 
 
@@ -6694,6 +7541,15 @@
   letter-spacing: -0.01em;
   line-height: 1.1;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+/* Empty entry: headline waits for click 1 (which also reveals scatter). */
+.zero-slide.scatter-shown .zero-headline { opacity: 1; }
+
+.zero-headline .emph-risk {
+  color: var(--sem-risk);
+  font-weight: 700;
 }
 
 /* ── The visual stage: scatter on left, workbook on right ──────────── */
@@ -6758,12 +7614,12 @@
   right: 0;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--l-muted);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.2;
   opacity: 0;
   transition: opacity 0.55s ease-out;
   transition-delay: 480ms;
@@ -6797,13 +7653,13 @@
 }
 .np-label {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--teal-700);
   background: rgba(60, 110, 61, 0.08);
-  border: 1px solid var(--teal-700);
-  padding: 5px 13px;
-  border-radius: 3px;
+  border: 1.4px solid var(--teal-700);
+  padding: 7px 16px;
+  border-radius: 4px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   line-height: 1;
@@ -6858,15 +7714,15 @@
 
 /* Workbook caption — names the architectural failure point in teal */
 .wb-caption {
-  margin-top: 16px;
+  margin-top: 18px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--teal-700);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   text-align: center;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* ── Key line: the diagnosis (lands at click 3, in ink) ────────────── */
@@ -6878,11 +7734,15 @@
   color: var(--l-ink);
   text-align: center;
   letter-spacing: -0.005em;
-  line-height: 1.3;
+  line-height: 1.35;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.55s ease-out,
               transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.zero-key-line .emph-risk {
+  color: var(--sem-risk);
+  font-weight: 700;
 }
 .zero-slide.key-shown .zero-key-line {
   opacity: 1;
@@ -6919,7 +7779,11 @@
   letter-spacing: -0.01em;
   line-height: 1.1;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
+/* Empty entry: headline lands with the main flow on click 1. */
+.memory-slide.flow-shown .memory-headline { opacity: 1; }
 
 /* ── MAIN FLOW (the visual hero) ───────────────────────────────────── */
 
@@ -6959,30 +7823,59 @@
   align-self: center;
 }
 
-/* Source: 4 past artifacts in a 2×2 grid, label below */
-.flow-source { width: 220px; }
+/* Labeled arrow: small uppercase tag above the arrow symbol — names
+   the intelligence step that turns memory into briefings. */
+.flow-arrow-labeled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+.flow-arrow-labeled .arrow-tag {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.flow-arrow-labeled .arrow-symbol {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--teal-700);
+  line-height: 1;
+}
+
+/* Source: 4 past artifacts in a 2×2 grid, label below.
+   Column is widened so the label fits on ONE LINE. */
+.flow-source { width: 380px; }
 .source-tiles {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  width: 100%;
+  width: 188px;          /* keeps tiles tight; column is wider for the label */
+  margin: 0 auto;
 }
 .source-tile {
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   justify-self: center;
   color: var(--l-muted);
 }
 .source-tile svg { width: 100%; height: 100%; display: block; }
 .source-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--l-muted);
-  letter-spacing: 0.20em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 /* MEMORY STORE — the hero. Sharp ink frame, teal header, populated cells,
@@ -6996,9 +7889,9 @@
 .store-header {
   background: var(--teal-700);
   color: var(--l-surface);
-  padding: 11px 18px;
+  padding: 13px 20px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -7051,20 +7944,20 @@
 }
 .op-label {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--teal-700);
   background: rgba(60, 110, 61, 0.08);
-  border: 1px solid var(--teal-700);
-  padding: 4px 11px;
-  border-radius: 3px;
+  border: 1.4px solid var(--teal-700);
+  padding: 6px 14px;
+  border-radius: 4px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   line-height: 1;
 }
 .op-arrow {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--teal-700);
   line-height: 0.9;
@@ -7080,9 +7973,9 @@
 .briefing-header {
   background: var(--teal-700);
   color: var(--l-surface);
-  padding: 7px 12px;
+  padding: 9px 14px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -7124,29 +8017,29 @@
 }
 .future-header {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--teal-700);
   letter-spacing: 0.20em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .future-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
 }
 .future-chip {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 500;
   color: var(--l-muted);
   border: 1px solid var(--l-hair-strong);
-  border-radius: 3px;
-  padding: 6px 14px;
+  border-radius: 4px;
+  padding: 8px 16px;
   background: var(--l-surface);
   line-height: 1.2;
 }
@@ -7155,7 +8048,7 @@
 
 .memory-grounding {
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 500;
   color: var(--l-ink);
   text-align: center;
@@ -7172,13 +8065,81 @@
 .grounding-prefix {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--teal-700);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   margin-right: 10px;
   vertical-align: 1px;
+}
+
+/* ── BENEFITS RIBBON — adjectives for the team's estimating decisions
+   once memory + insights are in place. Ribbon header frames them so
+   they don't read as standalone features. */
+
+.memory-benefits-wrap {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out 0.2s,
+              transform 0.55s cubic-bezier(.2,.7,.2,1) 0.2s;
+}
+.memory-slide.flow-shown .memory-benefits-wrap {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.benefits-header {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.memory-benefits {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.benefit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  background: var(--l-surface);
+  border: 1.6px solid var(--teal-700);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(28, 24, 19, 0.04);
+}
+.benefit-icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-700);
+}
+.benefit-icon svg { width: 26px; height: 26px; }
+.benefit-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: -0.005em;
+  line-height: 1;
 }
 
 
@@ -7330,47 +8291,140 @@
   line-height: 1;
 }
 
-.ws-zone-content {
+/* ── ROW PILLS · Manager & Intelligence columns ────────────────────
+   Each row is a soft-tinted pill (warm cream tint, no border between).
+   Label LEFT (mono uppercase), value RIGHT (display, semantic colour). */
+
+.ws-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
-
-.ws-item {
-  position: relative;
-  padding-left: 18px;
-  font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--l-ink);
-  line-height: 1.4;
+.ws-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(160, 106, 24, 0.05);
+  border-radius: 5px;
+  gap: 14px;
 }
-.ws-item::before {
-  content: "·";
-  position: absolute;
-  left: 2px;
-  top: -4px;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--teal-700);
+.ws-row-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--l-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   line-height: 1;
 }
+.ws-row-value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--l-ink);
+  text-align: right;
+  line-height: 1;
+}
+.ws-row-value.ws-v-amber { color: var(--amber-on-light); }
+.ws-row-value.ws-v-risk  { color: var(--sem-risk); }
+.ws-row-value.ws-v-file {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
 
-/* ── Footer · single quiet line beneath the frame ─────────────────── */
+/* ── CHAT · Copilot column ─────────────────────────────────────────
+   Meta line at top (scope/mode), user bubble right-aligned,
+   bot bubble left-aligned with teal citation pill inside. */
+
+.ws-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 2px;
+}
+.ws-chat-meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--l-muted);
+  letter-spacing: 0.12em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.ws-chat-msg {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 10px 16px;
+  max-width: 90%;
+  color: var(--l-ink);
+}
+.ws-chat-user {
+  align-self: flex-end;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 12px 12px 2px 12px;
+}
+.ws-chat-bot {
+  align-self: stretch;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 12px 12px 12px 2px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.ws-cite {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.10);
+  border: 1px solid rgba(60, 110, 61, 0.35);
+  padding: 3px 8px 3px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  line-height: 1;
+}
+.ws-cite-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+}
+
+/* ── Footer · single line beneath the frame, with semantic emphasis ─ */
 
 .ws-footer {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 500;
-  font-style: italic;
-  color: var(--l-muted);
+  color: var(--l-ink);
   text-align: center;
   line-height: 1.4;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.55s ease-out,
               transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.ws-footer .ws-emph {
+  color: var(--l-ink);
+  font-weight: 700;
+}
+.ws-footer .ws-emph-amber {
+  color: var(--amber-on-light);
+  font-weight: 700;
 }
 .workspace-slide.show .ws-footer {
   opacity: 1;
@@ -7407,19 +8461,19 @@
   line-height: 1.1;
   text-align: center;
 }
+.lens-headline .lens-amber {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
 
-/* ── Platform container — one shared frame holds three role lenses ── */
+/* ── Lens platform — 3 detached cards in a row (was one shared frame) */
 
 .lens-platform {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  gap: 28px;
   width: 100%;
   max-width: 1500px;
-  background: var(--l-surface);
-  border: 1.4px solid var(--l-hair-strong);
-  border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(28, 24, 19, 0.10);
-  overflow: hidden;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.6s ease-out,
@@ -7430,88 +8484,170 @@
   transform: translateY(0);
 }
 
-.lens-column {
-  padding: 30px 32px;
+/* Each card: top accent stripe + icon badge + title block + divider +
+   Sees list. Manager amber, Estimator teal, Executive neutral. */
+.lens-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  border-right: 1px solid var(--l-hair-strong);
+  padding: 28px 28px 24px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(28, 24, 19, 0.08);
+  overflow: hidden;
 }
-.lens-column:last-child { border-right: none; }
+
+.lens-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--l-hair-strong);
+}
+.lens-mgr  .lens-accent { background: var(--amber-on-light); }
+.lens-est  .lens-accent { background: var(--teal-700); }
+.lens-exec .lens-accent { background: var(--l-hair-strong); }
 
 .lens-head {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--l-hair-strong);
+  align-items: center;
+  gap: 16px;
+  padding-top: 4px;
 }
 
-.lens-role {
-  font-family: var(--font-mono);
-  font-size: 16px;
+.lens-icon {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.6px solid currentColor;
+  background: rgba(255, 255, 255, 0.4);
+}
+.lens-icon svg { width: 26px; height: 26px; }
+.lens-mgr  .lens-icon { color: var(--amber-on-light); background: rgba(160, 106, 24, 0.08); }
+.lens-est  .lens-icon { color: var(--teal-700);       background: rgba(60, 110, 61, 0.08); }
+.lens-exec .lens-icon { color: var(--l-muted);        background: rgba(28, 24, 19, 0.04); }
+
+.lens-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.lens-title {
+  font-family: var(--font-display);
+  font-size: 26px;
   font-weight: 700;
-  color: var(--teal-700);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
   line-height: 1.1;
 }
-
 .lens-verb {
-  font-family: var(--font-body);
-  font-size: 17px;
-  font-weight: 500;
-  font-style: italic;
-  color: var(--l-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   line-height: 1;
 }
+.lens-mgr  .lens-verb { color: var(--amber-on-light); }
+.lens-est  .lens-verb { color: var(--teal-700); }
+.lens-exec .lens-verb { color: var(--l-muted); }
 
-.lens-content {
+.lens-divider {
+  height: 1px;
+  background: var(--l-hair-strong);
+}
+
+.lens-sees {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-top: -4px;
+}
+
+.lens-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
-.lens-item {
+.lens-list li {
   position: relative;
-  padding-left: 18px;
+  padding-left: 20px;
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.35;
+}
+.lens-list li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  background: var(--l-ink);
+  border-radius: 1px;
+}
+
+/* ── HONEST SCOPE footer · teal pill + clarifying sentence ─────────── */
+
+.lens-honest {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(60, 110, 61, 0.05);
+  border: 1px solid rgba(60, 110, 61, 0.25);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.lens-slide.show .lens-honest {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 240ms;
+}
+.lens-honest-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.12);
+  border: 1px solid var(--teal-700);
+  padding: 5px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1;
+}
+.lens-honest-text {
   font-family: var(--font-body);
   font-size: 18px;
   font-weight: 500;
   color: var(--l-ink);
   line-height: 1.4;
 }
-.lens-item::before {
-  content: "·";
-  position: absolute;
-  left: 2px;
-  top: -4px;
-  font-size: 26px;
+.lens-honest-text strong {
   font-weight: 700;
-  color: var(--teal-700);
-  line-height: 1;
-}
-
-/* ── Boundary line · honesty beat, quiet, subordinate ─────────────── */
-
-.lens-boundary {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 500;
-  font-style: italic;
-  color: var(--l-muted);
-  text-align: center;
-  line-height: 1.4;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.55s ease-out,
-              transform 0.55s cubic-bezier(.2,.7,.2,1);
-}
-.lens-slide.show .lens-boundary {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 240ms;
+  color: var(--l-ink);
 }
 
 
@@ -7714,7 +8850,7 @@
   .browser-frame, .ws-footer,
   .lens-platform, .lens-boundary,
   .journey-step, .js-arrow, .journey-services, .journey-synthesis,
-  .mw-zone {
+  .mw-eb, .mw-headline, .mw-u, .mw-rfq-box, .mw-context-wrap {
     transition: opacity 0.2s linear;
     transform: none;
     transition-delay: 0s !important;
