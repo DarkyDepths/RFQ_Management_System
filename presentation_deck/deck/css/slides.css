@@ -533,6 +533,11 @@
   opacity: .55;
 }
 
+/* Subsection LABEL text stays in ink (default from components.css) — only
+   the slider TRACK dots carry the section accent colour. This keeps the
+   typography neutral and lets the green/amber show only in the small
+   progress indicator. */
+
 .slide[data-section] .section-opener-hero h2 .accent,
 .slide[data-section] .section-opener-hero .hero-headline .accent {
   color: var(--section-accent-text);
@@ -1353,6 +1358,25 @@
   line-height: 1;
 }
 
+/* ── Intro sentence — boardroom framing above the flow; appears with
+   the canvas. Used in newindex's RFQ definition slide; matches the
+   .rfq-synthesis visual weight so the slide reads symmetrically. ───── */
+.rfq-intro {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.25;
+  letter-spacing: -.005em;
+  text-align: center;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+.rfq-intro .emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+
 /* ── Synthesis sentence — fades up on click 4 ──────────────────────────── */
 .rfq-synthesis {
   font-family: var(--font-display);
@@ -1379,6 +1403,16 @@
 .rfq-synthesis .emph-risk {
   color: var(--sem-risk);
   font-weight: 700;
+}
+/* Brand-name treatment when Itqān lands inside the synthesis sentence
+   (newindex slide 7). Matches the .itqan-lede pattern: display weight
+   600 with the amber macron — so it reads as THE brand mark, not
+   plain text. */
+.rfq-synthesis .brand-name {
+  font-weight: 700;
+}
+.rfq-synthesis .brand-name .ar {
+  color: var(--amber-on-light);
 }
 .rfq-def-slide.synthesis-shown .rfq-synthesis {
   opacity: 1;
@@ -1810,6 +1844,16 @@
   line-height: 1.2;
   letter-spacing: -.008em;
   color: var(--l-ink);
+}
+/* Question variant — research question instead of a short label. Smaller
+   scale than the original (t-h3 → t-sub) so it fits the narrow box, bold
+   weight so it still reads with authority. Used in newindex.html where
+   the left box holds "The Question". */
+.expect-content.expect-content-question {
+  font-size: var(--t-sub);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
 }
 
 /* ── Audit box · contains badge + convergence diagram ────────────────── */
@@ -2569,6 +2613,16 @@
   background: rgba(192, 57, 43, 0.06);
   color: var(--sem-risk);
   font-weight: 700;
+}
+
+/* Neutral variant — factual problem items that don't compete with the
+   green/teal "solution" chips on the right, and don't carry rejection
+   semantics. Used in the convergence slide for the four gap names. */
+.map-tag-neutral {
+  background: rgba(28, 24, 19, 0.04);
+  border-color: rgba(28, 24, 19, 0.22);
+  color: var(--l-muted);
+  font-weight: 600;
 }
 
 /* ── PIVOT connector · between LEFT and RIGHT boxes ─────────────────── */
@@ -3452,6 +3506,27 @@
 .tile-intel    { border-left: 4px solid var(--teal-700);       background: rgba(60, 110, 61, 0.03); }
 .tile-copilot  { border-left: 4px solid var(--teal-900);       background: rgba(28, 72, 35, 0.03); }
 
+/* newindex variant — copilot promoted to the same amber-emphasized
+   treatment as the manager. Both backends now read as focal pillars
+   of the platform; intel keeps the lighter teal stripe as the
+   supporting peer. Scoped to .svc-arch-v2 so index.html's original
+   "manager is the single amber focal" treatment is preserved there. */
+.svc-arch-v2 .tile-copilot {
+  border: 2px solid var(--amber-on-light);
+  background: rgba(232, 160, 76, 0.08);
+  box-shadow: 0 10px 28px rgba(232, 160, 76, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.svc-arch-v2 .tile-copilot .tile-icon { color: var(--amber-on-light); }
+
+/* Session store is owned by copilot — promote it to the same amber
+   treatment so the ownership-by-colour cue (left border + icon +
+   connector ::before stem + ::after chevron) stays coherent. */
+.svc-arch-v2 .data-session                { border-left-color: var(--amber-on-light); }
+.svc-arch-v2 .data-session .data-icon     { color: var(--amber-on-light); }
+.svc-arch-v2 .data-session::before        { border-left-color: var(--amber-on-light); }
+.svc-arch-v2 .data-session::after         { border-top-color:  var(--amber-on-light); }
+
 /* Edges (between layers) */
 .topo-edge {
   display: inline-flex;
@@ -3669,6 +3744,140 @@
    reveal animations above; context-shown reveals labels/arrows/chips;
    data-shown reveals the data tiles; links-shown reveals connectors. */
 /* External strip now reveals with .backends-shown — see rule earlier in this section. */
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §03.1.a · Architecture FOCUS variants
+   ────────────────────────────────────────────────────────────────────
+   Same diagram as the §03.1.a base, but with one microservice spotlit
+   and every other element soft-faded to ~0.28. Used to introduce each
+   microservice in turn before its dedicated content slide. The data-
+   focused-svc attribute on the slide selects which tile keeps full
+   visual weight; everything else drops. No click reveal — the whole
+   diagram is visible from the start, only the focus state changes the
+   visual weight. Soft transition included so future cycle-on-same-slide
+   variations would animate cleanly.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Override the slide-9 progressive-reveal defaults (opacity: 0 +
+   translateY) so the entire diagram is visible on entry to a focus
+   slide. Without this, the topo-layers / tiles / lede would all be
+   invisible because they wait for state classes that never fire here. */
+.svc-focus-slide .topo-lede,
+.svc-focus-slide .topo-lede .lede-part,
+.svc-focus-slide .topo-layer-ui .topo-tile,
+.svc-focus-slide .topo-layer-iam .topo-tile,
+.svc-focus-slide .topo-layer-backends .topo-tile,
+.svc-focus-slide .topo-layer-ext,
+.svc-focus-slide .topo-layer-ext .ext-strip,
+.svc-focus-slide .topo-edge,
+.svc-focus-slide .topo-layer .layer-tag,
+.svc-focus-slide .topo-tile .tile-icon,
+.svc-focus-slide .topo-tile .tile-role,
+.svc-focus-slide .topo-tile .future-tag,
+.svc-focus-slide .data-tile {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth transition for the dim/lit states. */
+.svc-focus-slide .topo-layer,
+.svc-focus-slide .topo-edge,
+.svc-focus-slide .topo-lede .lede-part {
+  transition: opacity 0.5s ease-out;
+}
+
+/* Focused tile boost — applies to whichever tile is currently lit.
+   A soft amber glow (matches the deck's accent) + slight scale make the
+   focused box read as visually FORWARD of the rest, not just brighter.
+   Transitions on box-shadow + transform so the boost animates cleanly
+   if focus ever cycles within a single slide. */
+.svc-focus-slide .tile-ui,
+.svc-focus-slide .tile-iam,
+.svc-focus-slide .tile-manager,
+.svc-focus-slide .tile-copilot,
+.svc-focus-slide .tile-intel {
+  transition: transform 0.5s ease-out, box-shadow 0.5s ease-out;
+}
+.svc-focus-slide[data-focused-svc="ui"]       .tile-ui,
+.svc-focus-slide[data-focused-svc="iam"]      .tile-iam,
+.svc-focus-slide[data-focused-svc="manager"]  .tile-manager,
+.svc-focus-slide[data-focused-svc="copilot"]  .tile-copilot,
+.svc-focus-slide[data-focused-svc="intel"]    .tile-intel {
+  transform: scale(1.04);
+  box-shadow: 0 12px 40px -10px rgba(160, 106, 24, 0.45),
+              0 0  0 1px rgba(160, 106, 24, 0.35);
+}
+
+/* ── Focus: rfq_ui_ms ─────────────────────────────────────────────
+   Spotlight stays on tile-ui + its "Entry" layer-tag + the matching
+   ".lede-entry" clause of the lede. Everything else (IAM, the three
+   backends, data row, external, all edges, the other lede clauses)
+   fades hard to 0.15. Opacity composites multiplicatively so children
+   inside a dimmed container inherit the dim visually. */
+.svc-focus-slide[data-focused-svc="ui"] .lede-access,
+.svc-focus-slide[data-focused-svc="ui"] .lede-backends,
+.svc-focus-slide[data-focused-svc="ui"] .topo-layer-iam,
+.svc-focus-slide[data-focused-svc="ui"] .topo-layer-backends,
+.svc-focus-slide[data-focused-svc="ui"] .topo-layer-data,
+.svc-focus-slide[data-focused-svc="ui"] .topo-layer-ext,
+.svc-focus-slide[data-focused-svc="ui"] .topo-edge {
+  opacity: 0.15;
+}
+
+/* ── Focus: rfq_iam_ms ────────────────────────────────────────────
+   Same shape as UI focus, just rotated to the IAM layer. */
+.svc-focus-slide[data-focused-svc="iam"] .lede-entry,
+.svc-focus-slide[data-focused-svc="iam"] .lede-backends,
+.svc-focus-slide[data-focused-svc="iam"] .topo-layer-ui,
+.svc-focus-slide[data-focused-svc="iam"] .topo-layer-backends,
+.svc-focus-slide[data-focused-svc="iam"] .topo-layer-data,
+.svc-focus-slide[data-focused-svc="iam"] .topo-layer-ext,
+.svc-focus-slide[data-focused-svc="iam"] .topo-edge {
+  opacity: 0.15;
+}
+
+/* ── Focus: rfq_manager_ms ─ Backends layer stays at full opacity so
+   the focused tile can light up; the other two peer tiles (copilot,
+   intel) inside that layer dim individually instead. Same pattern for
+   the copilot and intel focus variants below. */
+.svc-focus-slide[data-focused-svc="manager"] .lede-entry,
+.svc-focus-slide[data-focused-svc="manager"] .lede-access,
+.svc-focus-slide[data-focused-svc="manager"] .topo-layer-ui,
+.svc-focus-slide[data-focused-svc="manager"] .topo-layer-iam,
+.svc-focus-slide[data-focused-svc="manager"] .topo-layer-data,
+.svc-focus-slide[data-focused-svc="manager"] .topo-layer-ext,
+.svc-focus-slide[data-focused-svc="manager"] .topo-edge,
+.svc-focus-slide[data-focused-svc="manager"] .tile-copilot,
+.svc-focus-slide[data-focused-svc="manager"] .tile-intel {
+  opacity: 0.15;
+}
+
+/* ── Focus: rfq_copilot_ms ───────────────────────────────────────── */
+.svc-focus-slide[data-focused-svc="copilot"] .lede-entry,
+.svc-focus-slide[data-focused-svc="copilot"] .lede-access,
+.svc-focus-slide[data-focused-svc="copilot"] .topo-layer-ui,
+.svc-focus-slide[data-focused-svc="copilot"] .topo-layer-iam,
+.svc-focus-slide[data-focused-svc="copilot"] .topo-layer-data,
+.svc-focus-slide[data-focused-svc="copilot"] .topo-layer-ext,
+.svc-focus-slide[data-focused-svc="copilot"] .topo-edge,
+.svc-focus-slide[data-focused-svc="copilot"] .tile-manager,
+.svc-focus-slide[data-focused-svc="copilot"] .tile-intel {
+  opacity: 0.15;
+}
+
+/* ── Focus: rfq_intelligence_ms ──────────────────────────────────── */
+.svc-focus-slide[data-focused-svc="intel"] .lede-entry,
+.svc-focus-slide[data-focused-svc="intel"] .lede-access,
+.svc-focus-slide[data-focused-svc="intel"] .topo-layer-ui,
+.svc-focus-slide[data-focused-svc="intel"] .topo-layer-iam,
+.svc-focus-slide[data-focused-svc="intel"] .topo-layer-data,
+.svc-focus-slide[data-focused-svc="intel"] .topo-layer-ext,
+.svc-focus-slide[data-focused-svc="intel"] .topo-edge,
+.svc-focus-slide[data-focused-svc="intel"] .tile-manager,
+.svc-focus-slide[data-focused-svc="intel"] .tile-copilot {
+  opacity: 0.15;
+}
 
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -5129,6 +5338,444 @@
 
 
 /* ============================================================================
+   05.0 · What we want from the copilot — the contract slide
+   ----------------------------------------------------------------------------
+   Sets the bar the next four slides are measured against. 2x2 grid of objective
+   cards. Each card uses the `.label-chip` primitive (mono-amber pill) — same
+   frozen primitive as 05.1's risk tiles + 05.3's closure ticks, so the jury
+   reads "these are the dimensions we're testing against".
+   Reveal:
+     1) headline lands
+     2-5) cards cascade in 01 → 02 → 03 → 04 (one click each, ~120ms apart)
+     6) finale — beat of darkness on numbers, then all four cards pulse
+        together as a unified contract (group light-up that holds)
+     7) footer bridge line lands, sets up 05.1
+   ============================================================================ */
+
+.copilot-aims-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 56px;
+  padding: 0 80px;
+}
+
+.aims-headline {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  color: var(--l-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.copilot-aims-slide.headline-shown .aims-headline {
+  opacity: 1;
+  transform: translateY(0);
+}
+.aims-emph {
+  color: var(--amber-on-light);
+}
+
+
+/* ============================================================================
+   COMPARE SLIDE · "What makes a copilot more than a chatbot?"
+   ----------------------------------------------------------------------------
+   Central-axis layout: left column = chatbot (muted, right-aligned text),
+   centre = comparison axis (FORM / KNOWS / ACTS / TRUST as mono pills,
+   sitting on a continuous dashed amber line), right column = copilot
+   (amber highlights on key phrases, left-aligned text). The right side
+   has a soft amber background wash so the powerful answer reads visually
+   heavier without needing a border or card frame. 3 clicks: headline →
+   chatbot column → copilot column (with amber highlights). The contrast
+   IS the conclusion — no trailing summary line needed.
+   ============================================================================ */
+
+.compare-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+  padding: 0 80px;
+}
+
+.cmp-headline {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-align: center;
+  margin: 0;
+  max-width: 1500px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.compare-slide.cmp-headline-shown .cmp-headline {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cmp-emph-chatbot {
+  color: var(--l-muted);
+  font-weight: 600;
+}
+.cmp-emph-copilot {
+  color: var(--amber-on-light);
+}
+
+/* Comparison table — 3-column grid: chatbot side · centre axis · copilot
+   side. The continuous dashed line down the centre is a pseudo-element on
+   the table; the pills sit above it with surface backgrounds so they
+   "cut" the line visually. Soft amber wash on the right column is a
+   second pseudo-element. */
+.cmp-table {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr;
+  gap: 0 28px;
+  width: 100%;
+  max-width: 1500px;
+}
+
+/* Soft amber wash behind the copilot column. Hidden until headline lands
+   (cmp-headline-shown) so the entry slide is clean, not pre-populated. */
+.cmp-table::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% + 70px);
+  right: -32px;
+  background: linear-gradient(
+    to left,
+    rgba(232, 160, 76, 0.10) 0%,
+    rgba(232, 160, 76, 0.05) 60%,
+    rgba(232, 160, 76, 0) 100%
+  );
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.compare-slide.cmp-headline-shown .cmp-table::before { opacity: 1; }
+
+/* Continuous dashed line down the centre — same lifecycle as the wash. */
+.cmp-table::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 130px;
+  bottom: 30px;
+  width: 0;
+  border-left: 1.5px dashed var(--amber-on-light);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.compare-slide.cmp-headline-shown .cmp-table::after { opacity: 0.55; }
+
+/* Rows */
+.cmp-row {
+  display: contents;
+}
+.cmp-side {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 28px 0;
+  border-bottom: 1px dashed var(--l-hair-strong);
+}
+.cmp-side-chatbot {
+  text-align: right;
+  color: var(--l-muted);
+}
+.cmp-side-copilot {
+  text-align: left;
+  color: var(--l-ink);
+}
+
+/* The centre axis cell holds the pill, vertically centred. */
+.cmp-axis {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0;
+  border-bottom: 1px dashed transparent;  /* keep row baseline aligned */
+}
+.cmp-axis-pill {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  background: var(--l-surface);
+  border: 1px solid var(--amber-on-light);
+  border-radius: 999px;
+  padding: 9px 22px;
+  line-height: 1;
+}
+
+/* Header row — names + icons + taglines, no row divider */
+.cmp-row-head .cmp-side {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 32px;
+  border-bottom: none;
+}
+.cmp-row-head .cmp-side-chatbot { justify-content: flex-end; }
+.cmp-row-head .cmp-side-copilot { justify-content: flex-start; }
+
+.cmp-axis-head { padding-bottom: 32px; border-bottom: none; }
+
+.cmp-head-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cmp-side-chatbot .cmp-head-stack { align-items: flex-end; }
+.cmp-side-copilot .cmp-head-stack { align-items: flex-start; }
+
+.cmp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 7px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 6px;
+}
+.cmp-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cmp-side-chatbot .cmp-icon { color: var(--l-muted); }
+.cmp-side-copilot .cmp-icon { color: var(--amber-on-light); }
+
+.cmp-name {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.cmp-side-chatbot .cmp-name { color: var(--l-ink); opacity: 0.78; }
+.cmp-side-copilot .cmp-name { color: var(--amber-on-light); }
+
+.cmp-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  line-height: 1;
+}
+.cmp-side-copilot .cmp-tag { color: var(--amber-on-light); opacity: 0.85; }
+
+/* Amber highlights in the copilot column — these phrases carry the
+   contrast (the things a chatbot CAN'T do). */
+.cmp-amber {
+  color: var(--amber-on-light);
+  font-weight: 600;
+}
+
+/* Reveal logic. The HEADER ROW (names, icons, taglines, the empty centre
+   axis cell) and the axis pills in the comparison rows all land with the
+   headline click — that way the slide enters cleanly empty, then click 1
+   sets up the WHOLE comparison framework. Subsequent clicks fill in the
+   chatbot, then copilot rows, then the bottom punchline. */
+
+/* Everything inside the table starts invisible. */
+.compare-slide .cmp-side,
+.compare-slide .cmp-axis {
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+
+/* Click 1 (headline) — table structure appears: header row (icons + names
+   + taglines on both sides) + the centre axis cells + the four axis pills,
+   ALL at once. The comparison row content stays hidden — only the frame
+   is visible. */
+.compare-slide.cmp-headline-shown .cmp-row-head .cmp-side-chatbot,
+.compare-slide.cmp-headline-shown .cmp-row-head .cmp-side-copilot,
+.compare-slide.cmp-headline-shown .cmp-axis {
+  opacity: 1;
+}
+.compare-slide.cmp-headline-shown .cmp-row-head .cmp-side-chatbot { opacity: 0.85; }
+
+/* Clicks 2–9 · per-row, per-side reveal — each row fills its chatbot
+   side first, then its copilot side. */
+.compare-slide.cmp-r1-chatbot-shown .cmp-row-r1 .cmp-side-chatbot { opacity: 0.85; }
+.compare-slide.cmp-r1-copilot-shown .cmp-row-r1 .cmp-side-copilot { opacity: 1; }
+
+.compare-slide.cmp-r2-chatbot-shown .cmp-row-r2 .cmp-side-chatbot { opacity: 0.85; }
+.compare-slide.cmp-r2-copilot-shown .cmp-row-r2 .cmp-side-copilot { opacity: 1; }
+
+.compare-slide.cmp-r3-chatbot-shown .cmp-row-r3 .cmp-side-chatbot { opacity: 0.85; }
+.compare-slide.cmp-r3-copilot-shown .cmp-row-r3 .cmp-side-copilot { opacity: 1; }
+
+.compare-slide.cmp-r4-chatbot-shown .cmp-row-r4 .cmp-side-chatbot { opacity: 0.85; }
+.compare-slide.cmp-r4-copilot-shown .cmp-row-r4 .cmp-side-copilot { opacity: 1; }
+
+/* In the TRUST row, the leading "Trust" word should NOT be amber — make
+   it muted gray with regular weight so the contrast lands hard on
+   "enforced by the system" alone. */
+.cmp-trust-word {
+  color: var(--l-muted) !important;
+  font-weight: 400 !important;
+}
+
+/* Bottom punchline — declarative summary on click 4. Display weight,
+   sized to land from the back of the room. */
+.cmp-bottom {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-align: center;
+  margin: 0;
+  max-width: 1500px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.compare-slide.cmp-bottom-shown .cmp-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cmp-bottom-mute {
+  color: var(--l-muted);
+  font-weight: 500;
+}
+.cmp-bottom-emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+
+/* 2x2 grid — equal columns, equal rows, generous internal padding. */
+.aims-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 30px;
+  margin: 0 auto;
+  max-width: 1500px;
+  width: 100%;
+}
+
+/* Each card — surface fill, amber left stripe (the copilot identity colour,
+   parallel to 05.1's red stripe but reversed semantic: this is the aim, not
+   the failure). Stripe stays visible after the card lands. */
+.aim-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 34px 30px 28px 26px;
+  background: var(--l-surface);
+  border-top:    1px solid var(--l-hair-strong);
+  border-right:  1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  border-left:   4px solid var(--amber-on-light);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1),
+              box-shadow 0.35s ease-out;
+}
+
+/* Cards cascade in one click at a time — each click reveals exactly one card.
+   The state classes c1-shown ... c4-shown stack additively. */
+.copilot-aims-slide.c1-shown .aim-card[data-aim-n="1"],
+.copilot-aims-slide.c2-shown .aim-card[data-aim-n="2"],
+.copilot-aims-slide.c3-shown .aim-card[data-aim-n="3"],
+.copilot-aims-slide.c4-shown .aim-card[data-aim-n="4"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Finale (click 6 — pulse-shown) — all four cards lift together with a
+   shadow + slight scale, reading as a single contract. The amber stripes
+   thicken from 4px to 6px to drive the "this is the bar" beat. The lift
+   holds — no auto-revert — so the speaker can dwell here. */
+.copilot-aims-slide.pulse-shown .aim-card {
+  border-left-width: 6px;
+  box-shadow: 0 6px 28px -10px rgba(160, 106, 24, 0.28);
+  transform: translateY(-3px);
+}
+
+.aim-num {
+  font-family: var(--font-mono);
+  font-size: var(--t-chrome);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+
+.aim-title {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.aim-line {
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-muted);
+  line-height: 1.35;
+}
+
+/* Footer bridge — muted, sits below the grid, lands after the pulse so it
+   reads as "this contract will be tested by what's next". */
+.aims-footer {
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  color: var(--l-muted);
+  text-align: center;
+  font-style: italic;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.copilot-aims-slide.footer-shown .aims-footer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
    05.1 · The Chatbot Trap
    ----------------------------------------------------------------------------
    Layout: headline · rejected anti-pattern picture · 3 risk tiles · synthesis.
@@ -6192,6 +6839,28 @@
   border-top: 1px dashed var(--l-hair-strong);
 }
 
+/* Inline head — padlock icon + SECURITY label sit on one row above the
+   description. Icon uses the same lock SVG that previously sat in the
+   removed zone-head, so the protected-routing semantic survives in
+   muted form: the security framing now lives in the footer. */
+.mop-d-zone-foot-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mop-d-zone-foot-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--amber-on-light);
+}
+.mop-d-zone-foot-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .mop-d-zone-foot-title {
   font-family: var(--font-mono);
   font-size: 15px;
@@ -7176,40 +7845,54 @@
   color: var(--amber-on-light);
   font-weight: 600;
 }
-.manager-workflow-slide.instance-shown .mw-headline { opacity: 1; }
+/* Instance-shown reveals only the ORIGINAL headline. The :not() guard
+   prevents the subtasks variant (which carries both classes) from also
+   matching this rule and showing at the same time. */
+.manager-workflow-slide.instance-shown .mw-headline:not(.mw-headline-subtasks) { opacity: 1; }
+
+/* On subtasks-shown, the original headline fades out and the subtasks
+   headline takes its place — same position, same scale, only the
+   message changes. */
+.manager-workflow-slide.subtasks-shown .mw-headline:not(.mw-headline-subtasks) { opacity: 0; }
+.manager-workflow-slide.subtasks-shown .mw-headline-subtasks { opacity: 1; }
 
 /* ── Stage area — rail + users layer + RFQ Instance overlay ──────── */
 
 .mw-stage {
   position: relative;
   width: 100%;
-  max-width: 1500px;
+  max-width: 1760px;
   margin: 28px auto 0;
   min-height: 260px;
 }
 
-/* The 6-stage workflow rail. Hidden on empty entry; fades in on click 1. */
+/* The full 11-stage workflow rail. Hidden on empty entry; fades in on
+   click 1. All 11 tiles on a single horizontal line — no ellipsis,
+   nothing hidden. Tiles flex equally so the rail fills the full slide
+   width with each stage owning ~9% of it. */
 .mw-rail {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   align-items: stretch;
   justify-content: center;
   position: relative;
   z-index: 2;
   opacity: 0;
   transition: opacity 0.5s ease-out;
+  overflow: visible;
 }
 .manager-workflow-slide.before-shown .mw-rail { opacity: 1; }
 
 .mw-tile {
   flex: 1;
+  min-width: 0;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 500;
   color: var(--l-ink);
   background: var(--l-surface);
   border: 1.4px solid var(--l-hair-strong);
-  padding: 14px 18px;
+  padding: 14px 8px;
   text-align: center;
   border-radius: 4px;
   line-height: 1.2;
@@ -7300,6 +7983,77 @@
   background: rgba(192, 57, 43, 0.06);
   color: var(--sem-risk);
 }
+
+/* Vertical dashed connector from each dot up to its rail tile. Drawn as
+   a child element so it can live in the BEFORE state only. Uses
+   currentColor so each line picks up the dot's role colour (CEO red,
+   estimators green, lead validators amber, supporting validators slate).
+   Row-1 dots (top: 8) need a ~78px line to reach the rail; row-2 dots
+   (top: 60) need ~130px. */
+.mw-u-line {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  border-left: 1.5px dashed currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out;
+}
+/* Row-1 dots (scattered at top: 8) */
+.mw-u-ceo  .mw-u-line,
+.mw-u-est1 .mw-u-line,
+.mw-u-val2 .mw-u-line,
+.mw-u-val3 .mw-u-line,
+.mw-u-val4 .mw-u-line,
+.mw-u-val5 .mw-u-line { height: 78px; }
+/* Row-2 dots (scattered at top: 60) */
+.mw-u-est2 .mw-u-line,
+.mw-u-est3 .mw-u-line,
+.mw-u-val1 .mw-u-line,
+.mw-u-val6 .mw-u-line { height: 130px; }
+
+/* Lines visible only in BEFORE state — fade out once users start to
+   converge (merged/instance/subtasks). */
+.manager-workflow-slide.before-shown .mw-u-line { opacity: 0.55; }
+.manager-workflow-slide.merged-shown .mw-u-line,
+.manager-workflow-slide.instance-shown .mw-u-line,
+.manager-workflow-slide.subtasks-shown .mw-u-line { opacity: 0; }
+
+/* The other 9 dots split into 3 colored role groups instead of the
+   default flat grey: 3 estimators (teal/forest), 2 lead validators
+   (amber), 4 supporting validators (slate). Same fill pattern as the
+   CEO dot — coloured border + 6% background tint + coloured silhouette
+   via currentColor. */
+
+/* 3 estimators — forest teal */
+.mw-u-est1,
+.mw-u-est2,
+.mw-u-est3 {
+  border-color: var(--teal-700);
+  background: rgba(60, 110, 61, 0.06);
+  color: var(--teal-700);
+}
+
+/* 2 lead validators — amber */
+.mw-u-val1,
+.mw-u-val2 {
+  border-color: var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.06);
+  color: var(--amber-on-light);
+}
+
+/* 4 supporting validators — slate (a third hue distinct from amber +
+   teal + the CEO red) */
+.mw-u-val3,
+.mw-u-val4,
+.mw-u-val5,
+.mw-u-val6 {
+  border-color: #5d7a8a;
+  background: rgba(93, 122, 138, 0.06);
+  color: #5d7a8a;
+}
 .mw-u-tag {
   position: absolute;
   bottom: -20px;
@@ -7317,42 +8071,58 @@
   white-space: nowrap;
 }
 
-/* ── State 0 positions — scattered across wrong stages ──────────── */
-/* Rail stage centers (1500px wide, 6 tiles): 8.33, 25, 41.67, 58.33, 75, 91.67 */
+/* ── State 0 positions — scattered across the wrong stages ──────────
+   Rail stage centers (11 tiles): 4.55, 13.64, 22.73, 31.82, 40.91, 50,
+   59.09, 68.18, 77.27, 86.36, 95.45.
+   Assignment (per the speaker brief):
+     Go/No-Go (13.64%)         → CEO
+     BOQ Prep (40.91%)         → 1 green (est1)
+     Vendor Inquiry (50%)      → 1 blue (val3) + 1 orange (val1)
+     Cost Estimation (59.09%)  → 1 orange + 3 blue + 2 green (6 dots
+                                  arranged in a 2×3 grid)
+   Cost Estimation cluster keeps a 2.5% spread so 3 dots side-by-side
+   leave a few px of edge gap at 38px-wide each on the 1760px stage. */
 
-/* CEO under Review (25%) */
-.mw-u-ceo  { left: 25%;    top: 8px; }
+/* CEO under Go/No-Go */
+.mw-u-ceo  { left: 13.64%; top: 8px; }
 
-/* 3 users under Estimation (cluster around 41.67%) */
-.mw-u-est1 { left: 37%;    top: 8px; }
-.mw-u-est2 { left: 41.67%; top: 8px; }
-.mw-u-est3 { left: 46.33%; top: 8px; }
+/* 1 green under BOQ + 2 green at Cost Estimation (bottom row) */
+.mw-u-est1 { left: 40.91%; top: 8px; }
+.mw-u-est2 { left: 59.09%; top: 60px; }
+.mw-u-est3 { left: 61.59%; top: 60px; }
 
-/* 6 users under Validation (2x3 grid around 58.33%) */
-.mw-u-val1 { left: 53.67%; top: 8px; }
-.mw-u-val2 { left: 58.33%; top: 8px; }
-.mw-u-val3 { left: 63%;    top: 8px; }
-.mw-u-val4 { left: 53.67%; top: 60px; }
-.mw-u-val5 { left: 58.33%; top: 60px; }
-.mw-u-val6 { left: 63%;    top: 60px; }
+/* 2 orange: 1 at Vendor Inquiry (bottom row) + 1 at Cost Estimation
+   (top-left of the active cluster) */
+.mw-u-val1 { left: 50%;    top: 60px; }
+.mw-u-val2 { left: 56.59%; top: 8px; }
 
-/* ── State 1 positions — all 10 converge under Validation in 2×5 ─── */
-.manager-workflow-slide.merged-shown .mw-u-ceo  { left: 49.0%;  top: 8px; }
-.manager-workflow-slide.merged-shown .mw-u-est1 { left: 53.67%; top: 8px; }
-.manager-workflow-slide.merged-shown .mw-u-est2 { left: 58.33%; top: 8px; }
-.manager-workflow-slide.merged-shown .mw-u-est3 { left: 63.0%;  top: 8px; }
-.manager-workflow-slide.merged-shown .mw-u-val1 { left: 67.67%; top: 8px; }
-.manager-workflow-slide.merged-shown .mw-u-val2 { left: 49.0%;  top: 60px; }
-.manager-workflow-slide.merged-shown .mw-u-val3 { left: 53.67%; top: 60px; }
-.manager-workflow-slide.merged-shown .mw-u-val4 { left: 58.33%; top: 60px; }
-.manager-workflow-slide.merged-shown .mw-u-val5 { left: 63.0%;  top: 60px; }
-.manager-workflow-slide.merged-shown .mw-u-val6 { left: 67.67%; top: 60px; }
+/* 4 blue: 1 at Vendor Inquiry (top row) + 3 at Cost Estimation
+   (top-center, top-right, bottom-left of the cluster) */
+.mw-u-val3 { left: 50%;    top: 8px; }
+.mw-u-val4 { left: 59.09%; top: 8px; }
+.mw-u-val5 { left: 61.59%; top: 8px; }
+.mw-u-val6 { left: 56.59%; top: 60px; }
 
-/* After convergence, non-CEO dots warm to teal (single source of truth). */
-.manager-workflow-slide.merged-shown .mw-u:not(.mw-u-ceo) {
-  border-color: var(--teal-700);
-  color: var(--teal-700);
-}
+/* ── State 1 positions — all 10 converge under Cost Estimation ─────
+   Active column is at 59.09% with ~9.09% width on the new 11-tile
+   rail. A 2×5 cluster spanning ~54–64% wraps cleanly inside the RFQ
+   Instance box (slight overflow of the active tile is fine — the
+   instance box defines the boundary visually). */
+.manager-workflow-slide.merged-shown .mw-u-ceo  { left: 54.0%; top: 8px;  }
+.manager-workflow-slide.merged-shown .mw-u-est1 { left: 56.5%; top: 8px;  }
+.manager-workflow-slide.merged-shown .mw-u-est2 { left: 59.0%; top: 8px;  }
+.manager-workflow-slide.merged-shown .mw-u-est3 { left: 61.5%; top: 8px;  }
+.manager-workflow-slide.merged-shown .mw-u-val1 { left: 64.0%; top: 8px;  }
+.manager-workflow-slide.merged-shown .mw-u-val2 { left: 54.0%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val3 { left: 56.5%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val4 { left: 59.0%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val5 { left: 61.5%; top: 60px; }
+.manager-workflow-slide.merged-shown .mw-u-val6 { left: 64.0%; top: 60px; }
+
+/* On convergence the dots KEEP their per-role colours (amber / blue /
+   green) — the unification story is told by their position (clustered
+   under the active stage, wrapped by the RFQ Instance box), not by a
+   colour flip. */
 
 /* Once the cluster converges, the CEO dot turns into a solid red badge
    with "CEO" centered inside (silhouette fades). The label stays visible
@@ -7387,17 +8157,23 @@
 
 .mw-rfq-box {
   position: absolute;
-  top: 110px;
+  top: 115px;
   left: 40%;
   width: 36%;
-  height: 112px;
+  height: 130px;
   border: 1.6px dashed var(--amber-on-light);
   border-radius: 10px;
   background: rgba(160, 106, 24, 0.05);
   opacity: 0;
   transform: scale(0.96);
   transform-origin: center top;
-  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(.2,.7,.2,1);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s cubic-bezier(.2,.7,.2,1),
+    top    0.7s cubic-bezier(.2,.7,.2,1),
+    left   0.7s cubic-bezier(.2,.7,.2,1),
+    width  0.7s cubic-bezier(.2,.7,.2,1),
+    height 0.7s cubic-bezier(.2,.7,.2,1);
   z-index: 1;
   pointer-events: none;
 }
@@ -7441,6 +8217,111 @@
 .mw-rfq-cur strong {
   color: var(--amber-on-light);
   font-weight: 700;
+}
+
+/* ── State 3 · subtasks-shown ─────────────────────────────────────────
+   The RFQ Instance box expands wide + tall. CEO sits at the top-centre
+   with an "OVERSIGHT" label below. Below that, 3 colour-coded sub-task
+   chips sit above their respective role groups: Vendor pricing (green
+   estimators, 2+1 layout), Internal review (orange validators, stacked
+   pair), Cost build-up (blue validators, 2×2 grid). Each role works on
+   its own sub-task under the active stage; the CEO oversees all three.
+   All dot positions are mw-users-relative (mw-users sits 60px below the
+   top of mw-stage). */
+
+.manager-workflow-slide.subtasks-shown .mw-rfq-box {
+  top: 115px;
+  left: 22%;
+  width: 56%;
+  height: 280px;
+}
+
+/* CEO moves to top-centre of the expanded box. mw-users is offset ~140px
+   from the top of mw-stage (rail height + margin-top), so a negative top
+   here floats the CEO ABOVE its container's natural top — placing it
+   right under the box's RFQ INSTANCE tag, well above the chips. */
+.manager-workflow-slide.subtasks-shown .mw-u-ceo {
+  left: 50%;
+  top: -5px;
+}
+
+/* Green group (Vendor pricing) — 3 dots, 2 on top + 1 centred below. */
+.manager-workflow-slide.subtasks-shown .mw-u-est1 { left: 26%; top: 135px; }
+.manager-workflow-slide.subtasks-shown .mw-u-est2 { left: 32%; top: 135px; }
+.manager-workflow-slide.subtasks-shown .mw-u-est3 { left: 29%; top: 190px; }
+
+/* Orange group (Internal review) — 2 dots stacked vertically. */
+.manager-workflow-slide.subtasks-shown .mw-u-val1 { left: 50%; top: 135px; }
+.manager-workflow-slide.subtasks-shown .mw-u-val2 { left: 50%; top: 190px; }
+
+/* Blue group (Cost build-up) — 4 dots in a 2×2 grid. */
+.manager-workflow-slide.subtasks-shown .mw-u-val3 { left: 64%; top: 135px; }
+.manager-workflow-slide.subtasks-shown .mw-u-val4 { left: 70%; top: 135px; }
+.manager-workflow-slide.subtasks-shown .mw-u-val5 { left: 64%; top: 190px; }
+.manager-workflow-slide.subtasks-shown .mw-u-val6 { left: 70%; top: 190px; }
+
+/* Oversight label — sits below the CEO. mw-stage-relative coords. */
+.mw-oversight {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sem-risk);
+  padding: 5px 11px;
+  border: 1px solid var(--sem-risk);
+  border-radius: 4px;
+  background: rgba(192, 57, 43, 0.04);
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  pointer-events: none;
+  z-index: 2;
+}
+.manager-workflow-slide.subtasks-shown .mw-oversight { opacity: 1; }
+
+/* Sub-task chips — coloured to match each dot group. Positioned above
+   their cluster. */
+.mw-st {
+  position: absolute;
+  top: 230px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 4px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+.manager-workflow-slide.subtasks-shown .mw-st { opacity: 1; }
+
+.mw-st-vendor {
+  left: 29%;
+  color: var(--teal-700);
+  border-color: var(--teal-700);
+}
+.mw-st-review {
+  left: 50%;
+  color: var(--amber-on-light);
+  border-color: var(--amber-on-light);
+}
+.mw-st-buildup {
+  left: 67%;
+  color: #5d7a8a;
+  border-color: #5d7a8a;
 }
 
 /* ── Active Stage Context — state 3 ─────────────────────────────── */
@@ -8560,6 +9441,379 @@
 .lens-est  .lens-verb { color: var(--teal-700); }
 .lens-exec .lens-verb { color: var(--l-muted); }
 
+/* newindex variant — Executive promoted to risk-red (was neutral gray).
+   The executive triggered the whole investigation back on slide 2; on
+   the lens slide they land first and most visibly. Scoped via
+   .lens-slide-v2 so index.html's neutral executive treatment stays. */
+.lens-slide-v2 .lens-exec .lens-accent { background: var(--sem-risk); }
+.lens-slide-v2 .lens-exec .lens-icon {
+  color: var(--sem-risk);
+  background: rgba(192, 57, 43, 0.06);
+}
+.lens-slide-v2 .lens-exec .lens-verb { color: var(--sem-risk); }
+
+
+/* ============================================================================
+   newindex · lifecycle.1 · RFQ Lifecycle (snake) — 11 stages serpentine
+   ----------------------------------------------------------------------------
+   Top row 1→6 left-to-right, bend on the right, bottom row 7→11 right-to-
+   left (DOM order 11,10,9,8,7 with ← arrows). The eye follows the snake
+   continuously without jumping back. Step boxes are uniform size; the
+   "Award / Lost" terminal step gets an amber accent.
+   Single-click reveal cascades in flow order.
+   ============================================================================ */
+
+/* Center the whole stack (title → snake → info → conclusion) as a
+   group. With ~50px gaps the elements breathe, and the snake's
+   midpoint lands near the slide centre. No auto-margins, so no big
+   dead space between elements. */
+.lifecycle-snake-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+}
+
+.snake-lede {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.15;
+  text-align: center;
+  max-width: 1500px;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+/* Title lands on its own first click (state s-0), before any of the
+   stage boxes appear. Once set the class sticks, so the title stays
+   visible through all subsequent step reveals. */
+.lifecycle-snake-slide.s-0 .snake-lede { opacity: 1; }
+.snake-lede .emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+
+/* Snake rail container — two flex rows + a bend element between. Both
+   rows right-aligned so step 6 (top right) and step 7 (bottom right)
+   sit in the same column; the bend becomes a clean vertical arrow
+   directly between them. */
+/* Single-row rail — no nested column; just the one .snake-row inside. */
+.snake-rail {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 1820px;
+}
+
+.snake-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+/* Step container — sized to fit all 11 stages on one line. */
+.snake-step {
+  width: 142px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s ease-out, transform 0.45s cubic-bezier(.2,.7,.2,1);
+}
+
+.snake-step .step-icon-card {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--l-surface);
+  border-radius: 11px;
+  box-shadow: 0 2px 8px rgba(28, 24, 19, 0.10);
+  color: var(--teal-700);
+}
+.snake-step .step-icon-card svg {
+  width: 24px;
+  height: 24px;
+}
+
+.snake-step .step-label {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-700);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Terminal step (Award / Lost) — amber icon card to mark the outcome. */
+.snake-step-terminal .step-icon-card { color: var(--amber-on-light); }
+.snake-step-terminal .step-label     { color: var(--amber-on-light); }
+
+.snake-arrow {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--teal-700);
+  line-height: 1;
+  margin-top: 18px;        /* vertically aligns with the icon-card row */
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+
+.snake-synthesis {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  text-align: center;
+  max-width: 1200px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.snake-synthesis .emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+
+/* ── 11-click reveal · one stage per click ──────────────────────────
+   .s-N is added by the JS handler when fragment data-snake-step="N"
+   becomes visible. Each .s-N rule reveals ONE step + the arrow that
+   leads INTO it (matching data-n=N). Click 7 also lands the bend.
+   Click 11 also lands the synthesis line. */
+
+.lifecycle-snake-slide.s-1  .snake-step[data-n="1"]                                     { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-2  .snake-step[data-n="2"], .lifecycle-snake-slide.s-2  .snake-arrow[data-n="2"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-3  .snake-step[data-n="3"], .lifecycle-snake-slide.s-3  .snake-arrow[data-n="3"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-4  .snake-step[data-n="4"], .lifecycle-snake-slide.s-4  .snake-arrow[data-n="4"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-5  .snake-step[data-n="5"], .lifecycle-snake-slide.s-5  .snake-arrow[data-n="5"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-6  .snake-step[data-n="6"], .lifecycle-snake-slide.s-6  .snake-arrow[data-n="6"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-7  .snake-step[data-n="7"], .lifecycle-snake-slide.s-7  .snake-arrow[data-n="7"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-8  .snake-step[data-n="8"], .lifecycle-snake-slide.s-8  .snake-arrow[data-n="8"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-9  .snake-step[data-n="9"], .lifecycle-snake-slide.s-9  .snake-arrow[data-n="9"]  { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-10 .snake-step[data-n="10"], .lifecycle-snake-slide.s-10 .snake-arrow[data-n="10"] { opacity: 1; transform: translateY(0); }
+.lifecycle-snake-slide.s-11 .snake-step[data-n="11"], .lifecycle-snake-slide.s-11 .snake-arrow[data-n="11"] { opacity: 1; transform: translateY(0); }
+
+/* ── Context info strip · RFQ Inputs / Contributors / Control Points ──
+   Three amber-circle blocks sitting below the snake. Keywords inline
+   (separated by middots), more space between blocks. Always visible
+   from slide entry — static context while the snake reveals above. */
+/* Three blocks spread across the slide width using space-between so
+   CONTRIBUTORS lands at the geometric centre, RFQ INPUTS at left,
+   CONTROL POINTS at right. Hidden until click 11. */
+.snake-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 40px;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+}
+.lifecycle-snake-slide.s-17 .snake-info { opacity: 1; }
+
+/* Conclusion sentence — final landing line that appears together with
+   the info strip on click 11. */
+.snake-conclusion {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  text-align: center;
+  max-width: 1300px;
+  opacity: 0;
+  transition: opacity 0.55s ease-out 0.15s;
+}
+.snake-conclusion .emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+.lifecycle-snake-slide.s-18 .snake-conclusion { opacity: 1; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   Workflow mode reveals on the lifecycle snake.
+   ────────────────────────────────────────────────────────────────────────
+   After all 11 stages land (click 11), the slide cycles through 5
+   workflow modes via the mode label + stage dimming:
+
+     s-12  LONG       (confirms the 11-stage long workflow)
+     s-13  SHORT      (RFQ → Go/No-Go → Cost Est → Internal Approval
+                        → Offer Submission → Award/Lost = 6 stages)
+     s-14  CUSTOM A   (Quick standard: RFQ · Go/No-Go · Vendor Inquiry
+                        · Cost Est · Internal Approval · Offer Sub
+                        · Award/Lost = 7 stages)
+     s-15  CUSTOM B   (Engineering-heavy: long minus Vendor Inquiry
+                        = 10 stages)
+     s-16  CUSTOM C   (Repeat client, clarifications-only:
+                        RFQ · Go/No-Go · Pre-bid · Cost Est · Internal
+                        Approval · Offer Sub · Award/Lost = 7 stages)
+
+   In every customized mode the 3 REQUIRED stages (1 RFQ Received,
+   2 Go/No-Go, 11 Award/Lost) are always lit.
+
+   s-17 reveals the info strip (RFQ Inputs / Contributors / Control
+   Points), s-18 reveals the bottom conclusion line.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* The mode label container · sits above the rail. Only ONE of the 5
+   inner spans is visible at a time (controlled by the s-N class). */
+.snake-mode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 32px;
+  margin: 8px 0 16px;
+  position: relative;
+}
+.snake-mode-label {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  padding: 6px 16px;
+  border: 1.4px solid var(--amber-on-light);
+  border-radius: 999px;
+  background: rgba(160, 106, 24, 0.04);
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+
+/* Each mode label appears ONLY in its exact state — state classes are
+   sticky (s-13 stays set when s-14 is added), so :not() ensures only
+   the matching pill is visible. */
+.lifecycle-snake-slide.s-12:not(.s-13) .snake-mode-long      { opacity: 1; }
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-mode-short     { opacity: 1; }
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-mode-custom-a  { opacity: 1; }
+.lifecycle-snake-slide.s-15:not(.s-16) .snake-mode-custom-b  { opacity: 1; }
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-mode-custom-c  { opacity: 1; }
+/* After info / conclusion lands (s-17+), all mode labels hide. */
+
+/* Stage dimming per mode — same :not() scoping so SHORT's dim doesn't
+   leak into CUSTOM A, etc. Arrows leading INTO a dim stage also dim. */
+
+/* SHORT — dim stages 3, 4, 5, 6, 10 */
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-step[data-n="3"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-step[data-n="4"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-step[data-n="5"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-step[data-n="6"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-step[data-n="10"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-arrow[data-n="3"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-arrow[data-n="4"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-arrow[data-n="5"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-arrow[data-n="6"],
+.lifecycle-snake-slide.s-13:not(.s-14) .snake-arrow[data-n="10"] {
+  opacity: 0.20;
+}
+
+/* CUSTOM A · Quick standard — dim 3, 4, 5, 10 (keep 6 Vendor lit) */
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-step[data-n="3"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-step[data-n="4"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-step[data-n="5"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-step[data-n="10"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-arrow[data-n="3"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-arrow[data-n="4"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-arrow[data-n="5"],
+.lifecycle-snake-slide.s-14:not(.s-15) .snake-arrow[data-n="10"] {
+  opacity: 0.20;
+}
+
+/* CUSTOM B · Engineering-heavy — dim only stage 6 (Vendor Inquiry) */
+.lifecycle-snake-slide.s-15:not(.s-16) .snake-step[data-n="6"],
+.lifecycle-snake-slide.s-15:not(.s-16) .snake-arrow[data-n="6"] {
+  opacity: 0.20;
+}
+
+/* CUSTOM C · Repeat client, clarifications-only — dim 4, 5, 6, 10 */
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-step[data-n="4"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-step[data-n="5"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-step[data-n="6"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-step[data-n="10"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-arrow[data-n="4"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-arrow[data-n="5"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-arrow[data-n="6"],
+.lifecycle-snake-slide.s-16:not(.s-17) .snake-arrow[data-n="10"] {
+  opacity: 0.20;
+}
+
+.info-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.info-icon-circle {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.8px solid var(--amber-on-light);
+  border-radius: 50%;
+  color: var(--amber-on-light);
+  background: rgba(160, 106, 24, 0.04);
+}
+.info-icon-circle svg {
+  width: 26px;
+  height: 26px;
+}
+
+.info-label {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--amber-on-light);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Inline keywords · all on one line per block, separated by middots.
+   Display font, modest size so all three blocks fit comfortably. */
+.info-keywords {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--l-ink);
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.info-keywords .info-sep {
+  display: inline-block;
+  margin: 0 6px;
+  color: var(--l-hair-strong);
+  font-weight: 700;
+}
+
 .lens-divider {
   height: 1px;
   background: var(--l-hair-strong);
@@ -8869,4 +10123,521 @@
   .erd-slide.attaches-shown .live-attach,
   .wf-exec-slide.beam-shown .beam-line { opacity: 1; }
   .naive-row::after { transition: none; }
+}
+
+
+/* ============================================================================
+   newindex · concern.1 · Boardroom CEO-Concern slide
+   ----------------------------------------------------------------------------
+   Executive entry to the new narrative arc. Plain business language (RFQ
+   intentionally avoided here — introduced later). Three-beat title (calm
+   fact → red loss → muted unknown), one focal visual (two clusters of
+   document cards with two losses in red), one caption, one audit handoff.
+   3-click reveal: head → problem → outro.
+   ============================================================================ */
+
+.boardroom-slide .slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 44px;
+}
+
+/* ── Eyebrow chip · leadership attribution ───────────────────────── */
+
+.bc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 9px 18px;
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 4px;
+  background: var(--l-surface);
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.boardroom-slide.head-shown .bc-eyebrow { opacity: 1; }
+
+/* ── Brand marks · flank the eyebrow at the top of the hero ──────────
+   Albassam Group (parent) sits left, GHI (subsidiary) sits right —
+   reads like a corporate masthead with the LEADERSHIP CONCERN chip
+   centered between them. Position absolute so the centered hero
+   composition stays untouched. The vertical position aligns with the
+   eyebrow band, the horizontal inset (140px) keeps them clear of the
+   corner ticks so they don't read as chrome. Modest opacity = identi-
+   fication, not assertion. Fade in on the head-shown beat together
+   with the eyebrow. */
+
+.bc-mark {
+  position: absolute;
+  top: 95px;
+  height: 190px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.55s ease-out;
+  z-index: 2;
+}
+.bc-mark-left  { left:  140px; }
+.bc-mark-right { right: 140px; }
+
+.boardroom-slide.head-shown .bc-mark { opacity: 0.9; }
+
+/* ── Three-beat title · descending emotional weight ──────────────── */
+
+.bc-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 68px;
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: var(--l-ink);
+}
+.bc-beat {
+  display: block;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+.bc-beat-risk  { color: var(--sem-risk); font-weight: 700; }
+.bc-beat-muted { color: var(--l-muted); font-style: italic; }
+
+.boardroom-slide.head-shown .bc-beat {
+  opacity: 1;
+  transform: translateY(0);
+}
+.boardroom-slide.head-shown .bc-beat:nth-child(1) { transition-delay: 100ms; }
+.boardroom-slide.head-shown .bc-beat:nth-child(2) { transition-delay: 380ms; }
+.boardroom-slide.head-shown .bc-beat:nth-child(3) { transition-delay: 660ms; }
+
+/* ── Visual stage · RECEIVED cluster · arrow · OUTCOME cluster ──── */
+
+.bc-stage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 64px;
+}
+
+.bc-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.bc-cluster-grid {
+  display: grid;
+  gap: 16px;
+}
+.bc-cluster-received .bc-cluster-grid,
+.bc-cluster-outcome  .bc-cluster-grid {
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(2, 72px);
+}
+
+.bc-card {
+  width: 56px;
+  height: 72px;
+  color: var(--l-muted);
+  opacity: 0;
+  transform: rotate(var(--bc-card-r, 0deg));
+  transition: opacity 0.5s ease-out;
+}
+.bc-card svg { width: 100%; height: 100%; display: block; }
+
+/* Subtle per-card rotation for organic stack feel (matches §04.1 scatter). */
+.bc-cluster-received .bc-card:nth-child(1) { --bc-card-r: -5deg; }
+.bc-cluster-received .bc-card:nth-child(2) { --bc-card-r:  3deg; }
+.bc-cluster-received .bc-card:nth-child(3) { --bc-card-r: -2deg; }
+.bc-cluster-received .bc-card:nth-child(4) { --bc-card-r:  4deg; }
+.bc-cluster-received .bc-card:nth-child(5) { --bc-card-r: -3deg; }
+.bc-cluster-received .bc-card:nth-child(6) { --bc-card-r:  2deg; }
+.bc-cluster-outcome  .bc-card:nth-child(1) { --bc-card-r: -3deg; }
+.bc-cluster-outcome  .bc-card:nth-child(2) { --bc-card-r:  4deg; }
+.bc-cluster-outcome  .bc-card:nth-child(3) { --bc-card-r: -4deg; }
+.bc-cluster-outcome  .bc-card:nth-child(4) { --bc-card-r:  3deg; }
+.bc-cluster-outcome  .bc-card:nth-child(5) { --bc-card-r: -2deg; }
+.bc-cluster-outcome  .bc-card:nth-child(6) { --bc-card-r:  5deg; }
+
+/* Lost cards · red color + diagonal slash. */
+.bc-card-lost { color: var(--sem-risk); }
+.bc-card-lost .bc-slash {
+  stroke: var(--sem-risk);
+  stroke-width: 2.2;
+}
+
+.bc-cluster-label {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--l-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.bc-arrow {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--l-muted);
+  line-height: 1;
+  align-self: center;
+  margin-top: 52px;            /* roughly aligns with vertical centre of cards */
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Click 2 reveal — RECEIVED cluster cascades L→R, arrow drops, then
+   OUTCOME's two surviving cards land before the four LOST cards arrive
+   together as the emphasis beat. Higher-specificity rule on lost-card
+   delay is required so the per-position nth-child rules don't clobber
+   it for outcome positions 2/3/4/5. */
+.boardroom-slide.head-shown .bc-card { opacity: 1; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(1) { transition-delay:   0ms; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(2) { transition-delay:  60ms; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(3) { transition-delay: 120ms; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(4) { transition-delay: 180ms; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(5) { transition-delay: 240ms; }
+.boardroom-slide.head-shown .bc-cluster-received .bc-card:nth-child(6) { transition-delay: 300ms; }
+.boardroom-slide.head-shown .bc-arrow                                  { opacity: 1; transition-delay: 400ms; }
+/* OUTCOME survivors (positions 1 and 6, the corners) — both land together. */
+.boardroom-slide.head-shown .bc-cluster-outcome .bc-card:not(.bc-card-lost) {
+  transition-delay: 480ms;
+}
+/* OUTCOME losses (positions 2/3/4/5) — all four drop together for impact. */
+.boardroom-slide.head-shown .bc-cluster-outcome .bc-card-lost {
+  transition-delay: 700ms;
+}
+.boardroom-slide.head-shown .bc-cluster-label                          { opacity: 1; transition-delay: 850ms; }
+
+/* ── Outro · caption + audit handoff ─────────────────────────────── */
+
+.bc-caption {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--l-ink);
+  text-align: center;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease-out,
+              transform 0.55s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Transition strip — matches the audit-output strip from the audit slide:
+   content-sized (not full-width), top/bottom hairlines, t-sub (28px)
+   scale, display-font sentence with amber emphasis on the key phrase. */
+.bc-transition {
+  display: inline-block;            /* content-sized, parent's align-items centers it */
+  padding: 14px 28px;
+  border-top: 1px solid var(--l-hair-strong);
+  border-bottom: 1px solid var(--l-hair-strong);
+  font-family: var(--font-display);
+  font-size: var(--t-sub);
+  font-weight: 500;
+  color: var(--l-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.bc-transition .bc-arrow-sym {
+  display: inline-block;
+  margin-right: 16px;
+  color: var(--amber-on-light);
+  font-weight: 300;
+  font-family: var(--font-display);
+}
+.bc-transition .bc-trans-emph {
+  color: var(--amber-on-light);
+  font-weight: 700;
+}
+
+.boardroom-slide.outro-shown .bc-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+.boardroom-slide.outro-shown .bc-transition {
+  opacity: 1;
+  transition-delay: 240ms;
+}
+
+
+/* ============================================================================
+   DEMO SLIDE · the recorded walkthrough
+   ----------------------------------------------------------------------------
+   Browser-window mock with traffic-light dots + URL breadcrumb. Token-sized
+   throughout so it lives inside the design system: chrome text uses
+   --t-chrome (mono), caption uses --t-kicker (mono uppercase), hint uses
+   --t-caption. Light-first. When demo.mp4 is wired, swap .demo-placeholder
+   for <video class="demo-video"> — chrome stays identical.
+   ============================================================================ */
+
+.demo-slide .slide-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-window {
+  width: 1500px;
+  height: 820px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 14px;
+  box-shadow: 0 28px 80px -28px rgba(28, 24, 19, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demo-window-chrome {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 14px 20px;
+  background: rgba(28, 24, 19, 0.035);
+  border-bottom: 1px solid var(--l-hair-strong);
+  flex-shrink: 0;
+}
+
+.demo-window-dots {
+  display: inline-flex;
+  gap: 8px;
+}
+.demo-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid rgba(28, 24, 19, 0.10);
+}
+.demo-dot-r { background: #ed6a5e; }
+.demo-dot-y { background: #f5bf4f; }
+.demo-dot-g { background: #62c554; }
+
+.demo-window-url {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: var(--l-bg);
+  border: 1px solid var(--l-hair-strong);
+  border-radius: 7px;
+  font-family: var(--font-mono);
+  font-size: var(--t-chrome);
+  color: var(--l-ink);
+}
+
+.demo-url-live {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sem-success, #62c554);
+  box-shadow: 0 0 0 2px rgba(98, 197, 84, 0.18);
+  flex-shrink: 0;
+}
+
+.demo-url-path {
+  letter-spacing: 0.01em;
+}
+
+.demo-window-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--l-bg);
+  overflow: hidden;
+}
+
+.demo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.demo-play-icon {
+  width: 84px;
+  height: 84px;
+  color: var(--l-muted);
+  opacity: 0.55;
+}
+.demo-play-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.demo-caption {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--l-ink);
+  font-weight: 500;
+}
+.demo-hint {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--l-muted);
+  opacity: 0.55;
+}
+
+.demo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+
+/* ============================================================================
+   RESOLVED SLIDE · "The Thread, Resolved" — closing hook
+   ----------------------------------------------------------------------------
+   Light-first per DESIGN.md (dark tokens retained but unused in this deck).
+   Same atmospheric language as the title slide: amber + forest + warm-white
+   radial wash over --l-bg. Mono kicker (--t-kicker), display headline
+   (--t-h2), amber accent on the brand phrase + the "ā" letter following
+   the deck-wide convention (.accent on title-slide h1).
+   ============================================================================ */
+
+.resolved-slide {
+  background:
+    radial-gradient(58% 55% at 100% 0%,  rgba(232, 160, 76, 0.18) 0%, transparent 56%),
+    radial-gradient(56% 56% at 0% 100%,  rgba(93, 138, 94, 0.15) 0%, transparent 58%),
+    radial-gradient(48% 48% at 50% 48%,  rgba(255, 252, 246, 0.55) 0%, transparent 72%),
+    var(--l-bg);
+}
+
+.resolved-slide .slide-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 96px;
+}
+
+.resolved-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  max-width: 1500px;
+  text-align: center;
+}
+
+.resolved-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+
+.resolved-headline {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.18;
+  color: var(--l-ink);
+  margin: 0;
+}
+
+.resolved-emph {
+  color: var(--amber-on-light);
+}
+.resolved-emph-a {
+  color: var(--amber-on-light);
+}
+
+
+/* ============================================================================
+   THANKS SLIDE · the final beat
+   ----------------------------------------------------------------------------
+   Mirrors the resolved slide's atmospheric background so they read as a
+   closing pair. Hero uses --t-hook (90px) — the deck's opening-scale token,
+   reused intentionally to bookend the deck with the same weight as the
+   title slide hook.
+   ============================================================================ */
+
+.thanks-slide {
+  background:
+    radial-gradient(58% 55% at 100% 0%,  rgba(232, 160, 76, 0.18) 0%, transparent 56%),
+    radial-gradient(56% 56% at 0% 100%,  rgba(93, 138, 94, 0.15) 0%, transparent 58%),
+    radial-gradient(48% 48% at 50% 48%,  rgba(255, 252, 246, 0.55) 0%, transparent 72%),
+    var(--l-bg);
+}
+
+.thanks-slide .slide-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 96px;
+}
+
+.thanks-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  text-align: center;
+}
+
+.thanks-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--amber-on-light);
+  line-height: 1;
+}
+
+.thanks-headline {
+  font-family: var(--font-display);
+  font-size: var(--t-hook);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--l-ink);
+  margin: 0;
+}
+.thanks-headline-accent {
+  color: var(--amber-on-light);
+}
+
+.thanks-sub {
+  font-family: var(--font-body);
+  font-size: var(--t-sub);
+  font-weight: 400;
+  color: var(--l-muted);
+  margin: 0;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
 }

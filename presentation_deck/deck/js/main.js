@@ -845,6 +845,21 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-dm-model]'))    { const s = trigger.closest('.dm-slide'); if (s) s.classList.add('model-shown');    return; }
   if (trigger.matches('[data-dm-boundary]')) { const s = trigger.closest('.dm-slide'); if (s) s.classList.add('boundary-shown'); return; }
 
+  // newindex · concern.1 · Boardroom Concern — 3 clicks (head → problem → outro).
+  if (trigger.matches('[data-bc-head]'))     { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.add('head-shown');    return; }
+  if (trigger.matches('[data-bc-problem]'))  { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.add('problem-shown'); return; }
+  if (trigger.matches('[data-bc-outro]'))    { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.add('outro-shown');   return; }
+
+  // newindex · lifecycle.1 · RFQ Lifecycle Snake — 11 clicks, one per
+  // stage. Each fragment carries data-snake-step="N"; we add the s-N
+  // class to the slide and the matching CSS reveals step + arrow.
+  if (trigger.matches('[data-snake-step]')) {
+    const n = trigger.dataset.snakeStep;
+    const s = trigger.closest('.lifecycle-snake-slide');
+    if (s) s.classList.add('s-' + n);
+    return;
+  }
+
   // §03.2.b · Live Workflow Object — 5 clicks (lede → rfq → rail → pointer → attaches).
   if (trigger.matches('[data-erd-sentence]')) { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('sentence-shown'); return; }
   if (trigger.matches('[data-erd-rfq]'))      { const s = trigger.closest('.erd-slide'); if (s) s.classList.add('rfq-shown'); return; }
@@ -864,6 +879,29 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-api-families]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('families-shown'); return; }
   if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('contract-shown'); return; }
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.add('maturity-shown'); return; }
+
+  // §compare · Chatbot vs Copilot — 10 clicks (headline → 4 rows × 2
+  // sides alternating chatbot/copilot → bottom punchline).
+  if (trigger.matches('[data-cmp-headline]'))    { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-headline-shown');    return; }
+  if (trigger.matches('[data-cmp-r1-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r1-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r1-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r1-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r2-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r2-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r2-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r2-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r3-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r3-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r3-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r3-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r4-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r4-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r4-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-r4-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-bottom]'))      { const s = trigger.closest('.compare-slide'); if (s) s.classList.add('cmp-bottom-shown');      return; }
+
+  // §05.0 · What we want from the copilot — 7 clicks (headline → 4 card
+  // cascade → pulse finale → footer bridge).
+  if (trigger.matches('[data-aims-headline]')) { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('headline-shown'); return; }
+  if (trigger.matches('[data-aims-c1]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('c1-shown');       return; }
+  if (trigger.matches('[data-aims-c2]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('c2-shown');       return; }
+  if (trigger.matches('[data-aims-c3]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('c3-shown');       return; }
+  if (trigger.matches('[data-aims-c4]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('c4-shown');       return; }
+  if (trigger.matches('[data-aims-pulse]'))    { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('pulse-shown');    return; }
+  if (trigger.matches('[data-aims-footer]'))   { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.add('footer-shown');   return; }
 
   // §05.1 · The Chatbot Trap — 3 clicks (picture → risks → synthesis).
   if (trigger.matches('[data-trap-headline]'))  { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.add('headline-shown'); return; }
@@ -958,6 +996,7 @@ Reveal.on('fragmentshown', (event) => {
   if (trigger.matches('[data-mw-before]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('before-shown');   return; }
   if (trigger.matches('[data-mw-merged]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('merged-shown');   return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('instance-shown'); return; }
+  if (trigger.matches('[data-mw-subtasks]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('subtasks-shown'); return; }
   if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.add('context-shown');  return; }
 
   // Title-slide cascade — first click on slide 0.1 plays the intro reveal.
@@ -1233,6 +1272,17 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-bacab-trans]'))    { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('trans-shown'); return; }
   if (trigger.matches('[data-bacab-support]'))  { const s = trigger.closest('.bacab-slide'); if (s) s.classList.remove('support-shown'); return; }
 
+  if (trigger.matches('[data-bc-head]'))     { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.remove('head-shown');    return; }
+  if (trigger.matches('[data-bc-problem]'))  { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.remove('problem-shown'); return; }
+  if (trigger.matches('[data-bc-outro]'))    { const s = trigger.closest('.boardroom-slide'); if (s) s.classList.remove('outro-shown');   return; }
+
+  if (trigger.matches('[data-snake-step]')) {
+    const n = trigger.dataset.snakeStep;
+    const s = trigger.closest('.lifecycle-snake-slide');
+    if (s) s.classList.remove('s-' + n);
+    return;
+  }
+
   if (trigger.matches('[data-dm-model]'))    { const s = trigger.closest('.dm-slide'); if (s) s.classList.remove('model-shown');    return; }
   if (trigger.matches('[data-dm-boundary]')) { const s = trigger.closest('.dm-slide'); if (s) s.classList.remove('boundary-shown'); return; }
 
@@ -1252,6 +1302,25 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-api-families]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('families-shown'); return; }
   if (trigger.matches('[data-api-contract]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('contract-shown'); return; }
   if (trigger.matches('[data-api-maturity]')) { const s = trigger.closest('.api-slide'); if (s) s.classList.remove('maturity-shown'); return; }
+
+  if (trigger.matches('[data-cmp-headline]'))    { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-headline-shown');    return; }
+  if (trigger.matches('[data-cmp-r1-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r1-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r1-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r1-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r2-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r2-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r2-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r2-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r3-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r3-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r3-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r3-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-r4-chatbot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r4-chatbot-shown');  return; }
+  if (trigger.matches('[data-cmp-r4-copilot]'))  { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-r4-copilot-shown');  return; }
+  if (trigger.matches('[data-cmp-bottom]'))      { const s = trigger.closest('.compare-slide'); if (s) s.classList.remove('cmp-bottom-shown');      return; }
+
+  if (trigger.matches('[data-aims-headline]')) { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('headline-shown'); return; }
+  if (trigger.matches('[data-aims-c1]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('c1-shown');       return; }
+  if (trigger.matches('[data-aims-c2]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('c2-shown');       return; }
+  if (trigger.matches('[data-aims-c3]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('c3-shown');       return; }
+  if (trigger.matches('[data-aims-c4]'))       { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('c4-shown');       return; }
+  if (trigger.matches('[data-aims-pulse]'))    { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('pulse-shown');    return; }
+  if (trigger.matches('[data-aims-footer]'))   { const s = trigger.closest('.copilot-aims-slide'); if (s) s.classList.remove('footer-shown');   return; }
 
   if (trigger.matches('[data-trap-headline]'))  { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('headline-shown'); return; }
   if (trigger.matches('[data-trap-picture]'))   { const s = trigger.closest('.chatbot-trap-slide'); if (s) s.classList.remove('picture-shown'); return; }
@@ -1337,6 +1406,7 @@ Reveal.on('fragmenthidden', (event) => {
   if (trigger.matches('[data-mw-before]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('before-shown');   return; }
   if (trigger.matches('[data-mw-merged]'))   { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('merged-shown');   return; }
   if (trigger.matches('[data-mw-instance]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('instance-shown'); return; }
+  if (trigger.matches('[data-mw-subtasks]')) { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('subtasks-shown'); return; }
   if (trigger.matches('[data-mw-context]'))  { const s = trigger.closest('.manager-workflow-slide'); if (s) s.classList.remove('context-shown');  return; }
 
   // Title-slide — going back (left arrow on slide 0.1 from the shown state)
@@ -1633,6 +1703,18 @@ Reveal.on('slidechanged', (event) => {
     bacabSlide.classList.toggle('trans-shown',    !!slide.querySelector('[data-bacab-trans].visible'));
     bacabSlide.classList.toggle('support-shown',  !!slide.querySelector('[data-bacab-support].visible'));
   }
+  const boardroomSlide = slide.querySelector('.boardroom-slide');
+  if (boardroomSlide) {
+    boardroomSlide.classList.toggle('head-shown',    !!slide.querySelector('[data-bc-head].visible'));
+    boardroomSlide.classList.toggle('problem-shown', !!slide.querySelector('[data-bc-problem].visible'));
+    boardroomSlide.classList.toggle('outro-shown',   !!slide.querySelector('[data-bc-outro].visible'));
+  }
+  const snakeSlide = slide.querySelector('.lifecycle-snake-slide');
+  if (snakeSlide) {
+    for (let n = 0; n <= 18; n++) {
+      snakeSlide.classList.toggle('s-' + n, !!slide.querySelector('[data-snake-step="' + n + '"].visible'));
+    }
+  }
   const dmSlide = slide.querySelector('.dm-slide');
   if (dmSlide) {
     dmSlide.classList.toggle('model-shown',    !!slide.querySelector('[data-dm-model].visible'));
@@ -1660,6 +1742,29 @@ Reveal.on('slidechanged', (event) => {
     apiSlide.classList.toggle('families-shown', !!slide.querySelector('[data-api-families].visible'));
     apiSlide.classList.toggle('contract-shown', !!slide.querySelector('[data-api-contract].visible'));
     apiSlide.classList.toggle('maturity-shown', !!slide.querySelector('[data-api-maturity].visible'));
+  }
+  const compareSlide = slide.querySelector('.compare-slide');
+  if (compareSlide) {
+    compareSlide.classList.toggle('cmp-headline-shown',    !!slide.querySelector('[data-cmp-headline].visible'));
+    compareSlide.classList.toggle('cmp-r1-chatbot-shown',  !!slide.querySelector('[data-cmp-r1-chatbot].visible'));
+    compareSlide.classList.toggle('cmp-r1-copilot-shown',  !!slide.querySelector('[data-cmp-r1-copilot].visible'));
+    compareSlide.classList.toggle('cmp-r2-chatbot-shown',  !!slide.querySelector('[data-cmp-r2-chatbot].visible'));
+    compareSlide.classList.toggle('cmp-r2-copilot-shown',  !!slide.querySelector('[data-cmp-r2-copilot].visible'));
+    compareSlide.classList.toggle('cmp-r3-chatbot-shown',  !!slide.querySelector('[data-cmp-r3-chatbot].visible'));
+    compareSlide.classList.toggle('cmp-r3-copilot-shown',  !!slide.querySelector('[data-cmp-r3-copilot].visible'));
+    compareSlide.classList.toggle('cmp-r4-chatbot-shown',  !!slide.querySelector('[data-cmp-r4-chatbot].visible'));
+    compareSlide.classList.toggle('cmp-r4-copilot-shown',  !!slide.querySelector('[data-cmp-r4-copilot].visible'));
+    compareSlide.classList.toggle('cmp-bottom-shown',      !!slide.querySelector('[data-cmp-bottom].visible'));
+  }
+  const copilotAimsSlide = slide.querySelector('.copilot-aims-slide');
+  if (copilotAimsSlide) {
+    copilotAimsSlide.classList.toggle('headline-shown', !!slide.querySelector('[data-aims-headline].visible'));
+    copilotAimsSlide.classList.toggle('c1-shown',       !!slide.querySelector('[data-aims-c1].visible'));
+    copilotAimsSlide.classList.toggle('c2-shown',       !!slide.querySelector('[data-aims-c2].visible'));
+    copilotAimsSlide.classList.toggle('c3-shown',       !!slide.querySelector('[data-aims-c3].visible'));
+    copilotAimsSlide.classList.toggle('c4-shown',       !!slide.querySelector('[data-aims-c4].visible'));
+    copilotAimsSlide.classList.toggle('pulse-shown',    !!slide.querySelector('[data-aims-pulse].visible'));
+    copilotAimsSlide.classList.toggle('footer-shown',   !!slide.querySelector('[data-aims-footer].visible'));
   }
   const chatbotTrapSlide = slide.querySelector('.chatbot-trap-slide');
   if (chatbotTrapSlide) {
@@ -1767,6 +1872,7 @@ Reveal.on('slidechanged', (event) => {
     managerWorkflowSlide.classList.toggle('before-shown',   !!slide.querySelector('[data-mw-before].visible'));
     managerWorkflowSlide.classList.toggle('merged-shown',   !!slide.querySelector('[data-mw-merged].visible'));
     managerWorkflowSlide.classList.toggle('instance-shown', !!slide.querySelector('[data-mw-instance].visible'));
+    managerWorkflowSlide.classList.toggle('subtasks-shown', !!slide.querySelector('[data-mw-subtasks].visible'));
     managerWorkflowSlide.classList.toggle('context-shown',  !!slide.querySelector('[data-mw-context].visible'));
   }
 
